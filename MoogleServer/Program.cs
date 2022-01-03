@@ -1,5 +1,8 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using MoogleEngine;
+
+Moogle.Indexar();
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,7 +17,7 @@ if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error");
 }
-
+//Moogle.Indexar();
 
 app.UseStaticFiles();
 
@@ -24,3 +27,5 @@ app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
 
 app.Run();
+
+
