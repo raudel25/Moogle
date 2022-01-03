@@ -54,7 +54,7 @@ public static class Moogle
             documents.Add(d1);
             q++;
         }
-        string jsonstring = File.ReadAllText("..//Content//sinonimos.json");
+        string jsonstring = File.ReadAllText("..//sinonimos.json");
         Sinonimo sin = JsonSerializer.Deserialize<Sinonimo>(jsonstring);
         Consulta.sinonimos = sin.sinonimos;
         Tf_IdfDoc();
