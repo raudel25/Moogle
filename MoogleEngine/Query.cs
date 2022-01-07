@@ -4,7 +4,7 @@ public class Sinonimo
 {
     public List<string[]> sinonimos { get; set; }
 }
-public class Consulta
+public class QueryClass
 {
     public double[] vectorC;
     public List<Document> resultsearchDoc = new List<Document>();
@@ -17,19 +17,19 @@ public class Consulta
     public List<List<string>> Cercanas = new List<List<string>>();
     public Dictionary<string, int> MayorRelevancia = new Dictionary<string, int>();
     public List<int> CantRelevancia = new List<int>();
+    public List<string> wordsRaices = new List<string>();
     public List<string> wordsSinonimo = new List<string>();
     public static List<string[]> sinonimos;
     public string txt;
-    public Consulta(string s)
+    public QueryClass(string s)
     {
         this.txt = s;
         Document.BuildHash(new string[] { s }, Document.cantdoc, this);
         this.vectorC = new double[Document.sistema.cantwords];
 
     }
-    public void Busqueda(string change, int index, int i, int j)
+    public void Busqueda(string change, int index, int i, int pos)
     {
-        bool contenido = false;
         List<string> cerca = new List<string>();
         string[] p = change.Split('~');
         if (p.Length > 1)
@@ -40,12 +40,11 @@ public class Consulta
                 agregar = true;
                 if (Document.sistema.searchTree(p[m]))
                 {
-                    Document.sistema.InsertWord(p[m], index, /*new Tuple<int, int>(i, j)*/j);
-                    //Document.time1 = 1000000000000;
+                    Document.sistema.InsertWord(p[m], index, pos);
                 }
                 else
                 {
-                    p[m] = similar(p[m], index, i, j);
+                    p[m] = similar(p[m], index, i, pos);
                     if (p[m] == "") agregar = false;
                 }
                 if (Moogle.word_cantdoc(Document.sistema.dic[p[m]].Item1) == 0) agregar = false;
@@ -57,16 +56,6 @@ public class Consulta
                     }
                 }
             }
-            /*if (Document.sistema.searchTree(p[1]))
-            {
-                Incluir.Add(change);
-                Document.sistema.InsertWord(change, index, Document.cantdoc, "", new Tuple<int, int>(i, j));
-            }
-            else
-            {
-                p[1] = similar(p[1], index, i, j);
-                if (p[1] == "") agregar = false;
-            }*/
             if (cerca.Count != 0)
             {
                 Cercanas.Add(cerca);
@@ -75,42 +64,34 @@ public class Consulta
         else if (change[0] == '!')
         {
             change = change.Substring(1);
-            //int a = sistema.searchTree(change);
             if (Document.sistema.searchTree(change))
             {
                 Excluir.Add(change);
-                Document.sistema.InsertWord(change, index, /*new Tuple<int, int>(i, j)*/j);
-                //Search_Sinonimos(change, index, j);
-                contenido = true;
+                Document.sistema.InsertWord(change, index, pos);
             }
             else
             {
-                string a = similar(change, index, i, j);
+                string a = similar(change, index, i, pos);
                 if (a != "")
                 {
                     Excluir.Add(a);
-                    contenido = true;
                 }
             }
         }
         else if (change[0] == '^')
         {
             change = change.Substring(1);
-            //int a = sistema.searchTree(change);
             if (Document.sistema.searchTree(change))
             {
                 Incluir.Add(change);
-                Document.sistema.InsertWord(change, index, /*new Tuple<int, int>(i, j)*/j);
-                contenido = true;
-                //Search_Sinonimos(change, index, j);
+                Document.sistema.InsertWord(change, index, pos);
             }
             else
             {
-                string a = similar(change, index, i, j);
+                string a = similar(change, index, i, pos);
                 if (a != "")
                 {
                     Incluir.Add(a);
-                    contenido = true;
                 }
             }
         }
@@ -121,41 +102,51 @@ public class Consulta
             {
                 a++;
             }
-            //int b = sistema.searchTree(change);
             change = change.Substring(a);
             if (Document.sistema.searchTree(change))
             {
                 MayorRelevancia.Add(change, a);
-                Document.sistema.InsertWord(change, index, /*new Tuple<int, int>(i, j)*/j);
-                //Search_Sinonimos(change, index, j);
-                contenido = true;
-                //busqueda.CantRelevancia.Add(a);
+                Document.sistema.InsertWord(change, index, pos);
             }
             else
             {
-                string b = similar(change, index, i, j);
+                string b = similar(change, index, i, pos);
                 if (b != "")
                 {
                     MayorRelevancia.Add(b, a);
-                    contenido = true;
                 }
             }
         }
         else if (Document.sistema.searchTree(change))
         {
-            Document.sistema.InsertWord(change, index, /*new Tuple<int, int>(i, j)*/j);
-            Search_Sinonimos(change, index, j);
+            Document.sistema.InsertWord(change, index, pos);
+            Search_Raices(change, index, pos);
+            Search_Sinonimos(change, index, pos);
         }
         else
         {
-            similar(change, index, i, j);
+            similar(change, index, i, pos);
         }
         Document.max[Document.cantdoc] = 1;
     }
-    public void Search_Sinonimos(string word, int index, int j)
+    public void Search_Raices(string word, int index, int pos)
     {
-        bool stop = false;
-        foreach (var line in Consulta.sinonimos)
+        string stemmer = Snowball.Stemmer(word);
+        foreach (var i in Document.sistema.dic)
+        {
+            if (i.Key[0] == stemmer[0] && word != i.Key)
+            {
+                if (Snowball.Stemmer(i.Key) == stemmer)
+                {
+                    Document.sistema.InsertWord(i.Key, index, pos);
+                    wordsRaices.Add(i.Key);
+                }
+            }
+        }
+    }
+    public void Search_Sinonimos(string word, int index, int pos)
+    {
+        foreach (var line in QueryClass.sinonimos)
         {
             for (int i = 0; i < line.Length; i++)
             {
@@ -165,23 +156,22 @@ public class Consulta
                     {
                         if (line[m] != word && Document.sistema.dic.ContainsKey(line[m]))
                         {
-                            Document.sistema.InsertWord(line[m], index, j);
+                            Document.sistema.InsertWord(line[m], index, pos);
                             wordsSinonimo.Add(line[m]);
                         }
                     }
-
                     break;
                 }
             }
         }
     }
-    public string similar(string change, int index, int i, int j)
+    public string similar(string change, int index, int i, int pos)
     {
         string a = simlitudword(change);
         if (a != "")
         {
-            Document.sistema.InsertWord(a, index, /*new Tuple<int, int>(i, j)*/j);
-            Search_Sinonimos(a, index, j);
+            Document.sistema.InsertWord(a, index, pos);
+            Search_Sinonimos(a, index, pos);
             for (int m = 0; m <= this.txt.Length - change.Length; m++)
             {
                 if (change == txt.Substring(m, change.Length).ToLower())
@@ -190,7 +180,6 @@ public class Consulta
                     break;
                 }
             }
-            //busqueda.txt = a;
         }
         return a;
     }

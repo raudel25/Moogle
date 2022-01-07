@@ -5,13 +5,12 @@ public class Document
     string[] doc;
     public static double time1;
     public static int[] max;
-    //public static List<Document> sistemaDoc;
     public int index;
     public static int cantdoc;
     public string title;
     public string ruta;
     public string score;
-    public static Suffix_Tree sistema;
+    public static BuildIndex sistema;
     public Document(string[] doc, string title, int q)
     {
         this.doc = doc;
@@ -20,7 +19,7 @@ public class Document
         this.index = q;
         BuildHash(doc, q);
     }
-    public static void BuildHash(string[] doc, int index, Consulta busqueda = null)
+    public static void BuildHash(string[] doc, int index, QueryClass busqueda = null)
     {
         int cant = 0;
         for (int i = 0; i < doc.Length; i++)
@@ -47,37 +46,23 @@ public class Document
                 }
                 else
                 {
-                    sistema.InsertWord(change, index, /*new Tuple<int, int>(i, j)*/ cant);
+                    sistema.InsertWord(change, index, cant);
                 }
                 cant++;
             }
         }
     }
-    public static string SignosPuntuacion(string s, Consulta busqueda)
+    public static string SignosPuntuacion(string s, QueryClass query)
     {
-        //char[] signos = { '!', '*', '^', '…', '«', '—', '»', '\'', '\"', ',', '.', ';', ':', '(', ')', '[', ']', '{', '}', '?', '¿', '¡', '-' };
         int start = 0; int stop = 0;
         for (int i = 0; i < s.Length; i++)
         {
             bool sig = false;
             bool operadores = false;
-            if (busqueda != null)
+            if (query != null)
             {
                 if (s[i] == '!' || s[i] == '*' || s[i] == '^') operadores = true;
             }
-            /*for (int j = x; j < signos.Length; j++)
-            {
-                /*if (s[i] == signos[j])
-                {
-                    sig = true;
-                    break;
-                }
-                if (char.IsPunctuation(s[i]))
-                {
-                    sig = true;
-                    break;
-                }
-            }*/
             if (!operadores && char.IsPunctuation(s[i]))
             {
                 sig = true;
@@ -91,19 +76,6 @@ public class Document
         for (int i = 0; i < s.Length; i++)
         {
             bool sig = false;
-            /*for (int j = 0; j < signos.Length; j++)
-            {
-                if (s[s.Length - 1 - i] == signos[j])
-                {
-                    sig = true;
-                    break;
-                }
-                if (char.IsPunctuation(s[s.Length - 1 - i]))
-                {
-                    sig = true;
-                    break;
-                }
-            }*/
             if (char.IsPunctuation(s[s.Length - 1 - i]))
             {
                 sig = true;
