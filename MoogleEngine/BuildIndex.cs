@@ -3,7 +3,7 @@ namespace MoogleEngine;
 public class BuildIndex
 {
     public Dictionary<string, Tuple<double[], List<int>[]>> dic = new Dictionary<string, Tuple<double[], List<int>[]>>();
-    // public Dictionary<string, List<string>> raices = new Dictionary<string, List<string>>();
+    //public Dictionary<string, List<string>> raices = new Dictionary<string, List<string>>();
     public int cantwords;
     public void InsertWord(string word, int index, int pos)
     {
@@ -13,7 +13,6 @@ public class BuildIndex
             List<int>[] l = new List<int>[Document.cantdoc];
             this.dic.Add(word, new Tuple<double[], List<int>[]>(n, l));
             this.cantwords++;
-
         }
         if (this.dic[word].Item1[index] == 0 && index < Document.cantdoc)
         {
@@ -32,7 +31,6 @@ public class BuildIndex
             {
                 this.raices.Add(stemming, new List<string>() { word });
             }*/
-
         }
         if (this.dic[word].Item1[index] > Document.max[index]) Document.max[index] = Convert.ToInt32(this.dic[word].Item1[index]);
     }

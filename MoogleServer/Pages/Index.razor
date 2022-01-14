@@ -8,28 +8,33 @@
 
 <button type="default" class="btn btn-primary" @onclick="RunQuery">🔍 Buscar</button>
 
-@if (!string.IsNullOrEmpty(result.Suggestion)) {
+@if (!string.IsNullOrEmpty(result.Suggestion)){
     <div class="suggestion">
-        <p>¿Quisite decir <strong><a href="#">@result.Suggestion</a></strong>?</p>
-    </div>
+    <p>¿Quisite decir <strong><a href="#">@result.Suggestion</a></strong>?</p>
+</div>
 }
 
 <ul class="results">
-@foreach (var item in result.Items()) {
-    <li>
-        <div class="item">
-            <p class="title">@item.Title</p>
-            <p>... @item.Snippet ...</p>
-        </div>
-    </li>
-}
+    @foreach (var item in result.Items())
+    {
+        <li>
+            <div class="item">
+                <p class="title">@item.Title</p>
+                @foreach (var snippet in item.Snippet)
+                {
+                    <p>... <a href="/pepe" >@snippet</a> ...</p>
+                }
+            </div>
+        </li>
+    }
 </ul>
 
 @code {
     private string query = "";
     private SearchResult result = new SearchResult();
-
-    private void RunQuery() {
+    
+    private void RunQuery()
+    {
         result = Moogle.Query(query);
     }
 }

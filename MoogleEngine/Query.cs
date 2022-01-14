@@ -11,7 +11,7 @@ public class QueryClass
     public int cantresult;
     public List<double> Score = new List<double>();
     public List<List<string>> Snipped = new List<List<string>>();
-    public List<string> SnippedResult = new List<string>();
+    public List<string[]> SnippedResult = new List<string[]>();
     public List<string> Excluir = new List<string>();
     public List<string> Incluir = new List<string>();
     public List<List<string>> Cercanas = new List<List<string>>();
@@ -171,7 +171,6 @@ public class QueryClass
         if (a != "")
         {
             Document.sistema.InsertWord(a, index, pos);
-            Search_Sinonimos(a, index, pos);
             for (int m = 0; m <= this.txt.Length - change.Length; m++)
             {
                 if (change == txt.Substring(m, change.Length).ToLower())
@@ -186,22 +185,44 @@ public class QueryClass
     public string simlitudword(string query)
     {
         string similar = "";
-        double porcentaje = 0;
+        double similarTF_IDF = 0;
+        //List<string> similar=new List<string>();
+        double porcentaje = int.MaxValue;
         foreach (var i in Document.sistema.dic)
         {
             double dist = LevenshteinDistance(query, i.Key);
-            if (dist >= 70)
+            if (/*dist >= 60*/true)
             {
-                double suma = 0;
+                /*double suma = 0;
                 for (int j = 0; j < Document.cantdoc; j++)
                 {
                     suma += i.Value.Item1[j];
-                }
-                dist = dist * suma;
-                if (dist > porcentaje)
+                }*/
+                //dist = dist * suma;
+                if (dist < porcentaje)
                 {
                     similar = i.Key;
+                    //similar=new List<string>(){i.Key};
                     porcentaje = dist;
+                    double suma = 0;
+                    for (int j = 0; j < Document.cantdoc; j++)
+                    {
+                        suma += i.Value.Item1[j];
+                    }
+                    similarTF_IDF = suma;
+                }
+                if (dist == porcentaje)
+                {
+                    double suma = 0;
+                    for (int j = 0; j < Document.cantdoc; j++)
+                    {
+                        suma += i.Value.Item1[j];
+                    }
+                    if (suma > similarTF_IDF)
+                    {
+                        similarTF_IDF = suma;
+                        similar = i.Key;
+                    }
                 }
             }
         }
@@ -236,8 +257,8 @@ public class QueryClass
                 /// si son iguales en posiciones equidistantes el peso es 0
                 /// de lo contrario el peso suma a uno.
                 costo = (s[i - 1] == t[j - 1]) ? 0 : 1;
-                d[i, j] = System.Math.Min(System.Math.Min(d[i - 1, j] + 2,  //Eliminacion
-                            d[i, j - 1] + 2),                             //Insercion 
+                d[i, j] = System.Math.Min(System.Math.Min(d[i - 1, j] + 1,  //Eliminacion
+                            d[i, j - 1] + 1),                             //Insercion 
                             d[i - 1, j - 1] + costo);                     //Sustitucion
             }
         }
@@ -247,6 +268,7 @@ public class QueryClass
             porcentaje = (1 - (d[m, n] / (double)s.Length)) * 100;
         else
             porcentaje = (1 - (d[m, n] / (double)t.Length)) * 100;
-        return porcentaje;
+        //return porcentaje;
+        return d[m, n];
     }
 }

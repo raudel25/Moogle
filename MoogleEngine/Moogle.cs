@@ -28,10 +28,10 @@ public static class Moogle
                 }
             }
             c1.Score[indicemax] = 0;
-            items[i] = new SearchItem(c1.resultsearchDoc[indicemax].title, c1.SnippedResult[indicemax].Substring(0, c1.SnippedResult[indicemax].Length - 7), (float)c1.Score[i]);
+            items[i] = new SearchItem(c1.resultsearchDoc[indicemax].title, /*new string[] { c1.SnippedResult[indicemax].Substring(0, c1.SnippedResult[indicemax].Length - 7), "raudel" }*/c1.SnippedResult[indicemax], (float)c1.Score[i]);
         }
 
-        SearchItem[] items1 = new SearchItem[1] { new SearchItem(/*c1.Cercanas[0][1]+*/ /*c1.wordsRaices[0]*/" ", Document.time1 + " ", 12) };
+        SearchItem[] items1 = new SearchItem[1] { new SearchItem(/*c1.busqueda_exacta.Count +*/ "", new string[] { "" }, 12) };
         return new SearchResult(items, c1.txt);
     }
     public static void Indexar()
@@ -196,7 +196,7 @@ public static class Moogle
     static void BuildSinipped(QueryClass query, int indexdoc, int[] Snippedwords)
     {
         string[] doc = File.ReadAllLines(query.resultsearchDoc[indexdoc].ruta);
-        string addSnipped = "";
+        string[] addSnipped = new string[Snippedwords.Length];
         for (int i = 0; i < Snippedwords.Length; i++)
         {
             int cant = 0;
@@ -229,7 +229,8 @@ public static class Moogle
                             if (cant1 == 10) break;
                         }
                     }
-                    addSnipped = addSnipped + n + "... ...";
+                    //addSnipped = addSnipped + n + "... ...";
+                    addSnipped[i] = n;
                     break;
                 }
                 cant += linea.Length;
