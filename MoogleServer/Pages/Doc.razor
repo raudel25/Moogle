@@ -1,6 +1,14 @@
-@page "/pepe"
+@page "/{id}"
 
 <PageTitle>Moogle!</PageTitle>
 
 <h1>🔍 Moogle!</h1>
-<p>hola</p>
+<h3>@id.Split('_')[0]</h3>
+@foreach (var s in CargarDoc.leer(id))
+{
+    <p>@s</p>
+}
+@code {
+    [Parameter]
+    public string id { get; set; }
+}

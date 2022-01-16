@@ -9,30 +9,27 @@ public static class Moogle
     public static SearchResult Query(string query)
     {
         // Modifique este método para responder a la búsqueda
-        Stopwatch crono = new Stopwatch();
-        crono.Start();
-        QueryClass c1 = new QueryClass(query);
-        QueryIndex(c1);
-        SearchItem[] items = new SearchItem[c1.Score.Count];
-        crono.Stop();
-        for (int i = 0; i < c1.Score.Count; i++)
+        QueryClass query1 = new QueryClass(query);
+        QueryIndex(query1);
+        SearchItem[] items = new SearchItem[query1.Score.Count];
+        for (int i = 0; i < query1.Score.Count; i++)
         {
             double max = 0;
             int indicemax = 0;
-            for (int j = 0; j < c1.Score.Count; j++)
+            for (int j = 0; j < query1.Score.Count; j++)
             {
-                if (c1.Score[j] > max)
+                if (query1.Score[j] > max)
                 {
-                    max = c1.Score[j];
+                    max = query1.Score[j];
                     indicemax = j;
                 }
             }
-            c1.Score[indicemax] = 0;
-            items[i] = new SearchItem(c1.resultsearchDoc[indicemax].title, /*new string[] { c1.SnippedResult[indicemax].Substring(0, c1.SnippedResult[indicemax].Length - 7), "raudel" }*/c1.SnippedResult[indicemax], (float)c1.Score[i]);
+            query1.Score[indicemax] = 0;
+            items[i] = new SearchItem(query1.resultsearchDoc[indicemax].title, query1.SnippetResult[indicemax], query1.Pos_SnippedResult[indicemax], (float)query1.Score[i]);
         }
 
-        SearchItem[] items1 = new SearchItem[1] { new SearchItem(/*c1.busqueda_exacta.Count +*/ "", new string[] { "" }, 12) };
-        return new SearchResult(items, c1.txt);
+        SearchItem[] items1 = new SearchItem[1] { new SearchItem(/*c1.busqueda_exacta.Count +*/ "", new string[] { "" }, new int[4], 12) };
+        return new SearchResult(items, query1.txt);
     }
     public static void Indexar()
     {
@@ -116,8 +113,7 @@ public static class Moogle
             query_x_doc = 0; mod_doc = 0;
             int ind_query = 0;
             List<string> words_doc = new List<string>();
-            List<string> words_doc1 = new List<string>();
-            //bool search_natural = false;
+            List<string> words_docSin_Raices = new List<string>();
             foreach (var j in Document.sistema.dic)
             {
                 query_x_doc += j.Value.Item1[i] * query.vectorC[ind_query];
@@ -130,12 +126,12 @@ public static class Moogle
                     }
                     else
                     {
-                        words_doc1.Add(j.Key);
+                        words_docSin_Raices.Add(j.Key);
                     }
                 }
                 ind_query++;
             }
-            if (words_doc.Count == 0) words_doc = words_doc1;
+            if (words_doc.Count == 0) words_doc = words_docSin_Raices;
             if (mod_query != 0)
             {
                 score[i] = (query_x_doc) / Math.Sqrt(mod_doc * mod_query);
@@ -143,40 +139,44 @@ public static class Moogle
             else score[i] = 0;
             if (score[i] != 0)
             {
-                bool result = true;
-                for (int m = 0; m < query.Excluir.Count; m++)
-                {
-                    if (Document.sistema.dic[query.Excluir[m]].Item1[i] != 0)
-                    {
-                        result = false;
-                    }
-                }
-                for (int m = 0; m < query.Incluir.Count; m++)
-                {
-                    if (Document.sistema.dic[query.Incluir[m]].Item1[i] == 0)
-                    {
-                        result = false;
-                    }
-                }
-                if (result)
-                {
-                    query.resultsearchDoc.Add(documents[i]);
-                    query.Snipped.Add(words_doc);
-                    query.cantresult++;
-                    score[i] = score[i] * Cercania(words_doc, query, documents[i]);
-                    query.Score.Add(score[i]);
-                }
+                ResultSearch(query, words_doc, score[i], documents[i]);
             }
+        }
+    }
+    static void ResultSearch(QueryClass query, List<string> words_doc, double score, Document doc)
+    {
+        bool result = true;
+        for (int m = 0; m < query.Excluir.Count; m++)
+        {
+            if (Document.sistema.dic[query.Excluir[m]].Item1[doc.index] != 0)
+            {
+                result = false;
+            }
+        }
+        for (int m = 0; m < query.Incluir.Count; m++)
+        {
+            if (Document.sistema.dic[query.Incluir[m]].Item1[doc.index] == 0)
+            {
+                result = false;
+            }
+        }
+        if (result)
+        {
+            query.resultsearchDoc.Add(doc);
+            query.Snippet.Add(words_doc);
+            query.cantresult++;
+            score = score * Cercania(words_doc, query, doc);
+            query.Score.Add(score);
         }
     }
     static void Snipped(QueryClass query)
     {
         for (int i = 0; i < query.cantresult; i++)
         {
-            int[] Snipped_words = new int[query.Snipped[i].Count];
+            int[] Snipped_words = new int[query.Snippet[i].Count];
             for (int j = 0; j < Snipped_words.Length; j++)
             {
-                List<int> l = Document.sistema.dic[query.Snipped[i][j]].Item2[query.resultsearchDoc[i].index];
+                List<int> l = Document.sistema.dic[query.Snippet[i][j]].Item2[query.resultsearchDoc[i].index];
                 Random rnd = new Random();
                 int ind = rnd.Next(l.Count);
                 Snipped_words[j] = l[ind];
@@ -184,7 +184,7 @@ public static class Moogle
             }
             if (Snipped_words.Length > 1)
             {
-                Tuple<int, int> tuple = Menor_DistanciaWord(query.Snipped[i], query.resultsearchDoc[i], 0, new int[Snipped_words.Length], int.MaxValue, int.MinValue, 10, 0);
+                Tuple<int, int> tuple = Menor_DistanciaWord(query.Snippet[i], query.resultsearchDoc[i], 0, new int[Snipped_words.Length], int.MaxValue, int.MinValue, 10, 0);
                 if (tuple.Item2 < 10)
                 {
                     Snipped_words = new int[] { tuple.Item1 };
@@ -197,6 +197,7 @@ public static class Moogle
     {
         string[] doc = File.ReadAllLines(query.resultsearchDoc[indexdoc].ruta);
         string[] addSnipped = new string[Snippedwords.Length];
+        int[] addposSnipped = new int[Snippedwords.Length];
         for (int i = 0; i < Snippedwords.Length; i++)
         {
             int cant = 0;
@@ -229,14 +230,15 @@ public static class Moogle
                             if (cant1 == 10) break;
                         }
                     }
-                    //addSnipped = addSnipped + n + "... ...";
                     addSnipped[i] = n;
+                    addposSnipped[i] = linea_ind;
                     break;
                 }
                 cant += linea.Length;
             }
         }
-        query.SnippedResult.Add(addSnipped);
+        query.SnippetResult.Add(addSnipped);
+        query.Pos_SnippedResult.Add(addposSnipped);
     }
     public static double Cercania(List<string> words, QueryClass query, Document document)
     {
@@ -254,7 +256,6 @@ public static class Moogle
                     cant++;
                 }
             }
-
             if (cant > 1)
             {
                 double n = (double)Menor_DistanciaWord(words, document, 0, new int[cant], int.MaxValue, int.MinValue, 100, 0).Item2;

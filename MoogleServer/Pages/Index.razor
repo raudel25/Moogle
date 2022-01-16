@@ -8,7 +8,8 @@
 
 <button type="default" class="btn btn-primary" @onclick="RunQuery">🔍 Buscar</button>
 
-@if (!string.IsNullOrEmpty(result.Suggestion)){
+@if (!string.IsNullOrEmpty(result.Suggestion))
+{
     <div class="suggestion">
     <p>¿Quisite decir <strong><a href="#">@result.Suggestion</a></strong>?</p>
 </div>
@@ -20,9 +21,9 @@
         <li>
             <div class="item">
                 <p class="title">@item.Title</p>
-                @foreach (var snippet in item.Snippet)
+                @for (int i = 0; i < item.Snippet.Length; i++)
                 {
-                    <p>... <a href="/pepe" >@snippet</a> ...</p>
+                    <p>... <a target='__blank' href=@(item.Title+"_"+item.Pos_Snippet[i])>@item.Snippet[i]</a> ...</p>
                 }
             </div>
         </li>
@@ -32,7 +33,6 @@
 @code {
     private string query = "";
     private SearchResult result = new SearchResult();
-    
     private void RunQuery()
     {
         result = Moogle.Query(query);
