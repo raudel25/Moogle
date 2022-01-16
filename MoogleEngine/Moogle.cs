@@ -9,6 +9,11 @@ public static class Moogle
     public static SearchResult Query(string query)
     {
         // Modifique este método para responder a la búsqueda
+        if(query=="")
+        {
+            SearchItem[] itemvacio = new SearchItem[]{new SearchItem("",new string[0],new int[0],2)};
+            return new SearchResult(itemvacio,query);
+        }
         QueryClass query1 = new QueryClass(query);
         QueryIndex(query1);
         SearchItem[] items = new SearchItem[query1.Score.Count];
@@ -25,7 +30,7 @@ public static class Moogle
                 }
             }
             query1.Score[indicemax] = 0;
-            items[i] = new SearchItem(query1.resultsearchDoc[indicemax].title, query1.SnippetResult[indicemax], query1.Pos_SnippedResult[indicemax], (float)query1.Score[i]);
+            items[i] = new SearchItem(query1.resultsearchDoc[indicemax].title, query1.SnippetResult[indicemax], query1.Pos_SnippetResult[indicemax], (float)query1.Score[i]);
         }
 
         SearchItem[] items1 = new SearchItem[1] { new SearchItem(/*c1.busqueda_exacta.Count +*/ "", new string[] { "" }, new int[4], 12) };
@@ -83,7 +88,7 @@ public static class Moogle
     {
         TF_idfC(query);
         SimVectors(query);
-        Snipped(query);
+        Snippet(query);
     }
     public static void TF_idfC(QueryClass query)
     {
@@ -169,44 +174,62 @@ public static class Moogle
             query.Score.Add(score);
         }
     }
-    static void Snipped(QueryClass query)
+    static void Snippet(QueryClass query)
     {
         for (int i = 0; i < query.cantresult; i++)
         {
-            int[] Snipped_words = new int[query.Snippet[i].Count];
-            for (int j = 0; j < Snipped_words.Length; j++)
+            //int[] Snippet_words = new int[query.Snippet[i].Count];
+            /*for (int j = 0; j < Snippet_words.Length; j++)
             {
                 List<int> l = Document.sistema.dic[query.Snippet[i][j]].Item2[query.resultsearchDoc[i].index];
                 Random rnd = new Random();
-                int ind = rnd.Next(l.Count);
-                Snipped_words[j] = l[ind];
-
-            }
-            if (Snipped_words.Length > 1)
-            {
-                Tuple<int, int> tuple = Menor_DistanciaWord(query.Snippet[i], query.resultsearchDoc[i], 0, new int[Snipped_words.Length], int.MaxValue, int.MinValue, 10, 0);
-                if (tuple.Item2 < 10)
+                int ind = 0;
+                if (l != null)
                 {
-                    Snipped_words = new int[] { tuple.Item1 };
+                    ind = rnd.Next(l.Count);
+                    Snippet_words[j] = l[ind];
                 }
+            }*/
+            if (/*Snippet_words.Length > 1*/query.Snippet[i].Count>0)
+            {
             }
-            BuildSinipped(query, i, Snipped_words);
+            List<int> Snippet_words1 = new List<int>();
+            while(query.Snippet[i].Count!=0)
+            {
+                Tuple<int, int,List<string>> tuple = Menor_DistanciaWord(query.Snippet[i], query.resultsearchDoc[i],/*query.Snippet[i].Count*/1,10);
+                    /*if (tuple.Item2 <= 10)
+                    {
+                        Snippet_words1.Add(tuple.Item1);
+                        query.Snippet[i]=tuple.Item3;
+                        //Snippet_words = new int[] { tuple.Item1 };                    
+                    }*/
+                Snippet_words1.Add(tuple.Item1);
+                query.Snippet[i]=tuple.Item3;
+                //query.Snippet[i]=tuple.Item3;
+            }
+            //Snippet_words[2]=Document.sistema.dic[query.Snippet[i][0]].Item2[query.resultsearchDoc[i].index][0];                
+            int[] Snippet_words=new int[Snippet_words1.Count];
+            for(int m=0;m<Snippet_words.Length;m++)
+            {
+                Snippet_words[m]=Snippet_words1[m];
+            }
+            BuildSinipped(query, i, Snippet_words);
         }
     }
-    static void BuildSinipped(QueryClass query, int indexdoc, int[] Snippedwords)
+    static void BuildSinipped(QueryClass query, int indexdoc, int[] Snippetwords)
     {
         string[] doc = File.ReadAllLines(query.resultsearchDoc[indexdoc].ruta);
-        string[] addSnipped = new string[Snippedwords.Length];
-        int[] addposSnipped = new int[Snippedwords.Length];
-        for (int i = 0; i < Snippedwords.Length; i++)
+        string[] addSnippet = new string[Snippetwords.Length];
+        int[] addposSnippet = new int[Snippetwords.Length];
+        for (int i = 0; i < Snippetwords.Length; i++)
         {
             int cant = 0;
             for (int linea_ind = 0; linea_ind < doc.Length; linea_ind++)
             {
                 string[] linea = doc[linea_ind].Split(' ');
-                if (Snippedwords[i] <= cant + linea.Length - 1)
+                if (Snippetwords[i] <= cant + linea.Length - 1)
                 {
-                    int j = Snippedwords[i] - cant;
+                    int j = Snippetwords[i] - cant;
                     string n = "";
                     int cant1 = 0;
                     for (int w = j; w < linea.Length; w++)
@@ -230,15 +253,15 @@ public static class Moogle
                             if (cant1 == 10) break;
                         }
                     }
-                    addSnipped[i] = n;
-                    addposSnipped[i] = linea_ind;
+                    addSnippet[i] = n;
+                    addposSnippet[i] = linea_ind;
                     break;
                 }
                 cant += linea.Length;
             }
         }
-        query.SnippetResult.Add(addSnipped);
-        query.Pos_SnippedResult.Add(addposSnipped);
+        query.SnippetResult.Add(addSnippet);
+        query.Pos_SnippetResult.Add(addposSnippet);
     }
     public static double Cercania(List<string> words, QueryClass query, Document document)
     {
@@ -258,39 +281,251 @@ public static class Moogle
             }
             if (cant > 1)
             {
-                double n = (double)Menor_DistanciaWord(words, document, 0, new int[cant], int.MaxValue, int.MinValue, 100, 0).Item2;
-                sumaScore += ((double)cant / (double)i.Count) * ((101 - n) / 10);
+                double n = (double)Menor_DistanciaWord(words, document,words.Count,10).Item2;
+                if (n <= 100)
+                {
+                    sumaScore += ((double)cant / (double)i.Count) * (100 / (n - 1));
+                }
+                else sumaScore = 0;
             }
         }
         if (sumaScore > 0) return sumaScore;
         return 1;
     }
-
-    public static Tuple<int, int> Menor_DistanciaWord(List<string> words, Document document, int index, int[] distancia, int min, int max, int cota, int pos)
+    static Tuple<int, int,List<string>> Menor_DistanciaWord(List<string> words, Document document,int cantmin,int cota)
     {
-        if (index == distancia.Length) return new Tuple<int, int>(min, max - min);
-        int minDist = int.MaxValue;
-        foreach (var i in Document.sistema.dic[words[index]].Item2[document.index])
+        List<int> l=new List<int>();
+        List<int> index_words_not_range=new List<int>();
+        Tuple<int, int>[] t = Tuplar(Document.sistema.dic[words[0]].Item2[document.index], 0);
+        for (int i = 1; i < words.Count; i++)
         {
-            int newmax = max;
-            int newmin = min;
-            distancia[index] = i;
-            if (i < min) newmin = i;
-            if (max < i) newmax = i;
-            if (newmax - newmin < minDist && newmax - newmin < cota)
+            t = Sorted(t, Tuplar(Document.sistema.dic[words[i]].Item2[document.index], i));
+        }
+        int menorDist = int.MaxValue;
+        int pos = 0;
+        Queue<Tuple<int, int>> cola = new Queue<Tuple<int, int>>();
+        int[] posList = new int[words.Count];
+        for(int j=words.Count;j>=cantmin;j--)
+        {
+            cola=new Queue<Tuple<int, int>>();
+            posList=new int[words.Count];
+            for (int i = 0; i < t.Length; i++)
             {
-                Tuple<int, int> t = Menor_DistanciaWord(words, document, index + 1, distancia, newmin, newmax, cota, pos);
-                if (minDist > t.Item2)
+                cola.Enqueue(t[i]);
+                posList[t[i].Item1]++;
+                Tuple<bool,List<int>> aux1=TodosContenidos(posList,j);
+                if (aux1.Item1)
                 {
-                    minDist = t.Item2; pos = t.Item1;
+                    l=aux1.Item2;
+                    while (true)
+                    {
+                        Tuple<int, int> quitar = cola.Peek();
+                        posList[quitar.Item1]--;
+                        Tuple<bool,List<int>> tuple=TodosContenidos(posList,j);
+                        if (tuple.Item1)
+                        {
+                            l=tuple.Item2;
+                            cola.Dequeue();
+                        }
+                        else
+                        {
+                            posList[quitar.Item1]++;
+                            break;
+                        }
+                    }
+                    if (t[i].Item2 - cola.Peek().Item2 + 1 < menorDist)
+                    {
+                        index_words_not_range=l;
+                        menorDist = t[i].Item2 - cola.Peek().Item2 + 1;
+                        pos = cola.Peek().Item2;
+                    }
+                    if (t[i].Item2 - cola.Peek().Item2 + 1 == menorDist)
+                    {
+                        Random random=new Random();
+                        if(random.Next(2)==0)
+                        {
+                            index_words_not_range=l;
+                            pos = cola.Peek().Item2;
+                        }
+                    }
                 }
-                if (minDist == t.Item2)
+                
+            }
+            if(menorDist<=cota) break;           
+        }
+        List<string> words_not_range=new List<string>();
+        for(int i=0;i<words.Count;i++)
+        {
+            if(!index_words_not_range.Contains(i))
+            {
+                words_not_range.Add(words[i]);
+            }
+        }
+        return new Tuple<int, int,List<string>>(pos, menorDist,words_not_range);
+    }
+    static Tuple<int, int>[] Sorted(Tuple<int, int>[] a, Tuple<int, int>[] b)
+    {
+        Tuple<int, int>[] c = new Tuple<int, int>[a.Length + b.Length];
+        int i = 0; int j = 0;
+        for (int x = 0; x < c.Length; x++)
+        {
+            if (a[i].Item2 < b[j].Item2)
+            {
+                c[x] = a[i];
+                if (i < a.Length - 1) i++;
+                else
                 {
-                    Random random = new Random();
-                    if (random.Next(2) == 0) pos = t.Item1;
+                    Tuple<int, int> t = new Tuple<int, int>(a[i].Item1, int.MaxValue);
+                    a[i] = t;
+                }
+            }
+            else
+            {
+                c[x] = b[j];
+                if (j < b.Length - 1) j++;
+                else
+                {
+                    Tuple<int, int> t = new Tuple<int, int>(b[j].Item1, int.MaxValue);
+                    b[j] = t;
                 }
             }
         }
-        return new Tuple<int, int>(pos, minDist);
+        return c;
     }
+    static Tuple<int, int>[] Tuplar(List<int> a, int index)
+    {
+        Tuple<int, int>[] t = new Tuple<int, int>[a.Count];
+        for (int i = 0; i < t.Length; i++)
+        {
+            Tuple<int, int> t1 = new Tuple<int, int>(index, a[i]);
+            t[i] = t1;
+        }
+        return t;
+    }
+    static Tuple<bool,List<int>> TodosContenidos(int[] a,int cant)
+    {
+        List<int> words_not_range=new List<int>();
+        int cantnoceros=0;
+        for (int i = 0; i < a.Length; i++)
+        {
+            if (a[i] != 0)
+            {
+                words_not_range.Add(i);
+                cantnoceros++;
+            }
+        }
+        if(cantnoceros<cant) return new Tuple<bool,List<int>>(false,words_not_range);
+        return new Tuple<bool,List<int>>(true,words_not_range);;
+    }
+    /*static Tuple<int, int> Menor_DistanciaWord(List<string> words, Document document,int cantmin,int cota)
+    {
+        List<int> l=new List<int>();
+        List<int> l1=new List<int>();
+        Tuple<int, int>[] t = Tuplar(Document.sistema.dic[words[0]].Item2[document.index], 0);
+        for (int i = 1; i < words.Count; i++)
+        {
+            t = Sorted(t, Tuplar(Document.sistema.dic[words[i]].Item2[document.index], i));
+        }
+        int menorDist = int.MaxValue;
+        int pos = 0;
+        Queue<Tuple<int, int>> cola = new Queue<Tuple<int, int>>();
+        int[] posList = new int[words.Count];
+        for(int j=words.Count;j>=cantmin;j--)
+        {
+            cola=new Queue<Tuple<int, int>>();
+            posList=new int[words.Count];
+            for (int i = 0; i < t.Length; i++)
+            {
+                cola.Enqueue(t[i]);
+                posList[t[i].Item1]++;
+                if (TodosContenidos(posList,j,l))
+                {
+                    while (true)
+                    {
+                        Tuple<int, int> quitar = cola.Peek();
+                        posList[quitar.Item1]--;
+                        if (TodosContenidos(posList,j,l))
+                        {
+                            cola.Dequeue();
+                        }
+                        else
+                        {
+                            posList[quitar.Item1]++;
+                            break;
+                        }
+                    }
+                    if (t[i].Item2 - cola.Peek().Item2 + 1 < menorDist)
+                    {
+                        l1=l;
+                        menorDist = t[i].Item2 - cola.Peek().Item2 + 1;
+                        pos = cola.Peek().Item2;
+                    }
+                }
+                if(menorDist<=cota) break;
+            }
+           
+        }
+        List<string> s=new List<string>();
+         for(int i=0;i<words.Count;i++)
+        {
+            if(!l1.Contains(i)) s.Add(words[i]);
+            words=s;
+        }
+        return new Tuple<int, int>(pos, menorDist);
+    }
+    static Tuple<int, int>[] Sorted(Tuple<int, int>[] a, Tuple<int, int>[] b)
+    {
+        Tuple<int, int>[] c = new Tuple<int, int>[a.Length + b.Length];
+        int i = 0; int j = 0;
+        for (int x = 0; x < c.Length; x++)
+        {
+            if (a[i].Item2 < b[j].Item2)
+            {
+                c[x] = a[i];
+                if (i < a.Length - 1) i++;
+                else
+                {
+                    Tuple<int, int> t = new Tuple<int, int>(a[i].Item1, int.MaxValue);
+                    a[i] = t;
+                }
+            }
+            else
+            {
+                c[x] = b[j];
+                if (j < b.Length - 1) j++;
+                else
+                {
+                    Tuple<int, int> t = new Tuple<int, int>(b[j].Item1, int.MaxValue);
+                    b[j] = t;
+                }
+            }
+        }
+        return c;
+    }
+    static Tuple<int, int>[] Tuplar(List<int> a, int index)
+    {
+        Tuple<int, int>[] t = new Tuple<int, int>[a.Count];
+        for (int i = 0; i < t.Length; i++)
+        {
+            Tuple<int, int> t1 = new Tuple<int, int>(index, a[i]);
+            t[i] = t1;
+        }
+        return t;
+    }
+    static bool TodosContenidos(int[] a,int cant,List<int> l)
+    {
+        List<int> l1=new List<int>();
+        int cantnoceros=0;
+        for (int i = 0; i < a.Length; i++)
+        {
+            if (a[i] != 0)
+            {
+                l1.Add(a[i]);
+                cantnoceros++;
+            }
+        }
+        if(cantnoceros<cant) return false;
+        l=l1;
+        return true;
+    }*/
 }

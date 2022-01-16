@@ -3,6 +3,7 @@ namespace MoogleEngine;
 public class Document
 {
     string[] doc;
+    public static string prueba;
     public static double time1;
     //Aqui guardamos la frecuencia de la palabra que mas se repite por documento
     public static int[] max;
@@ -66,7 +67,7 @@ public class Document
         }
     }
     //Metodo para eliminar los signos de puntuciaon
-    public static string SignosPuntuacion(string s, QueryClass query)
+    public static string SignosPuntuacion(string s, QueryClass query = null)
     {
         int start = 0; int stop = 0;
         //Recorremos la palabra de izqueierda a derecha y paramos cuando hallemos una letra

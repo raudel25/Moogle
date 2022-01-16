@@ -6,35 +6,35 @@ public class Sinonimo
 }
 public class QueryClass
 {
-    //Aqui guardamos los pesos de las palabras de la query
+    //Guardar los pesos de las palabras de la query
     public double[] vectorC;
-    //Aqui guardamos los documentos que resultan de la busqueda
+    //Guardar los documentos que resultan de la busqueda
     public List<Document> resultsearchDoc = new List<Document>();
-    //Aqui guardamos la cantidad de documentos que resultan de la busqueda
+    //Guardar la cantidad de documentos que resultan de la busqueda
     public int cantresult;
-    //Aqui guardamos el score de cada documento que resulta de la busqueda
+    //Guardar el score de cada documento que resulta de la busqueda
     public List<double> Score = new List<double>();
-    //Aqui una lista con las palabras encontradas en cada documento
+    //Guardar con las palabras encontradas en cada documento
     public List<List<string>> Snippet = new List<List<string>>();
-    //Aqui guardamos los Snippets resultantes de cada documento
+    //Guardar los Snippets resultantes de cada documento
     public List<string[]> SnippetResult = new List<string[]>();
-    //Aqui guardamos la linea correspondiente a los Snippets en cada documento resultante de la busqueda
-    public List<int[]> Pos_SnippedResult = new List<int[]>();
-    //Aqui guardamos las palabras del operador Excluir
+    //Guardar la linea correspondiente a los Snippets en cada documento resultante de la busqueda
+    public List<int[]> Pos_SnippetResult = new List<int[]>();
+    //Guardar las palabras del operador Excluir
     public List<string> Excluir = new List<string>();
-    //Aqui guardamos las palabras del operador Incluir
+    //Guardar las palabras del operador Incluir
     public List<string> Incluir = new List<string>();
-    //Aqui guardamos las palabras del operador Cercania por cada grupo de palabras cercanas
+    //Guardar las palabras del operador Cercania por cada grupo de palabras cercanas
     public List<List<string>> Cercanas = new List<List<string>>();
-    //Aqui guardamos las palabras del operador Relevancia y su respectiva relevancia
+    //Guardar las palabras del operador Relevancia y su respectiva relevancia
     public Dictionary<string, int> MayorRelevancia = new Dictionary<string, int>();
-    //Aqui guardamos las palabras con la misma raiz q las de nuestra query
+    //Guardar las palabras con la misma raiz q las de nuestra query
     public List<string> wordsRaices = new List<string>();
-    //Aqui guardamos los sinonimos de las palabras de nustra query
+    //Guardar los sinonimos de las palabras de nustra query
     public List<string> wordsSinonimo = new List<string>();
-    //Aqui guardamos los sinonimos cargados de nuestro json
+    //Guardar los sinonimos cargados de nuestro json
     public static List<string[]> sinonimos;
-    //Aqui guardamos el texto de nustra query
+    //Guardar el texto de nustra query
     public string txt;
     public QueryClass(string s)
     {
@@ -49,27 +49,23 @@ public class QueryClass
     public void Operators(string change, int index, int i, int pos)
     {
         bool operadores = false;
-        //Comprobamos el operador de cercania y si no seguimos
         if (!operadores && Cercania_Operator(change, index, pos))
         {
             operadores = true;
         }
-        //Comprobamos el operador de exclusion y si no seguimos
         if (!operadores && Excluir_Operator(change, index, pos))
         {
             operadores = true;
         }
-        //Comprobamos el operador de inclusion y si no seguimos
         if (!operadores && Incluir_Operator(change, index, pos))
         {
             operadores = true;
         }
-        //Comprobamos el operador de relevancia y si no seguimos
         if (!operadores && MayorRelevancia_Operator(change, index, pos))
         {
             operadores = true;
         }
-        //Si no hemos encontrado un operador procedemos a busqueda de la palabra
+        //Si no hemos encontrado un operador procedemos la busqueda de la palabra
         if (!operadores)
         {
             //Comprobamos si la palabra a buscar existe en nuestro sistema
@@ -92,7 +88,6 @@ public class QueryClass
     public bool Cercania_Operator(string change, int index, int pos)
     {
         List<string> cerca = new List<string>();
-        //Separamos por ~
         string[] p = change.Split('~');
         //Si nuestro arreglo tienen mas de dos elementos estamos en presencia del operador
         if (p.Length > 1)
@@ -102,6 +97,7 @@ public class QueryClass
             for (int m = 0; m < p.Length; m++)
             {
                 agregar = true;
+                p[m] = Document.SignosPuntuacion(p[m]);
                 //Comprobamos si la palabra esta en nuestro sistema
                 if (Document.sistema.dic.ContainsKey(p[m]))
                 {
@@ -134,7 +130,7 @@ public class QueryClass
     {
         if (change[0] == '!')
         {
-            change = change.Substring(1);
+            change = Document.SignosPuntuacion(change);
             if (Document.sistema.dic.ContainsKey(change))
             {
                 Excluir.Add(change);
@@ -156,7 +152,7 @@ public class QueryClass
     {
         if (change[0] == '^')
         {
-            change = change.Substring(1);
+            change = Document.SignosPuntuacion(change);
             if (Document.sistema.dic.ContainsKey(change))
             {
                 Incluir.Add(change);
@@ -183,10 +179,10 @@ public class QueryClass
             {
                 a++;
             }
-            change = change.Substring(a);
+            change = Document.SignosPuntuacion(change);
             if (Document.sistema.dic.ContainsKey(change))
             {
-                MayorRelevancia.Add(change, a);
+                MayorRelevancia.Add(change, a + 1);
                 Document.sistema.InsertWord(change, index, pos);
             }
             else
