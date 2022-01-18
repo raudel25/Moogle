@@ -5,34 +5,20 @@ using System.Text.Json;
 
 public static class Moogle
 {
-    static List<Document> documents = new List<Document>();
     public static SearchResult Query(string query)
     {
         // Modifique este método para responder a la búsqueda
         if(query=="")
         {
-            SearchItem[] itemvacio = new SearchItem[]{new SearchItem("",new string[0],new int[0],2)};
-            return new SearchResult(itemvacio,query);
+            return new SearchResult(new SearchItem[0],query);
         }
         QueryClass query1 = new QueryClass(query);
         QueryIndex(query1);
         SearchItem[] items = new SearchItem[query1.Score.Count];
         for (int i = 0; i < query1.Score.Count; i++)
         {
-            double max = 0;
-            int indicemax = 0;
-            for (int j = 0; j < query1.Score.Count; j++)
-            {
-                if (query1.Score[j] > max)
-                {
-                    max = query1.Score[j];
-                    indicemax = j;
-                }
-            }
-            query1.Score[indicemax] = 0;
-            items[i] = new SearchItem(query1.resultsearchDoc[indicemax].title, query1.SnippetResult[indicemax], query1.Pos_SnippetResult[indicemax], (float)query1.Score[i]);
+            items[i] = new SearchItem(query1.resultsearchDoc[i].title, query1.SnippetResult[i], query1.Pos_SnippetResult[i], (float)query1.Score[i]);
         }
-
         SearchItem[] items1 = new SearchItem[1] { new SearchItem(/*c1.busqueda_exacta.Count +*/ "", new string[] { "" }, new int[4], 12) };
         return new SearchResult(items, query1.txt);
     }
@@ -42,7 +28,7 @@ public static class Moogle
         crono.Start();
         Document.sistema = new BuildIndex();
         var list = Directory.EnumerateFiles("..//Content", "*.txt");
-        //List<Document> documents = new List<Document>();
+        Document.documents = new List<Document>();
         int q = 0;
         foreach (var i in list)
         {
@@ -54,7 +40,7 @@ public static class Moogle
         foreach (var i in list)
         {
             Document d1 = new Document(File.ReadAllLines(i), i, q);
-            documents.Add(d1);
+            Document.documents.Add(d1);
             q++;
         }
         string jsonstring = File.ReadAllText("..//sinonimos.json");
@@ -144,7 +130,7 @@ public static class Moogle
             else score[i] = 0;
             if (score[i] != 0)
             {
-                ResultSearch(query, words_doc, score[i], documents[i]);
+                ResultSearch(query, words_doc, score[i], Document.documents[i]);
             }
         }
     }
@@ -169,14 +155,13 @@ public static class Moogle
         {
             query.resultsearchDoc.Add(doc);
             query.Snippet.Add(words_doc);
-            query.cantresult++;
             score = score * Cercania(words_doc, query, doc);
             query.Score.Add(score);
         }
     }
     static void Snippet(QueryClass query)
     {
-        for (int i = 0; i < query.cantresult; i++)
+        for (int i = 0; i < query.resultsearchDoc.Count; i++)
         {
             List<int> Snippet_words1 = new List<int>();
             while(query.Snippet[i].Count!=0)
@@ -344,28 +329,28 @@ public static class Moogle
     {
         Tuple<int, int>[] c = new Tuple<int, int>[a.Length + b.Length];
         int i = 0; int j = 0;
-        for (int x = 0; x < c.Length; x++)
+         while(i<a.Length&&j<b.Length)
         {
-            if (a[i].Item2 < b[j].Item2)
+            if(a[i].Item2<b[j].Item2)
             {
-                c[x] = a[i];
-                if (i < a.Length - 1) i++;
-                else
-                {
-                    Tuple<int, int> t = new Tuple<int, int>(a[i].Item1, int.MaxValue);
-                    a[i] = t;
-                }
+                c[i+j]=a[i];
+                i++;
             }
             else
             {
-                c[x] = b[j];
-                if (j < b.Length - 1) j++;
-                else
-                {
-                    Tuple<int, int> t = new Tuple<int, int>(b[j].Item1, int.MaxValue);
-                    b[j] = t;
-                }
+                c[i+j]=b[j];
+                j++;
             }
+        }
+        while(i<a.Length)
+        {
+            c[i+j]=a[i];
+            i++;
+        }
+        while(j<b.Length)
+        {
+            c[i+j]=b[j];
+            j++;
         }
         return c;
     }
@@ -382,16 +367,14 @@ public static class Moogle
     static Tuple<bool,List<int>> TodosContenidos(int[] a,int cant)
     {
         List<int> words_not_range=new List<int>();
-        int cantnoceros=0;
         for (int i = 0; i < a.Length; i++)
         {
             if (a[i] != 0)
             {
                 words_not_range.Add(i);
-                cantnoceros++;
             }
         }
-        if(cantnoceros<cant) return new Tuple<bool,List<int>>(false,words_not_range);
+        if(words_not_range.Count<cant) return new Tuple<bool,List<int>>(false,words_not_range);
         return new Tuple<bool,List<int>>(true,words_not_range);;
     }
 }

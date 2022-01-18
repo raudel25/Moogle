@@ -10,8 +10,6 @@ public class QueryClass
     public double[] vectorC;
     //Guardar los documentos que resultan de la busqueda
     public List<Document> resultsearchDoc = new List<Document>();
-    //Guardar la cantidad de documentos que resultan de la busqueda
-    public int cantresult;
     //Guardar el score de cada documento que resulta de la busqueda
     public List<double> Score = new List<double>();
     //Guardar con las palabras encontradas en cada documento
@@ -40,7 +38,7 @@ public class QueryClass
     {
         this.txt = s;
         //Quitamos los esapcios y los signos de puntiucion
-        Document.BuildHash(new string[] { s }, Document.cantdoc, this);
+        Document.Tokenizar(new string[] { s }, Document.cantdoc, this);
         //Creamos un nuevo arreglo para guardar los pesos de la query
         this.vectorC = new double[Document.sistema.cantwords];
 
@@ -92,11 +90,9 @@ public class QueryClass
         //Si nuestro arreglo tienen mas de dos elementos estamos en presencia del operador
         if (p.Length > 1)
         {
-            bool agregar = true;
-            //Recorremos nuestro arreglo
             for (int m = 0; m < p.Length; m++)
             {
-                agregar = true;
+                if(p[m]=="") continue;
                 p[m] = Document.SignosPuntuacion(p[m]);
                 //Comprobamos si la palabra esta en nuestro sistema
                 if (Document.sistema.dic.ContainsKey(p[m]))
@@ -105,17 +101,12 @@ public class QueryClass
                 }
                 else
                 {
-                    //Si la palabra no existe procedemos a dar una recomndacion
+                    //Si la palabra no existe procedemos a dar una recomendacion
                     p[m] = similar(p[m], index, pos);
-                    if (p[m] == "") agregar = false;
                 }
-                if (Moogle.word_cantdoc(Document.sistema.dic[p[m]].Item1) == 0) agregar = false;
-                if (agregar)
+                if (!cerca.Contains(p[m]))
                 {
-                    if (!cerca.Contains(p[m]))
-                    {
-                        cerca.Add(p[m]);
-                    }
+                    cerca.Add(p[m]);
                 }
             }
             if (cerca.Count != 0)
@@ -178,6 +169,7 @@ public class QueryClass
             while (change[a] == '*')
             {
                 a++;
+                if(a==change.Length) break;
             }
             change = Document.SignosPuntuacion(change);
             if (Document.sistema.dic.ContainsKey(change))

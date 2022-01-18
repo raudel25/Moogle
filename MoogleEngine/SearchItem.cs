@@ -9,11 +9,11 @@ public class SearchItem
         this.Score = score;
         this.Pos_Snippet = Pos_Snippet;
     }
-
+    
     public string Title { get; private set; }
 
     public string[] Snippet { get; private set; }
     public int[] Pos_Snippet { get; private set; }
 
-    public float Score { get; private set; }
+    public float Score { get; set; }
 }

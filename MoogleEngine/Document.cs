@@ -3,6 +3,8 @@ namespace MoogleEngine;
 public class Document
 {
     string[] doc;
+
+    public static List<Document> documents;
     public static string prueba;
     public static double time1;
     //Aqui guardamos la frecuencia de la palabra que mas se repite por documento
@@ -23,9 +25,9 @@ public class Document
         this.title = title.Substring(12, title.Length - 5 - 12 + 1);
         this.index = q;
         //Quitamos los signos de puntuacion e indexamos el documento
-        BuildHash(doc, q);
+        Tokenizar(doc, q);
     }
-    public static void BuildHash(string[] doc, int index, QueryClass query = null)
+    public static void Tokenizar(string[] doc, int index, QueryClass query = null)
     {
         int cant = 0;
         //Recoremos cada linea del documento
