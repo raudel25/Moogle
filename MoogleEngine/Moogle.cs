@@ -8,10 +8,6 @@ public static class Moogle
     public static SearchResult Query(string query)
     {
         // Modifique este método para responder a la búsqueda
-        if(query=="")
-        {
-            return new SearchResult(new SearchItem[0],query);
-        }
         QueryClass query1 = new QueryClass(query);
         QueryIndex(query1);
         SearchItem[] items = new SearchItem[query1.Score.Count];
@@ -36,6 +32,10 @@ public static class Moogle
         }
         Document.cantdoc = q;
         Document.max = new int[q + 1];
+        for(int i=0;i<Document.max.Length;i++)
+        {
+            Document.max[i]=1;
+        }
         q = 0;
         foreach (var i in list)
         {
@@ -89,7 +89,7 @@ public static class Moogle
             i.Value.Item1[Document.cantdoc] = 0;
             j++;
         }
-        Document.max[Document.cantdoc] = 0;
+        Document.max[Document.cantdoc] = 1;
     }
     static void SimVectors(QueryClass query)
     {

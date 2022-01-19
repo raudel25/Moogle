@@ -43,8 +43,9 @@ public class QueryClass
         this.vectorC = new double[Document.sistema.cantwords];
 
     }
-    //Metodo para los operadores de busqueda
-    public void Operators(string change, int index, int i, int pos)
+    /// <summary>Metodo para los operadores de busqueda</summary>
+    /// <param name="change">String que contiene los operadores</param>
+    public void Operators(string change, int index, int pos)
     {
         bool operadores = false;
         if (!operadores && Cercania_Operator(change, index, pos))
@@ -70,20 +71,20 @@ public class QueryClass
             if (Document.sistema.dic.ContainsKey(change))
             {
                 Document.sistema.InsertWord(change, index, pos);
-                //Buscamos los sinonimos y las raices de la palabra
-                Search_Raices(change, index, pos);
-                Search_Sinonimos(change, index, pos);
             }
             else
             {
                 //Si la palabra no existe procedemos a dar una recomndacion
-                similar(change, index, pos);
+                change=similar(change, index, pos);
             }
+            //Buscamos los sinonimos y las raices de la palabra
+            Search_Raices(change, index, pos);
+            Search_Sinonimos(change, index, pos);
         }
-        Document.max[Document.cantdoc] = 1;
     }
-    //Operador Cercania
-    public bool Cercania_Operator(string change, int index, int pos)
+    /// <summary>Metodo para el operador cercania</summary>
+    /// <param name="change">String que contiene los operadores</param>
+    private bool Cercania_Operator(string change, int index, int pos)
     {
         List<string> cerca = new List<string>();
         string[] p = change.Split('~');
@@ -117,7 +118,7 @@ public class QueryClass
         }
         return false;
     }
-    public bool Excluir_Operator(string change, int index, int pos)
+    private bool Excluir_Operator(string change, int index, int pos)
     {
         if (change[0] == '!')
         {
@@ -139,7 +140,7 @@ public class QueryClass
         }
         return false;
     }
-    public bool Incluir_Operator(string change, int index, int pos)
+    private bool Incluir_Operator(string change, int index, int pos)
     {
         if (change[0] == '^')
         {
@@ -161,7 +162,7 @@ public class QueryClass
         }
         return false;
     }
-    public bool MayorRelevancia_Operator(string change, int index, int pos)
+    private bool MayorRelevancia_Operator(string change, int index, int pos)
     {
         if (change[0] == '*')
         {
@@ -189,7 +190,7 @@ public class QueryClass
         }
         return false;
     }
-    public void Search_Raices(string word, int index, int pos)
+    private void Search_Raices(string word, int index, int pos)
     {
         string stemmer = Snowball.Stemmer(word);
         foreach (var i in Document.sistema.dic)
@@ -204,7 +205,7 @@ public class QueryClass
             }
         }
     }
-    public void Search_Sinonimos(string word, int index, int pos)
+    private void Search_Sinonimos(string word, int index, int pos)
     {
         foreach (var line in QueryClass.sinonimos)
         {
@@ -225,7 +226,7 @@ public class QueryClass
             }
         }
     }
-    public string similar(string change, int index, int pos)
+    private string similar(string change, int index, int pos)
     {
         string a = simlitudword(change);
         if (a != "")
@@ -242,7 +243,7 @@ public class QueryClass
         }
         return a;
     }
-    public string simlitudword(string query)
+    private string simlitudword(string query)
     {
         string similar = "";
         double similarTF_IDF = 0;
@@ -277,7 +278,7 @@ public class QueryClass
         }
         return similar;
     }
-    public static double LevenshteinDistance(string s, string t)
+    private static double LevenshteinDistance(string s, string t)
     {
         double porcentaje = 0;
 

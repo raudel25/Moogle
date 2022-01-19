@@ -5,17 +5,16 @@ public class Document
     string[] doc;
 
     public static List<Document> documents;
-    public static string prueba;
     public static double time1;
-    //Aqui guardamos la frecuencia de la palabra que mas se repite por documento
+    //Guardar la frecuencia de la palabra que mas se repite por documento
     public static int[] max;
-    //Aqui guardamos el indice del documento
+    //Guardar el indice del documento
     public int index;
-    //Aqui guardamos la cantidad de documentos
+    //Guardar la cantidad de documentos
     public static int cantdoc;
-    //Aqui guardamos el titulo del documento
+    //Guardar el titulo del documento
     public string title;
-    //Aqui guardamos la ruta del documento
+    //Guardar la ruta del documento
     public string ruta;
     public static BuildIndex sistema;
     public Document(string[] doc, string title, int q)
@@ -57,7 +56,7 @@ public class Document
                 //Si la palabra es del query vamos al metodo de los operadores de busqueda
                 if (query != null)
                 {
-                    query.Operators(change, index, i, cant);
+                    query.Operators(change, index, cant);
                 }
                 else
                 {
@@ -68,7 +67,7 @@ public class Document
             }
         }
     }
-    //Metodo para eliminar los signos de puntuciaon
+    //Metodo para eliminar los signos de puntuacion
     public static string SignosPuntuacion(string s, QueryClass query = null)
     {
         int start = 0; int stop = 0;
