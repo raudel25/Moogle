@@ -79,10 +79,10 @@ public class Document
             //Si la palabra es parte de la query excluimos los signos de los operadores
             if (query != null)
             {
-                if (s[i] == '!' || s[i] == '*' || s[i] == '^') operadores = true;
+                if (s[i] == '!' || s[i] == '*' || s[i] == '^' || s[i]=='"') operadores = true;
             }
             //Si nos encontramos una letra paramos y guardamos la posicion
-            if (!operadores && char.IsPunctuation(s[i]))
+            if (!operadores && !char.IsLetterOrDigit(s[i]))
             {
                 sig = true;
             }
@@ -97,8 +97,13 @@ public class Document
         for (int i = 0; i < s.Length; i++)
         {
             bool sig = false;
+            bool operadores=false;
+            if (query != null)
+            {
+                if (s[s.Length - 1 - i]=='"') operadores = true;
+            }
             //Si nos encontramos una letra paramos y guardamos la posicion
-            if (char.IsPunctuation(s[s.Length - 1 - i]))
+            if (!operadores && !char.IsLetterOrDigit(s[s.Length - 1 - i]))
             {
                 sig = true;
             }

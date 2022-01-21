@@ -104,6 +104,7 @@ public static class Moogle
             query_x_doc = 0; mod_doc = 0;
             int ind_query = 0;
             List<string> words_doc = new List<string>();
+            List<string> words_docLiteral=new List<string>();
             List<string> words_docSin_Raices = new List<string>();
             foreach (var j in Document.sistema.dic)
             {
@@ -121,6 +122,10 @@ public static class Moogle
                     }
                 }
                 ind_query++;
+                 if (j.Value.Item2 != null)
+                {
+                    words_docLiteral.Add(j.Key);
+                }
             }
             if (words_doc.Count == 0) words_doc = words_docSin_Raices;
             if (mod_query != 0)
@@ -130,11 +135,11 @@ public static class Moogle
             else score[i] = 0;
             if (score[i] != 0)
             {
-                ResultSearch(query, words_doc, score[i], Document.documents[i]);
+                ResultSearch(query, words_doc,words_docLiteral, score[i], Document.documents[i]);
             }
         }
     }
-    static void ResultSearch(QueryClass query, List<string> words_doc, double score, Document doc)
+    static void ResultSearch(QueryClass query, List<string> words_doc,List<string> words_docLiteral, double score, Document doc)
     {
         bool result = true;
         for (int m = 0; m < query.Excluir.Count; m++)
@@ -151,6 +156,7 @@ public static class Moogle
                 result = false;
             }
         }
+        if(result) result=SearchLiteral_Operator(query,words_docLiteral,doc);
         if (result)
         {
             query.resultsearchDoc.Add(doc);
@@ -159,31 +165,60 @@ public static class Moogle
             query.Score.Add(score);
         }
     }
+    static bool SearchLiteral_Operator(QueryClass query, List<string> words_doc, Document doc)
+    {
+        List<int> l=new List<int>();
+        for(int i=0;i<query.SearchLiteral_words.Count;i++)
+        {
+            for(int j=0;j<query.SearchLiteral_words[i].Count;j++)
+            {
+                if (Document.sistema.dic[query.SearchLiteral_words[i][j]].Item2[doc.index] == null)
+                {
+                    return false;
+                }
+            }
+            Tuple<int,int,List<string>> t=Menor_DistanciaWord(query.SearchLiteral_words[i],doc,query.SearchLiteral_words[i].Count,10,true);
+            if(t.Item2>query.SearchLiteral_words[i].Count)
+            {
+                return false;
+            }
+            l.Add(t.Item1);
+        }
+        query.Pos_SearchLiteral.Add(l);
+        return true;
+    }
     static void Snippet(QueryClass query)
     {
         for (int i = 0; i < query.resultsearchDoc.Count; i++)
         {
-            List<int> Snippet_words1 = new List<int>();
+            List<int> Snippet_words = new List<int>();
+            if(query.SearchLiteral_words.Count>0)
+            {
+                for(int x=0;x<query.SearchLiteral_words.Count;x++)
+                {
+                    foreach(var y in query.SearchLiteral_words[x])
+                    {
+                        if(query.Snippet[i].Contains(y)) query.Snippet[i].Remove(y);
+                    }
+                    Snippet_words.Add(query.Pos_SearchLiteral[i][x]);
+                }
+                //BuildSinipped(query, i, query.Pos_SearchLiteral[i]);
+            }
             while(query.Snippet[i].Count!=0)
             {
                 Tuple<int, int,List<string>> tuple = Menor_DistanciaWord(query.Snippet[i], query.resultsearchDoc[i],1,10);
-                Snippet_words1.Add(tuple.Item1);
+                Snippet_words.Add(tuple.Item1);
                 query.Snippet[i]=tuple.Item3;
             }              
-            int[] Snippet_words=new int[Snippet_words1.Count];
-            for(int m=0;m<Snippet_words.Length;m++)
-            {
-                Snippet_words[m]=Snippet_words1[m];
-            }
             BuildSinipped(query, i, Snippet_words);
         }
     }
-    static void BuildSinipped(QueryClass query, int indexdoc, int[] Snippetwords)
+    static void BuildSinipped(QueryClass query, int indexdoc, List<int> Snippetwords)
     {
         string[] doc = File.ReadAllLines(query.resultsearchDoc[indexdoc].ruta);
-        string[] addSnippet = new string[Snippetwords.Length];
-        int[] addposSnippet = new int[Snippetwords.Length];
-        for (int i = 0; i < Snippetwords.Length; i++)
+        string[] addSnippet = new string[Snippetwords.Count];
+        int[] addposSnippet = new int[Snippetwords.Count];
+        for (int i = 0; i < Snippetwords.Count; i++)
         {
             int cant = 0;
             for (int linea_ind = 0; linea_ind < doc.Length; linea_ind++)
@@ -254,7 +289,7 @@ public static class Moogle
         if (sumaScore > 0) return sumaScore;
         return 1;
     }
-    static Tuple<int, int,List<string>> Menor_DistanciaWord(List<string> words, Document document,int cantmin,int cota)
+    static Tuple<int, int,List<string>> Menor_DistanciaWord(List<string> words, Document document,int cantmin,int cota,bool orden=false)
     {
         List<int> l=new List<int>();
         List<int> index_words_not_range=new List<int>();
@@ -295,13 +330,30 @@ public static class Moogle
                             break;
                         }
                     }
-                    if (t[i].Item2 - cola.Peek().Item2 + 1 < menorDist)
+                    bool orden1=true;
+                    if(orden)
+                    {
+                        int comp=-1;
+                        if(cola.Count==words.Count)
+                        {
+                            foreach(var m in cola)
+                            {
+                                if(m.Item1<=comp) 
+                                {
+                                    orden1=false;
+                                    break;
+                                }
+                                comp=m.Item1;
+                            }
+                        }
+                    }
+                    if (orden1&&t[i].Item2 - cola.Peek().Item2 + 1 < menorDist)
                     {
                         index_words_not_range=l;
                         menorDist = t[i].Item2 - cola.Peek().Item2 + 1;
                         pos = cola.Peek().Item2;
                     }
-                    if (t[i].Item2 - cola.Peek().Item2 + 1 == menorDist)
+                    if (orden1&&t[i].Item2 - cola.Peek().Item2 + 1 == menorDist)
                     {
                         Random random=new Random();
                         if(random.Next(2)==0)
@@ -313,7 +365,8 @@ public static class Moogle
                 }
                 
             }
-            if(menorDist<=cota) break;           
+            if(menorDist<=cota) break; 
+
         }
         List<string> words_not_range=new List<string>();
         for(int i=0;i<words.Count;i++)

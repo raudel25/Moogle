@@ -26,6 +26,9 @@ public class QueryClass
     public List<List<string>> Cercanas = new List<List<string>>();
     //Guardar las palabras del operador Relevancia y su respectiva relevancia
     public Dictionary<string, int> MayorRelevancia = new Dictionary<string, int>();
+    public bool SearchLiteral;
+    public List<List<string>> SearchLiteral_words=new List<List<string>>();
+    public List<List<int>> Pos_SearchLiteral=new List<List<int>>();
     //Guardar las palabras con la misma raiz q las de nuestra query
     public List<string> wordsRaices = new List<string>();
     //Guardar los sinonimos de las palabras de nustra query
@@ -48,6 +51,10 @@ public class QueryClass
     public void Operators(string change, int index, int pos)
     {
         bool operadores = false;
+        if(!operadores && SearchLieteral_Operator(change,index,pos))
+        {
+            operadores=true;
+        }
         if (!operadores && Cercania_Operator(change, index, pos))
         {
             operadores = true;
@@ -81,6 +88,35 @@ public class QueryClass
             Search_Raices(change, index, pos);
             Search_Sinonimos(change, index, pos);
         }
+    }
+    private bool SearchLieteral_Operator(string change,int index,int pos)
+    {
+        if(change[0]=='"'&&!SearchLiteral)
+        {
+            SearchLiteral_words.Add(new List<string>());
+            SearchLiteral=true;
+        }
+        if(SearchLiteral)
+        {
+            if(change[change.Length-1]=='"') SearchLiteral=false;
+            change=Document.SignosPuntuacion(change);
+            if(change=="") return true;
+            if (Document.sistema.dic.ContainsKey(change))
+            {
+                SearchLiteral_words[SearchLiteral_words.Count-1].Add(change);
+                Document.sistema.InsertWord(change, index, pos);
+            }
+            else
+            {
+                string a = similar(change, index, pos);
+                if (a != "")
+                {
+                    SearchLiteral_words[SearchLiteral_words.Count-1].Add(a);
+                }
+            }
+            return true;
+        }
+        return false;
     }
     /// <summary>Metodo para el operador cercania</summary>
     /// <param name="change">String que contiene los operadores</param>
@@ -123,6 +159,7 @@ public class QueryClass
         if (change[0] == '!')
         {
             change = Document.SignosPuntuacion(change);
+            if(change=="") return true;
             if (Document.sistema.dic.ContainsKey(change))
             {
                 Excluir.Add(change);
@@ -145,6 +182,7 @@ public class QueryClass
         if (change[0] == '^')
         {
             change = Document.SignosPuntuacion(change);
+            if(change=="") return true;
             if (Document.sistema.dic.ContainsKey(change))
             {
                 Incluir.Add(change);
@@ -173,6 +211,7 @@ public class QueryClass
                 if(a==change.Length) break;
             }
             change = Document.SignosPuntuacion(change);
+            if(change=="") return true;
             if (Document.sistema.dic.ContainsKey(change))
             {
                 MayorRelevancia.Add(change, a + 1);
