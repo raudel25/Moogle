@@ -5,6 +5,7 @@ using System.Text.Json;
 
 public static class Moogle
 {
+    static int Snippet_len=20;
     public static SearchResult Query(string query)
     {
         // Modifique este método para responder a la búsqueda
@@ -122,13 +123,13 @@ public static class Moogle
                     }
                 }
                 ind_query++;
-                 if (j.Value.Item2 != null)
+                if (j.Value.Item2 != null)
                 {
                     words_docLiteral.Add(j.Key);
                 }
             }
             if (words_doc.Count == 0) words_doc = words_docSin_Raices;
-            if (mod_query != 0)
+            if (mod_query * mod_doc != 0)
             {
                 score[i] = (query_x_doc) / Math.Sqrt(mod_doc * mod_query);
             }
@@ -202,11 +203,10 @@ public static class Moogle
                     }
                     Snippet_words.Add(query.Pos_SearchLiteral[i][x]);
                 }
-                //BuildSinipped(query, i, query.Pos_SearchLiteral[i]);
             }
             while(query.Snippet[i].Count!=0)
             {
-                Tuple<int, int,List<string>> tuple = Menor_DistanciaWord(query.Snippet[i], query.resultsearchDoc[i],1,10);
+                Tuple<int, int,List<string>> tuple = Menor_DistanciaWord(query.Snippet[i], query.resultsearchDoc[i],1,Snippet_len);
                 Snippet_words.Add(tuple.Item1);
                 query.Snippet[i]=tuple.Item3;
             }              
@@ -233,9 +233,9 @@ public static class Moogle
                     {
                         n = n + linea[w] + " ";
                         cant1++;
-                        if (cant1 == 10) break;
+                        if (cant1 == Snippet_len) break;
                     }
-                    if (cant1 < 10 && linea_ind < doc.Length - 1)
+                    if (cant1 < Snippet_len && linea_ind < doc.Length - 1)
                     {
                         int ind = linea_ind + 1;
                         if (doc[linea_ind + 1] == "" && linea_ind < doc.Length - 2)
@@ -247,7 +247,7 @@ public static class Moogle
                         {
                             n = n + newlinea[w] + " ";
                             cant1++;
-                            if (cant1 == 10) break;
+                            if (cant1 == Snippet_len) break;
                         }
                     }
                     addSnippet[i] = n;
@@ -259,6 +259,7 @@ public static class Moogle
         }
         query.SnippetResult.Add(addSnippet);
         query.Pos_SnippetResult.Add(addposSnippet);
+        doc=null;
     }
     public static double Cercania(List<string> words, QueryClass query, Document document)
     {
@@ -428,6 +429,6 @@ public static class Moogle
             }
         }
         if(words_not_range.Count<cant) return new Tuple<bool,List<int>>(false,words_not_range);
-        return new Tuple<bool,List<int>>(true,words_not_range);;
+        return new Tuple<bool,List<int>>(true,words_not_range);
     }
 }

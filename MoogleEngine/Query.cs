@@ -234,6 +234,7 @@ public class QueryClass
         string stemmer = Snowball.Stemmer(word);
         foreach (var i in Document.sistema.dic)
         {
+            if(stemmer=="") continue;
             if (i.Key[0] == stemmer[0] && word != i.Key)
             {
                 if (Snowball.Stemmer(i.Key) == stemmer)

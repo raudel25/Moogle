@@ -2,8 +2,6 @@ namespace MoogleEngine;
 
 public class Document
 {
-    string[] doc;
-
     public static List<Document> documents;
     public static double time1;
     //Guardar la frecuencia de la palabra que mas se repite por documento
@@ -19,7 +17,6 @@ public class Document
     public static BuildIndex sistema;
     public Document(string[] doc, string title, int q)
     {
-        this.doc = doc;
         this.ruta = title;
         this.title = title.Substring(12, title.Length - 5 - 12 + 1);
         this.index = q;
