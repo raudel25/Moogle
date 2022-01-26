@@ -1,6 +1,5 @@
 ﻿namespace MoogleEngine;
 using System.IO;
-using System.Diagnostics;
 using System.Text.Json;
 
 public static class Moogle
@@ -16,13 +15,10 @@ public static class Moogle
         {
             items[i] = new SearchItem(query1.resultsearchDoc[i].title, query1.SnippetResult[i], query1.Pos_SnippetResult[i], (float)query1.Score[i]);
         }
-        SearchItem[] items1 = new SearchItem[1] { new SearchItem(/*c1.busqueda_exacta.Count +*/ "", new string[] { "" }, new int[4], 12) };
         return new SearchResult(items, query1.txt);
     }
     public static void Indexar()
     {
-        Stopwatch crono = new Stopwatch();
-        crono.Start();
         Document.sistema = new BuildIndex();
         var list = Directory.EnumerateFiles("..//Content", "*.txt");
         Document.documents = new List<Document>();
@@ -48,8 +44,6 @@ public static class Moogle
         Sinonimo sin = JsonSerializer.Deserialize<Sinonimo>(jsonstring);
         QueryClass.sinonimos = sin.sinonimos;
         Tf_IdfDoc();
-        crono.Stop();
-        Document.time1 = crono.ElapsedMilliseconds;
     }
     static void Tf_IdfDoc()
     {
@@ -265,23 +259,22 @@ public static class Moogle
     {
         int cant = 0;
         double sumaScore = 0;
-        List<string> words_document = new List<string>();
         foreach (var i in query.Cercanas)
         {
-            cant = 0;
+            List<string> words_searchDist = new List<string>();
             for (int j = 0; j < i.Count; j++)
             {
                 if (words.Contains(i[j]))
                 {
-                    words_document.Add(i[j]);
-                    cant++;
+                    words_searchDist.Add(i[j]);
                 }
             }
-            if (cant > 1)
+            if (words_searchDist.Count > 1)
             {
-                double n = (double)Menor_DistanciaWord(words, document,words.Count,10).Item2;
+                double n = (double)Menor_DistanciaWord(words_searchDist, document,words_searchDist.Count,10).Item2;
                 if (n <= 100)
                 {
+                    n=n*words_searchDist.Count/i.Count;
                     sumaScore += ((double)cant / (double)i.Count) * (100 / (n - 1));
                 }
                 else sumaScore = 0;
@@ -294,40 +287,40 @@ public static class Moogle
     {
         List<int> l=new List<int>();
         List<int> index_words_not_range=new List<int>();
-        Tuple<int, int>[] t = Tuplar(Document.sistema.dic[words[0]].Item2[document.index], 0);
+        Tuple<int, int>[] t = BuildTuple(Document.sistema.dic[words[0]].Item2[document.index], 0);
         for (int i = 1; i < words.Count; i++)
         {
-            t = Sorted(t, Tuplar(Document.sistema.dic[words[i]].Item2[document.index], i));
+            t = Sorted(t, BuildTuple(Document.sistema.dic[words[i]].Item2[document.index], i));
         }
         int menorDist = int.MaxValue;
         int pos = 0;
-        Queue<Tuple<int, int>> cola = new Queue<Tuple<int, int>>();
+        Queue<Tuple<int, int>> search_min_dist;
         int[] posList = new int[words.Count];
         for(int j=words.Count;j>=cantmin;j--)
         {
-            cola=new Queue<Tuple<int, int>>();
+            search_min_dist=new Queue<Tuple<int, int>>();
             posList=new int[words.Count];
             for (int i = 0; i < t.Length; i++)
             {
-                cola.Enqueue(t[i]);
+                search_min_dist.Enqueue(t[i]);
                 posList[t[i].Item1]++;
-                Tuple<bool,List<int>> aux1=TodosContenidos(posList,j);
-                if (aux1.Item1)
+                Tuple<bool,List<int>> all=AllContains(posList,j);
+                if (all.Item1)
                 {
-                    l=aux1.Item2;
+                    l=all.Item2;
                     while (true)
                     {
-                        Tuple<int, int> quitar = cola.Peek();
-                        posList[quitar.Item1]--;
-                        Tuple<bool,List<int>> tuple=TodosContenidos(posList,j);
+                        Tuple<int, int> eliminate = search_min_dist.Peek();
+                        posList[eliminate.Item1]--;
+                        Tuple<bool,List<int>> tuple=AllContains(posList,j);
                         if (tuple.Item1)
                         {
                             l=tuple.Item2;
-                            cola.Dequeue();
+                            search_min_dist.Dequeue();
                         }
                         else
                         {
-                            posList[quitar.Item1]++;
+                            posList[eliminate.Item1]++;
                             break;
                         }
                     }
@@ -335,9 +328,9 @@ public static class Moogle
                     if(orden)
                     {
                         int comp=-1;
-                        if(cola.Count==words.Count)
+                        if(search_min_dist.Count==words.Count)
                         {
-                            foreach(var m in cola)
+                            foreach(var m in search_min_dist)
                             {
                                 if(m.Item1<=comp) 
                                 {
@@ -348,26 +341,25 @@ public static class Moogle
                             }
                         }
                     }
-                    if (orden1&&t[i].Item2 - cola.Peek().Item2 + 1 < menorDist)
+                    if (orden1&&t[i].Item2 - search_min_dist.Peek().Item2 + 1 < menorDist)
                     {
                         index_words_not_range=l;
-                        menorDist = t[i].Item2 - cola.Peek().Item2 + 1;
-                        pos = cola.Peek().Item2;
+                        menorDist = t[i].Item2 - search_min_dist.Peek().Item2 + 1;
+                        pos = search_min_dist.Peek().Item2;
                     }
-                    if (orden1&&t[i].Item2 - cola.Peek().Item2 + 1 == menorDist)
+                    if (orden1&&t[i].Item2 - search_min_dist.Peek().Item2 + 1 == menorDist)
                     {
                         Random random=new Random();
                         if(random.Next(2)==0)
                         {
                             index_words_not_range=l;
-                            pos = cola.Peek().Item2;
+                            pos = search_min_dist.Peek().Item2;
                         }
                     }
                 }
                 
             }
             if(menorDist<=cota) break; 
-
         }
         List<string> words_not_range=new List<string>();
         for(int i=0;i<words.Count;i++)
@@ -408,22 +400,22 @@ public static class Moogle
         }
         return c;
     }
-    static Tuple<int, int>[] Tuplar(List<int> a, int index)
+    static Tuple<int, int>[] BuildTuple(List<int> words_pos, int index)
     {
-        Tuple<int, int>[] t = new Tuple<int, int>[a.Count];
-        for (int i = 0; i < t.Length; i++)
+        Tuple<int, int>[] tuple = new Tuple<int, int>[words_pos.Count];
+        for (int i = 0; i < tuple.Length; i++)
         {
-            Tuple<int, int> t1 = new Tuple<int, int>(index, a[i]);
-            t[i] = t1;
+            Tuple<int, int> t1 = new Tuple<int, int>(index, words_pos[i]);
+            tuple[i] = t1;
         }
-        return t;
+        return tuple;
     }
-    static Tuple<bool,List<int>> TodosContenidos(int[] a,int cant)
+    static Tuple<bool,List<int>> AllContains(int[] posList,int cant)
     {
         List<int> words_not_range=new List<int>();
-        for (int i = 0; i < a.Length; i++)
+        for (int i = 0; i < posList.Length; i++)
         {
-            if (a[i] != 0)
+            if (posList[i] != 0)
             {
                 words_not_range.Add(i);
             }

@@ -3,7 +3,6 @@ namespace MoogleEngine;
 public class Document
 {
     public static List<Document> documents;
-    public static double time1;
     //Guardar la frecuencia de la palabra que mas se repite por documento
     public static int[] max;
     //Guardar el indice del documento
@@ -21,9 +20,9 @@ public class Document
         this.title = title.Substring(12, title.Length - 5 - 12 + 1);
         this.index = q;
         //Quitamos los signos de puntuacion e indexamos el documento
-        Tokenizar(doc, q);
+        Token(doc, q);
     }
-    public static void Tokenizar(string[] doc, int index, QueryClass query = null)
+    public static void Token(string[] doc, int index, QueryClass query = null)
     {
         int cant = 0;
         //Recoremos cada linea del documento
@@ -33,32 +32,32 @@ public class Document
             string[] s = doc[i].Split(' ');
             for (int j = 0; j < s.Length; j++)
             {
-                string change = s[j];
+                string word = s[j];
                 //Si nos encontramos una linea vacia seguimos
-                if (change == "")
+                if (word == "")
                 {
                     cant++;
                     continue;
                 }
                 //Quitamos los signos de puntuacion
-                change = SignosPuntuacion(change, query);
+                word = SignosPuntuacion(word, query);
                 //Si solo es un signo de puntuacion seguimos
-                if (change == "")
+                if (word == "")
                 {
                     cant++;
                     continue;
                 }
                 //Convertimos la palabra a minusculas
-                change = change.ToLower();
+                word = word.ToLower();
                 //Si la palabra es del query vamos al metodo de los operadores de busqueda
                 if (query != null)
                 {
-                    query.Operators(change, index, cant);
+                    query.Operators(word, index, cant);
                 }
                 else
                 {
                     //Insertamos la palabra en el sistema
-                    sistema.InsertWord(change, index, cant);
+                    sistema.InsertWord(word, index, cant);
                 }
                 cant++;
             }

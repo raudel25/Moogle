@@ -41,33 +41,33 @@ public class QueryClass
     {
         this.txt = s;
         //Quitamos los esapcios y los signos de puntiucion
-        Document.Tokenizar(new string[] { s }, Document.cantdoc, this);
+        Document.Token(new string[] { s }, Document.cantdoc, this);
         //Creamos un nuevo arreglo para guardar los pesos de la query
         this.vectorC = new double[Document.sistema.cantwords];
 
     }
     /// <summary>Metodo para los operadores de busqueda</summary>
-    /// <param name="change">String que contiene los operadores</param>
-    public void Operators(string change, int index, int pos)
+    /// <param name="word">String que contiene los operadores</param>
+    public void Operators(string word, int index, int pos)
     {
         bool operadores = false;
-        if(!operadores && SearchLieteral_Operator(change,index,pos))
-        {
-            operadores=true;
-        }
-        if (!operadores && Cercania_Operator(change, index, pos))
+        if(!operadores && SearchLiteral_Operator(word,index,pos))
         {
             operadores = true;
         }
-        if (!operadores && Excluir_Operator(change, index, pos))
+        if (!operadores && Cercania_Operator(word, index, pos))
         {
             operadores = true;
         }
-        if (!operadores && Incluir_Operator(change, index, pos))
+        if (!operadores && Excluir_Operator(word, index, pos))
         {
             operadores = true;
         }
-        if (!operadores && MayorRelevancia_Operator(change, index, pos))
+        if (!operadores && Incluir_Operator(word, index, pos))
+        {
+            operadores = true;
+        }
+        if (!operadores && MayorRelevancia_Operator(word, index, pos))
         {
             operadores = true;
         }
@@ -75,40 +75,40 @@ public class QueryClass
         if (!operadores)
         {
             //Comprobamos si la palabra a buscar existe en nuestro sistema
-            if (Document.sistema.dic.ContainsKey(change))
+            if (Document.sistema.dic.ContainsKey(word))
             {
-                Document.sistema.InsertWord(change, index, pos);
+                Document.sistema.InsertWord(word, index, pos);
             }
             else
             {
                 //Si la palabra no existe procedemos a dar una recomndacion
-                change=similar(change, index, pos);
+                word=similar(word, index, pos);
             }
             //Buscamos los sinonimos y las raices de la palabra
-            Search_Raices(change, index, pos);
-            Search_Sinonimos(change, index, pos);
+            Search_Raices(word, index, pos);
+            Search_Sinonimos(word, index, pos);
         }
     }
-    private bool SearchLieteral_Operator(string change,int index,int pos)
+    private bool SearchLiteral_Operator(string word,int index,int pos)
     {
-        if(change[0]=='"'&&!SearchLiteral)
+        if(word[0]=='"'&&!SearchLiteral)
         {
             SearchLiteral_words.Add(new List<string>());
             SearchLiteral=true;
         }
         if(SearchLiteral)
         {
-            if(change[change.Length-1]=='"') SearchLiteral=false;
-            change=Document.SignosPuntuacion(change);
-            if(change=="") return true;
-            if (Document.sistema.dic.ContainsKey(change))
+            if(word[word.Length-1]=='"') SearchLiteral=false;
+            word=Document.SignosPuntuacion(word);
+            if(word=="") return true;
+            if (Document.sistema.dic.ContainsKey(word))
             {
-                SearchLiteral_words[SearchLiteral_words.Count-1].Add(change);
-                Document.sistema.InsertWord(change, index, pos);
+                SearchLiteral_words[SearchLiteral_words.Count-1].Add(word);
+                Document.sistema.InsertWord(word, index, pos);
             }
             else
             {
-                string a = similar(change, index, pos);
+                string a = similar(word, index, pos);
                 if (a != "")
                 {
                     SearchLiteral_words[SearchLiteral_words.Count-1].Add(a);
@@ -119,11 +119,11 @@ public class QueryClass
         return false;
     }
     /// <summary>Metodo para el operador cercania</summary>
-    /// <param name="change">String que contiene los operadores</param>
-    private bool Cercania_Operator(string change, int index, int pos)
+    /// <param name="word">String que contiene los operadores</param>
+    private bool Cercania_Operator(string word, int index, int pos)
     {
         List<string> cerca = new List<string>();
-        string[] p = change.Split('~');
+        string[] p = word.Split('~');
         //Si nuestro arreglo tienen mas de dos elementos estamos en presencia del operador
         if (p.Length > 1)
         {
@@ -154,20 +154,20 @@ public class QueryClass
         }
         return false;
     }
-    private bool Excluir_Operator(string change, int index, int pos)
+    private bool Excluir_Operator(string word, int index, int pos)
     {
-        if (change[0] == '!')
+        if (word[0] == '!')
         {
-            change = Document.SignosPuntuacion(change);
-            if(change=="") return true;
-            if (Document.sistema.dic.ContainsKey(change))
+            word = Document.SignosPuntuacion(word);
+            if(word=="") return true;
+            if (Document.sistema.dic.ContainsKey(word))
             {
-                Excluir.Add(change);
-                Document.sistema.InsertWord(change, index, pos);
+                Excluir.Add(word);
+                Document.sistema.InsertWord(word, index, pos);
             }
             else
             {
-                string a = similar(change, index, pos);
+                string a = similar(word, index, pos);
                 if (a != "")
                 {
                     Excluir.Add(a);
@@ -177,20 +177,20 @@ public class QueryClass
         }
         return false;
     }
-    private bool Incluir_Operator(string change, int index, int pos)
+    private bool Incluir_Operator(string word, int index, int pos)
     {
-        if (change[0] == '^')
+        if (word[0] == '^')
         {
-            change = Document.SignosPuntuacion(change);
-            if(change=="") return true;
-            if (Document.sistema.dic.ContainsKey(change))
+            word = Document.SignosPuntuacion(word);
+            if(word=="") return true;
+            if (Document.sistema.dic.ContainsKey(word))
             {
-                Incluir.Add(change);
-                Document.sistema.InsertWord(change, index, pos);
+                Incluir.Add(word);
+                Document.sistema.InsertWord(word, index, pos);
             }
             else
             {
-                string a = similar(change, index, pos);
+                string a = similar(word, index, pos);
                 if (a != "")
                 {
                     Incluir.Add(a);
@@ -200,26 +200,26 @@ public class QueryClass
         }
         return false;
     }
-    private bool MayorRelevancia_Operator(string change, int index, int pos)
+    private bool MayorRelevancia_Operator(string word, int index, int pos)
     {
-        if (change[0] == '*')
+        if (word[0] == '*')
         {
             int a = 0;
-            while (change[a] == '*')
+            while (word[a] == '*')
             {
                 a++;
-                if(a==change.Length) break;
+                if(a==word.Length) break;
             }
-            change = Document.SignosPuntuacion(change);
-            if(change=="") return true;
-            if (Document.sistema.dic.ContainsKey(change))
+            word = Document.SignosPuntuacion(word);
+            if(word=="") return true;
+            if (Document.sistema.dic.ContainsKey(word))
             {
-                MayorRelevancia.Add(change, a + 1);
-                Document.sistema.InsertWord(change, index, pos);
+                MayorRelevancia.Add(word, a + 1);
+                Document.sistema.InsertWord(word, index, pos);
             }
             else
             {
-                string b = similar(change, index, pos);
+                string b = similar(word, index, pos);
                 if (b != "")
                 {
                     MayorRelevancia.Add(b, a);
@@ -266,21 +266,18 @@ public class QueryClass
             }
         }
     }
-    private string similar(string change, int index, int pos)
+    private string similar(string word, int index, int pos)
     {
-        string a = simlitudword(change);
-        if (a != "")
-        {
-            Document.sistema.InsertWord(a, index, pos);
-            for (int m = 0; m <= this.txt.Length - change.Length; m++)
+        string a = simlitudword(word);
+        Document.sistema.InsertWord(a, index, pos);
+            for (int m = 0; m <= this.txt.Length - word.Length; m++)
             {
-                if (change == txt.Substring(m, change.Length).ToLower())
+                if (word == txt.Substring(m, word.Length).ToLower())
                 {
-                    txt = txt.Substring(0, m) + a + txt.Substring(m + change.Length, txt.Length - change.Length - m);
+                    txt = txt.Substring(0, m) + a + txt.Substring(m + word.Length, txt.Length - word.Length - m);
                     break;
                 }
             }
-        }
         return a;
     }
     private string simlitudword(string query)

@@ -4,9 +4,15 @@
 
 <h1>🔍 Moogle!</h1>
 
-<input class="p-1 my-4" @bind="query" placeholder="Introduzca su búsqueda">
+<input list="auto" class="p-1 my-4" @bind="query" @bind:event="oninput" placeholder="Introduzca su búsqueda" @onkeydown="presionar">
 
-<button type="default" class="btn btn-primary" @onclick="RunQuery">🔍 Buscar</button>
+<button type="default" class="btn btn-primary" @onclick="RunQuery" >🔍 Buscar</button>
+<datalist id="auto">
+    @foreach (var item in autoComp)
+    {
+        <option value="@(queryAuto+item)"></option>
+    }
+</datalist>
 
 @if (!string.IsNullOrEmpty(result.Suggestion))
 {
@@ -23,7 +29,7 @@
                 <p class="title">@item.Title</p>
                 @for (int i = 0; i < item.Snippet.Length; i++)
                 {
-                    <p>... <a target='__blank' href=@(item.Title+"_"+item.Pos_Snippet[i])>@item.Snippet[i]</a> ...</p>
+                    <p>... <a target='__blank' href=@(item.Title+"/"+item.Pos_Snippet[i])>@item.Snippet[i]</a> ...</p>
                 }
             </div>
         </li>
@@ -31,10 +37,53 @@
 </ul>
 
 @code {
-    private string query = "";
+    private string query="";
+    private List<char> l=new List<char>();
+    private string queryAuto="";
+    private List<string> autoComp=new List<string>();
     private SearchResult result = new SearchResult();
     private void RunQuery()
     {
         result = Moogle.Query(query);
+    }
+    private void presionar(KeyboardEventArgs e)
+    {
+        if(e.Code=="Enter")
+        {
+            RunQuery();
+        }
+        if(e.Code=="Backspace")
+        {
+            if(l.Count>0)
+            {
+                char aux=l[l.Count-1];
+                l.Reverse();
+                l.Remove(aux);
+                l.Reverse();
+            } 
+        }
+        try{
+            if(e.Key.Length==1)
+            {
+                if(char.IsLetterOrDigit(e.Key[0])||e.Key[0]==' ')
+                {
+                    l.Add(e.Key[0]);              
+                }
+            }
+        }catch(SystemException qwe){
+            return;
+        }
+        string auto="";
+        for(int i =0;i<l.Count;i++)
+        {
+            if(!char.IsLetterOrDigit(l[i])) auto="";
+            else auto=auto+l[i];
+        }
+        if(query!="")
+        {
+            autoComp=Server.AutoCompletar(auto);
+            string[] s=query.Split(' ');
+            queryAuto=query.Substring(0,query.Length-s[s.Length-1].Length);
+        }
     }
 }

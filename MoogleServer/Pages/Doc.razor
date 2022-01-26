@@ -1,14 +1,16 @@
-@page "/{id}"
+@page "/{id}/{pos:int}"
 
 <PageTitle>Moogle!</PageTitle>
 
 <h1>🔍 Moogle!</h1>
-<h3>@id.Split('_')[0]</h3>
-@foreach (var s in CargarDoc.leer(id))
+<h3>@id</h3>
+@foreach (var s in Server.leer(id,pos))
 {
     <p>@s</p>
 }
 @code {
     [Parameter]
     public string id { get; set; }
+    [Parameter]
+    public int pos {get; set; }
 }
