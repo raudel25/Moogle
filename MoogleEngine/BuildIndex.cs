@@ -1,6 +1,6 @@
 namespace MoogleEngine;
 
-public class BuildIndex
+public static class BuildIndex
 {
     //Para indexar las palabras en el sistema usaremos un diccionario que tiene como Key el string con la palabra a indexar
     //y como valor una tupla q tiene en el 1er item un arreglo llamemoslo p
@@ -9,28 +9,29 @@ public class BuildIndex
     //en la ultima posicion de p guardamos la cantidad de documentos donde se repite la palabra 
     //,como 2do item de la tupla un arreglo de listas de enteros 
     //en cada lista l_i se guardan las posiciones de la palabra en el documento d_i con 0<=i<Document.cantdoc
-    public Dictionary<string, Tuple<double[], List<int>[]>> dic = new Dictionary<string, Tuple<double[], List<int>[]>>();
-    public int cantwords;
+    public static Dictionary<string, Tuple<double[], List<int>[]>> dic = new Dictionary<string, Tuple<double[], List<int>[]>>();
+    public static int cantwords;
     //Con este metodo iremos indexando terminos en nustro documento
-    public void InsertWord(string word, int index, int pos)
+    public static void InsertWord(string word, int index, int pos=0)
     {
         //Si el diccionario no contiene a la palabra incializamos los componentes de 
-        if (!this.dic.ContainsKey(word))
+        if (!dic.ContainsKey(word))
         {
+            //Guardando lo
             double[] n = new double[Document.cantdoc + 2];
             List<int>[] l = new List<int>[Document.cantdoc];
-            this.dic.Add(word, new Tuple<double[], List<int>[]>(n, l));
-            this.cantwords++;
+            dic.Add(word, new Tuple<double[], List<int>[]>(n, l));
+            cantwords++;
         }
-        if (this.dic[word].Item1[index] == 0 && index < Document.cantdoc)
+        if (dic[word].Item1[index] == 0 && index < Document.cantdoc)
         {
-            this.dic[word].Item2[index] = new List<int>();
+            dic[word].Item2[index] = new List<int>();
         }
-        this.dic[word].Item1[index]++;
+        dic[word].Item1[index]++;
         if (index < Document.cantdoc)
         {
-            this.dic[word].Item2[index].Add(pos);
+            dic[word].Item2[index].Add(pos);
         }
-        if (this.dic[word].Item1[index] > Document.max[index]) Document.max[index] = Convert.ToInt32(this.dic[word].Item1[index]);
+        if (dic[word].Item1[index] > Document.max[index]) Document.max[index] = Convert.ToInt32(dic[word].Item1[index]);
     }
 }

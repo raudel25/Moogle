@@ -1,5 +1,6 @@
 ﻿namespace MoogleEngine;
 using System.IO;
+using System.Text;
 using System.Text.Json;
 
 public static class Moogle
@@ -19,7 +20,6 @@ public static class Moogle
     }
     public static void Indexar()
     {
-        Document.sistema = new BuildIndex();
         var list = Directory.EnumerateFiles("..//Content", "*.txt");
         Document.documents = new List<Document>();
         int q = 0;
@@ -47,7 +47,7 @@ public static class Moogle
     }
     static void Tf_IdfDoc()
     {
-        foreach (var i in Document.sistema.dic)
+        foreach (var i in BuildIndex.dic)
         {
             i.Value.Item1[Document.cantdoc + 1] = word_cantdoc(i.Value.Item1);
             for (int j = 0; j < Document.cantdoc; j++)
@@ -74,7 +74,7 @@ public static class Moogle
     public static void TF_idfC(QueryClass query)
     {
         int j = 0;
-        foreach (var i in Document.sistema.dic)
+        foreach (var i in BuildIndex.dic)
         {
             double a = 1;
             if (query.MayorRelevancia.ContainsKey(i.Key)) a = query.MayorRelevancia[i.Key];
@@ -90,7 +90,7 @@ public static class Moogle
     {
         double[] score = new double[Document.cantdoc];
         double mod_query = 0, query_x_doc = 0, mod_doc = 0;
-        for (int i = 0; i < Document.sistema.cantwords; i++)
+        for (int i = 0; i < BuildIndex.cantwords; i++)
         {
             mod_query += query.vectorC[i] * query.vectorC[i];
         }
@@ -101,7 +101,7 @@ public static class Moogle
             List<string> words_doc = new List<string>();
             List<string> words_docLiteral=new List<string>();
             List<string> words_docSin_Raices = new List<string>();
-            foreach (var j in Document.sistema.dic)
+            foreach (var j in BuildIndex.dic)
             {
                 query_x_doc += j.Value.Item1[i] * query.vectorC[ind_query];
                 mod_doc += j.Value.Item1[i] * j.Value.Item1[i];
@@ -139,14 +139,14 @@ public static class Moogle
         bool result = true;
         for (int m = 0; m < query.Excluir.Count; m++)
         {
-            if (Document.sistema.dic[query.Excluir[m]].Item1[doc.index] != 0)
+            if (BuildIndex.dic[query.Excluir[m]].Item1[doc.index] != 0)
             {
                 result = false;
             }
         }
         for (int m = 0; m < query.Incluir.Count; m++)
         {
-            if (Document.sistema.dic[query.Incluir[m]].Item1[doc.index] == 0)
+            if (BuildIndex.dic[query.Incluir[m]].Item1[doc.index] == 0)
             {
                 result = false;
             }
@@ -167,7 +167,7 @@ public static class Moogle
         {
             for(int j=0;j<query.SearchLiteral_words[i].Count;j++)
             {
-                if (Document.sistema.dic[query.SearchLiteral_words[i][j]].Item2[doc.index] == null)
+                if (BuildIndex.dic[query.SearchLiteral_words[i][j]].Item2[doc.index] == null)
                 {
                     return false;
                 }
@@ -221,11 +221,11 @@ public static class Moogle
                 if (Snippetwords[i] <= cant + linea.Length - 1)
                 {
                     int j = Snippetwords[i] - cant;
-                    string n = "";
                     int cant1 = 0;
+                    StringBuilder sb =new StringBuilder();
                     for (int w = j; w < linea.Length; w++)
                     {
-                        n = n + linea[w] + " ";
+                        sb.Append(linea[w] + " ");
                         cant1++;
                         if (cant1 == Snippet_len) break;
                     }
@@ -239,12 +239,12 @@ public static class Moogle
                         string[] newlinea = doc[ind].Split(' ');
                         for (int w = 0; w < newlinea.Length; w++)
                         {
-                            n = n + newlinea[w] + " ";
+                            sb.Append(newlinea[w] + " ");
                             cant1++;
                             if (cant1 == Snippet_len) break;
                         }
                     }
-                    addSnippet[i] = n;
+                    addSnippet[i] = sb.ToString();
                     addposSnippet[i] = linea_ind;
                     break;
                 }
@@ -253,11 +253,9 @@ public static class Moogle
         }
         query.SnippetResult.Add(addSnippet);
         query.Pos_SnippetResult.Add(addposSnippet);
-        doc=null;
     }
     public static double Cercania(List<string> words, QueryClass query, Document document)
     {
-        int cant = 0;
         double sumaScore = 0;
         foreach (var i in query.Cercanas)
         {
@@ -275,11 +273,12 @@ public static class Moogle
                 if (n <= 100)
                 {
                     n=n*words_searchDist.Count/i.Count;
-                    sumaScore += ((double)cant / (double)i.Count) * (100 / (n - 1));
+                    sumaScore += ((double)words_searchDist.Count / (double)i.Count) * (100 / (n - 1));
                 }
                 else sumaScore = 0;
             }
         }
+        
         if (sumaScore > 0) return sumaScore;
         return 1;
     }
@@ -287,10 +286,10 @@ public static class Moogle
     {
         List<int> l=new List<int>();
         List<int> index_words_not_range=new List<int>();
-        Tuple<int, int>[] t = BuildTuple(Document.sistema.dic[words[0]].Item2[document.index], 0);
+        Tuple<int, int>[] t = BuildTuple(BuildIndex.dic[words[0]].Item2[document.index], 0);
         for (int i = 1; i < words.Count; i++)
         {
-            t = Sorted(t, BuildTuple(Document.sistema.dic[words[i]].Item2[document.index], i));
+            t = Sorted(t, BuildTuple(BuildIndex.dic[words[i]].Item2[document.index], i));
         }
         int menorDist = int.MaxValue;
         int pos = 0;

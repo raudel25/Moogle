@@ -4,7 +4,8 @@
 
 <h1>🔍 Moogle!</h1>
 <h3>@id</h3>
-@foreach (var s in Server.leer(id,pos))
+
+@foreach (var s in book)
 {
     <p>@s</p>
 }
@@ -12,5 +13,10 @@
     [Parameter]
     public string id { get; set; }
     [Parameter]
-    public int pos {get; set; }
+    public int pos {get; set;} 
+    private List<string> book  {get{return Server.leer(id,pos);}} 
+    private void Next()
+    {
+        pos=0;
+    }
 }

@@ -4,13 +4,13 @@
 
 <h1>🔍 Moogle!</h1>
 
-<input list="auto" class="p-1 my-4" @bind="query" @bind:event="oninput" placeholder="Introduzca su búsqueda" @onkeydown="presionar">
+<input list="auto" class="p-1 my-4" @bind="query" @bind:event="oninput" placeholder="Introduzca su búsqueda" @onkeydown="Press">
 
 <button type="default" class="btn btn-primary" @onclick="RunQuery" >🔍 Buscar</button>
-<datalist id="auto">
+<datalist id="auto" class="p-1 my-4">
     @foreach (var item in autoComp)
     {
-        <option value="@(queryAuto+item)"></option>
+        <option value="@item"></option>
     }
 </datalist>
 
@@ -46,8 +46,9 @@
     {
         result = Moogle.Query(query);
     }
-    private void presionar(KeyboardEventArgs e)
+    private void Press(KeyboardEventArgs e)
     {
+        string query_aux=query;
         if(e.Code=="Enter")
         {
             RunQuery();
@@ -65,23 +66,55 @@
         try{
             if(e.Key.Length==1)
             {
-                if(char.IsLetterOrDigit(e.Key[0])||e.Key[0]==' ')
+                if(/*char.IsLetterOrDigit(e.Key[0])||e.Key[0]==' '*/true)
                 {
-                    l.Add(e.Key[0]);              
+                    l.Add(e.Key[0]);
+                    query_aux=query_aux+e.Key[0];              
                 }
             }
         }catch(SystemException qwe){
             return;
         }
-        string auto="";
+        System.Text.StringBuilder sb=new System.Text.StringBuilder();
+        int start=0; int stop=0; bool no_letter=false;
         for(int i =0;i<l.Count;i++)
         {
-            if(!char.IsLetterOrDigit(l[i])) auto="";
-            else auto=auto+l[i];
+            if(!char.IsLetterOrDigit(l[i])) no_letter=true;
+            else
+            {
+                if(no_letter) 
+                {
+                    no_letter=false;
+                    sb=new System.Text.StringBuilder();
+                    start=i;
+                    stop=0;
+                }
+                sb.Append(l[i]);
+                stop++;
+            } 
         }
+        string auto=sb.ToString();
         if(query!="")
         {
-            autoComp=Server.AutoCompletar(auto);
+            List<int> change=new List<int>();
+            string aux=auto.ToLower();
+            for(int i=0;i<auto.Length;i++)
+            {
+                if(auto[i]!=aux[i]) change.Add(i);
+            }
+            autoComp=Server.AutoCompletar(aux);
+            for(int i=0;i<autoComp.Count;i++)
+            {
+                System.Text.StringBuilder sb1=new System.Text.StringBuilder(query_aux);
+                sb=new System.Text.StringBuilder(autoComp[i]);
+                for(int j=0;j<change.Count;j++)
+                {
+                    sb[change[j]]=Char.ToUpper(sb[change[j]]);
+                }
+                sb1.Remove(start,stop);
+                sb1.Insert(start,sb.ToString());
+                autoComp[i]=sb1.ToString();
+            }
             string[] s=query.Split(' ');
             queryAuto=query.Substring(0,query.Length-s[s.Length-1].Length);
         }

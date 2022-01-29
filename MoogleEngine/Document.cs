@@ -13,7 +13,7 @@ public class Document
     public string title;
     //Guardar la ruta del documento
     public string ruta;
-    public static BuildIndex sistema;
+    //public static BuildIndex sistema;
     public Document(string[] doc, string title, int q)
     {
         this.ruta = title;
@@ -52,12 +52,12 @@ public class Document
                 //Si la palabra es del query vamos al metodo de los operadores de busqueda
                 if (query != null)
                 {
-                    query.Operators(word, index, cant);
+                    query.Operators(word);
                 }
                 else
                 {
                     //Insertamos la palabra en el sistema
-                    sistema.InsertWord(word, index, cant);
+                    BuildIndex.InsertWord(word, index, cant);
                 }
                 cant++;
             }

@@ -25,8 +25,7 @@ public static class Server
         }
         string[] a=s.Split(' ');
         s=a[a.Length-1];
-        string auto="";
-        foreach(var i in Document.sistema.dic)
+        foreach(var i in BuildIndex.dic)
         {
             if(i.Key.Length>=s.Length)
             {
