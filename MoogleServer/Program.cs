@@ -17,7 +17,6 @@ if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error");
 }
-//Moogle.Indexar();
 
 app.UseStaticFiles();
 

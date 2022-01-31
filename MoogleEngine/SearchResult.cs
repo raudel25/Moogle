@@ -6,16 +6,18 @@ public class SearchResult
 
     public SearchResult(SearchItem[] items, string suggestion = "")
     {
-        if (items == null){
+        if (items == null)
+        {
             throw new ArgumentNullException("items");
         }
-        if(items.Length!=0) items=MergeSort(items,0,items.Length-1);
+        if (items.Length != 0) items = MergeSort(items, 0, items.Length - 1);
         this.items = items;
         this.Suggestion = suggestion;
     }
 
-    public SearchResult() : this(new SearchItem[0]){
- 
+    public SearchResult() : this(new SearchItem[0])
+    {
+
     }
 
     public string Suggestion { get; private set; }
@@ -36,27 +38,27 @@ public class SearchResult
     {
         SearchItem[] c = new SearchItem[a.Length + b.Length];
         int i = 0; int j = 0;
-        while(i<a.Length&&j<b.Length)
+        while (i < a.Length && j < b.Length)
         {
-            if(a[i].Score>b[j].Score)
+            if (a[i].Score > b[j].Score)
             {
-                c[i+j]=a[i];
+                c[i + j] = a[i];
                 i++;
             }
             else
             {
-                c[i+j]=b[j];
+                c[i + j] = b[j];
                 j++;
             }
         }
-        while(i<a.Length)
+        while (i < a.Length)
         {
-            c[i+j]=a[i];
+            c[i + j] = a[i];
             i++;
         }
-        while(j<b.Length)
+        while (j < b.Length)
         {
-            c[i+j]=b[j];
+            c[i + j] = b[j];
             j++;
         }
         return c;

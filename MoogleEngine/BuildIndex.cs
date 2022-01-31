@@ -2,36 +2,54 @@ namespace MoogleEngine;
 
 public static class BuildIndex
 {
-    //Para indexar las palabras en el sistema usaremos un diccionario que tiene como Key el string con la palabra a indexar
-    //y como valor una tupla q tiene en el 1er item un arreglo llamemoslo p
-    //en las primeras Document.cantdoc de posiciones de p guardamos la frecuencia de la palabra en el documento d_i con 0<=i<Document.cantdoc
-    //en la penultima posicion de p guardamos la frecuencia de la palabra en la query
-    //en la ultima posicion de p guardamos la cantidad de documentos donde se repite la palabra 
-    //,como 2do item de la tupla un arreglo de listas de enteros 
-    //en cada lista l_i se guardan las posiciones de la palabra en el documento d_i con 0<=i<Document.cantdoc
-    public static Dictionary<string, Tuple<double[], List<int>[]>> dic = new Dictionary<string, Tuple<double[], List<int>[]>>();
+    //Guardamos las palabras de nuestro corpus
+    public static Dictionary<string, DataStructure> dic = new Dictionary<string, DataStructure>();
     public static int cantwords;
-    //Con este metodo iremos indexando terminos en nustro documento
-    public static void InsertWord(string word, int index, int pos=0)
+    /// <summary>Metodo para el indexar los terminos en el corpus</summary>
+    /// <param name="word">Palabra a indexar</param>
+    /// <param name="index">Indice del documento</param>
+    /// <param name="pos">Posicion de la palabra en el documento</param>
+    /// <param name="query">Query</param>
+    public static void InsertWord(string word, int index, int pos, QueryClass query = null)
     {
-        //Si el diccionario no contiene a la palabra incializamos los componentes de 
         if (!dic.ContainsKey(word))
         {
-            //Guardando lo
-            double[] n = new double[Document.cantdoc + 2];
-            List<int>[] l = new List<int>[Document.cantdoc];
-            dic.Add(word, new Tuple<double[], List<int>[]>(n, l));
+            DataStructure data = new DataStructure();
+            data.weight_doc = new double[Document.cantdoc];
+            data.weigth_query = 0;
+            data.Pos_doc = new List<int>[Document.cantdoc];
+            dic.Add(word, data);
             cantwords++;
         }
-        if (dic[word].Item1[index] == 0 && index < Document.cantdoc)
+        if (query == null)
         {
-            dic[word].Item2[index] = new List<int>();
+            if (dic[word].weight_doc[index] == 0)
+            {
+                dic[word].Pos_doc[index] = new List<int>();
+            }
+            dic[word].weight_doc[index]++;
+            dic[word].Pos_doc[index].Add(pos);
+            //Llevamos la cuenta de la maxima frecuencia en el documento
+            if (dic[word].weight_doc[index] > Document.max[index]) Document.max[index] = dic[word].weight_doc[index];
         }
-        dic[word].Item1[index]++;
-        if (index < Document.cantdoc)
+        else
         {
-            dic[word].Item2[index].Add(pos);
+            dic[word].weigth_query++;
+            //Llevamos la cuenta de la maxima frecuencia en el documento
+            if (dic[word].weigth_query > query.max) query.max = dic[word].weigth_query;
         }
-        if (dic[word].Item1[index] > Document.max[index]) Document.max[index] = Convert.ToInt32(dic[word].Item1[index]);
+
     }
+
+}
+public class DataStructure
+{
+    //Guardamos el peso de la palabra en cada documento
+    public double[] weight_doc { get; set; }
+    //Guardamos el peso de la palabra en la query
+    public double weigth_query { get; set; }
+    //Guardamos la candtidad de documentos en los que aparece la palabra
+    public double word_cant_doc { get; set; }
+    //Guardamos las posiciones de la palabra en cada documento
+    public List<int>[] Pos_doc { get; set; }
 }

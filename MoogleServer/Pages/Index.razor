@@ -10,37 +10,35 @@
 <datalist id="auto" class="p-1 my-4">
     @foreach (var item in autoComp)
     {
-        <option value="@item"></option>
+            <option value="@item"></option>
     }
 </datalist>
 
 @if (!string.IsNullOrEmpty(result.Suggestion))
 {
-    <div class="suggestion">
-    <p>¿Quisiste decir <strong><a href="#">@result.Suggestion</a></strong>?</p>
-</div>
+        <div class="suggestion">
+        <p>¿Quisiste decir <strong><a href="#">@result.Suggestion</a></strong>?</p>
+    </div>
 }
 
 <ul class="results">
     @foreach (var item in result.Items())
     {
-        <li>
-            <div class="item">
-                <p class="title">@item.Title</p>
+            <li>
+                <div class="item">
+                    <p class="title">@item.Title</p>
                 @for (int i = 0; i < item.Snippet.Length; i++)
                 {
-                    <p>... <a target='__blank' href=@(item.Title+"/"+item.Pos_Snippet[i])>@item.Snippet[i]</a> ...</p>
+                            <p>... <a target='__blank' href=@(item.Title+"/"+(item.Pos_Snippet[i]-item.Pos_Snippet[i]%100)+"/"+item.Pos_Snippet[i])>@item.Snippet[i]</a> ...</p>
                 }
-            </div>
-        </li>
+                </div>
+            </li>
     }
 </ul>
 
 @code {
-    private string query="";
-    private List<char> l=new List<char>();
-    private string queryAuto="";
-    private List<string> autoComp=new List<string>();
+    private string query = "";
+    private List<string> autoComp = new List<string>();
     private SearchResult result = new SearchResult();
     private void RunQuery()
     {
@@ -48,75 +46,72 @@
     }
     private void Press(KeyboardEventArgs e)
     {
-        string query_aux=query;
-        if(e.Code=="Enter")
+        System.Text.StringBuilder query_aux = new System.Text.StringBuilder(query);
+        if (e.Code == "Enter")
         {
             RunQuery();
         }
-        if(e.Code=="Backspace")
+        if (e.Code == "Backspace")
         {
-            if(l.Count>0)
+            if (query_aux.Length > 0)
             {
-                char aux=l[l.Count-1];
-                l.Reverse();
-                l.Remove(aux);
-                l.Reverse();
-            } 
-        }
-        try{
-            if(e.Key.Length==1)
-            {
-                if(/*char.IsLetterOrDigit(e.Key[0])||e.Key[0]==' '*/true)
-                {
-                    l.Add(e.Key[0]);
-                    query_aux=query_aux+e.Key[0];              
-                }
+                query_aux.Remove(query_aux.Length - 1, 1);
             }
-        }catch(SystemException qwe){
+        }
+        try
+        {
+            if (e.Key.Length == 1)
+            {
+                query_aux.Insert(query_aux.Length, e.Key[0]);
+            }
+        }
+        catch (SystemException qwe)
+        {
             return;
         }
-        System.Text.StringBuilder sb=new System.Text.StringBuilder();
-        int start=0; int stop=0; bool no_letter=false;
-        for(int i =0;i<l.Count;i++)
+        System.Text.StringBuilder sb = new System.Text.StringBuilder();
+        int start = 0; int stop = 0; bool no_letter = false;
+        //Buscamos la ultima porcion de la query alfanumerica
+        for (int i = 0; i < query_aux.Length; i++)
         {
-            if(!char.IsLetterOrDigit(l[i])) no_letter=true;
+            if (!char.IsLetterOrDigit(query_aux[i])) no_letter = true;
             else
             {
-                if(no_letter) 
+                if (no_letter)
                 {
-                    no_letter=false;
-                    sb=new System.Text.StringBuilder();
-                    start=i;
-                    stop=0;
+                    no_letter = false;
+                    sb = new System.Text.StringBuilder();
+                    start = i;
+                    stop = 0;
                 }
-                sb.Append(l[i]);
+                sb.Append(query_aux[i]);
                 stop++;
-            } 
+            }
         }
-        string auto=sb.ToString();
-        if(query!="")
+        string auto = sb.ToString();
+        if (query != "")
         {
-            List<int> change=new List<int>();
-            string aux=auto.ToLower();
-            for(int i=0;i<auto.Length;i++)
+            List<int> change = new List<int>();
+            string aux = auto.ToLower();
+            //Guardamos las posiciones de las mayusculas
+            for (int i = 0; i < auto.Length; i++)
             {
-                if(auto[i]!=aux[i]) change.Add(i);
+                if (auto[i] != aux[i]) change.Add(i);
             }
-            autoComp=Server.AutoCompletar(aux);
-            for(int i=0;i<autoComp.Count;i++)
+            autoComp = Server.AutoCompletar(aux);
+            //Actualizar las mayusculas y minusculas y completar con la recomendacion
+            for (int i = 0; i < autoComp.Count; i++)
             {
-                System.Text.StringBuilder sb1=new System.Text.StringBuilder(query_aux);
-                sb=new System.Text.StringBuilder(autoComp[i]);
-                for(int j=0;j<change.Count;j++)
+                System.Text.StringBuilder Add_autoComp = new System.Text.StringBuilder(query_aux.ToString());
+                sb = new System.Text.StringBuilder(autoComp[i]);
+                for (int j = 0; j < change.Count; j++)
                 {
-                    sb[change[j]]=Char.ToUpper(sb[change[j]]);
+                    sb[change[j]] = Char.ToUpper(sb[change[j]]);
                 }
-                sb1.Remove(start,stop);
-                sb1.Insert(start,sb.ToString());
-                autoComp[i]=sb1.ToString();
+                Add_autoComp.Remove(start, stop);
+                Add_autoComp.Insert(start, sb.ToString());
+                autoComp[i] = Add_autoComp.ToString();
             }
-            string[] s=query.Split(' ');
-            queryAuto=query.Substring(0,query.Length-s[s.Length-1].Length);
         }
     }
 }
