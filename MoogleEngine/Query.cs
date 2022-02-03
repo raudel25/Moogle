@@ -7,7 +7,9 @@ public class Synonymous
 public class QueryClass
 {
     //Guardar los pesos de las palabras de la query
-    public double[] vectorC;
+    public Dictionary<string, double> words_query = new Dictionary<string, double>();
+    public double norma;
+    public double norma_Stemming_Syn;
     //Guardar los documentos que resultan de la busqueda
     public List<Document> resultsearchDoc = new List<Document>();
     //Guardar el score de cada documento que resulta de la busqueda
@@ -32,24 +34,44 @@ public class QueryClass
     public List<List<string>> SearchLiteral_words = new List<List<string>>();
     //Guardar la posicion de las palabras de la busqueda literal
     public List<List<int>> Pos_SearchLiteral = new List<List<int>>();
-    //Guardar las palabras con la misma raiz q las de nuestra query
-    public List<string> words_Stemming = new List<string>();
-    //Guardar los sinonimos de las palabras de nustra query
-    public List<string> words_Synonymous = new List<string>();
+    //Guardar los sinonimos y las palabras con la misma raiz q las de nuestra query
+    public Dictionary<string, double[]> words_Stemming_Syn = new Dictionary<string, double[]>();
     //Guardar los sinonimos cargados de nuestro json
     public static List<string[]> synonymous;
-    //Guardar el texto de nustra query
+    //Guardar el texto de nustra query para dar la sugerencia
     public string txt;
+    //Guardar el texto de la query original
+    public string original;
     //Guardar la maxima frecuencia de la query
-    public double max = 1;
+    public int max = 1;
+    //Guardar la maxima frecuencia de la query con los sinonimos y las raices
+    public int max_Stemming_Syn = 1;
+    //Para determinar si no hay resultados
+    public bool no_results=false;
     public QueryClass(string s)
     {
         this.txt = s;
+        this.original=s;
         //Quitamos los esapcios y los signos de puntiucion
         Document.Token(new string[] { s }, Document.cantdoc, this);
-        //Creamos un nuevo arreglo para guardar los pesos de la query
-        this.vectorC = new double[BuildIndex.cantwords];
-
+    }
+    /// <summary>Metodo para calcular la frecuencia de la query</summary>
+    /// <param name="word">String que contien la palabra</param>
+    private void Frecuency_Query(string word)
+    {
+        if (!words_query.ContainsKey(word)) words_query.Add(word, 0);
+        words_query[word]++;
+        if (words_query[word] > max) max = (int)words_query[word];
+    }
+    /// <summary>Metodo para calcular la frecuencia de la query con las raices y los sinonimos</summary>
+    /// <param name="word">String que contien la palabra</param>
+    /// <param name="stemming">Sinonimos o raices</param>
+    private void Frecuency_Query_Stemming_Syn(string word, bool stemming)
+    {
+        if (!words_Stemming_Syn.ContainsKey(word)) words_Stemming_Syn.Add(word, new double[2]);
+        if (stemming) words_Stemming_Syn[word][0]++;
+        else words_Stemming_Syn[word][1]++;
+        if (words_Stemming_Syn[word][0] + words_Stemming_Syn[word][1] > max_Stemming_Syn) max_Stemming_Syn = (int)(words_Stemming_Syn[word][0] + words_Stemming_Syn[word][1]);
     }
     /// <summary>Metodo para los operadores de busqueda</summary>
     /// <param name="word">String que contiene los operadores</param>
@@ -82,12 +104,12 @@ public class QueryClass
             //Comprobamos si la palabra a buscar existe en nuestro sistema
             if (BuildIndex.dic.ContainsKey(word))
             {
-                BuildIndex.InsertWord(word, 0, 0, this);
+                Frecuency_Query(word);
             }
             else
             {
                 //Si la palabra no existe procedemos a dar una recomendacion
-                word = suggestion(word);
+                suggestion(word);
             }
             //Buscamos los sinonimos y las raices de la palabra
             Search_Stemming(word);
@@ -114,12 +136,14 @@ public class QueryClass
             if (BuildIndex.dic.ContainsKey(word))
             {
                 SearchLiteral_words[SearchLiteral_words.Count - 1].Add(word);
-                BuildIndex.InsertWord(word, 0, 0, this);
+                Frecuency_Query(word);
             }
             else
             {
-                string a = suggestion(word);
-                SearchLiteral_words[SearchLiteral_words.Count - 1].Add(a);
+                suggestion(word);
+                //Si no esta la palabra en nuestro corpus no hay resultados
+                no_results=true;
+                //SearchLiteral_words[SearchLiteral_words.Count - 1].Add(a);
             }
             return true;
         }
@@ -140,11 +164,11 @@ public class QueryClass
                 close_words[m] = Document.Sign_Puntuation(close_words[m]);
                 if (BuildIndex.dic.ContainsKey(close_words[m]))
                 {
-                    BuildIndex.InsertWord(close_words[m], 0, 0, this);
+                    Frecuency_Query(close_words[m]);
                 }
                 else
-                {
-                    close_words[m] = suggestion(close_words[m]);
+                {   
+                    suggestion(close_words[m]);
                 }
                 if (!close.Contains(close_words[m]))
                 {
@@ -170,12 +194,11 @@ public class QueryClass
             if (BuildIndex.dic.ContainsKey(word))
             {
                 Exclude.Add(word);
-                BuildIndex.InsertWord(word, 0, 0, this);
+                Frecuency_Query(word);
             }
             else
             {
-                string a = suggestion(word);
-                Exclude.Add(a);
+                suggestion(word);
             }
             return true;
         }
@@ -192,12 +215,13 @@ public class QueryClass
             if (BuildIndex.dic.ContainsKey(word))
             {
                 Include.Add(word);
-                BuildIndex.InsertWord(word, 0, 0, this);
+                Frecuency_Query(word);
             }
             else
             {
-                string a = suggestion(word);
-                Include.Add(a);
+                suggestion(word);
+                //Si no esta la palabra en nuestro corpus no hay resultados
+                no_results=true;
             }
             return true;
         }
@@ -221,12 +245,11 @@ public class QueryClass
             if (BuildIndex.dic.ContainsKey(word))
             {
                 highest_relevance.Add(word, a + 1);
-                BuildIndex.InsertWord(word, 0, 0, this);
+                Frecuency_Query(word);
             }
             else
             {
-                string b = suggestion(word);
-                highest_relevance.Add(b, a + 1);
+                suggestion(word);
             }
             return true;
         }
@@ -246,8 +269,7 @@ public class QueryClass
             {
                 if (Snowball.Stemmer(i.Key) == stemmer)
                 {
-                    BuildIndex.InsertWord(i.Key, 0, 0, this);
-                    words_Stemming.Add(i.Key);
+                    Frecuency_Query_Stemming_Syn(i.Key, true);
                 }
             }
         }
@@ -268,8 +290,7 @@ public class QueryClass
                     {
                         if (line[m] != word && BuildIndex.dic.ContainsKey(line[m]))
                         {
-                            BuildIndex.InsertWord(line[m], 0, 0, this);
-                            words_Synonymous.Add(line[m]);
+                            Frecuency_Query_Stemming_Syn(line[m], false); ;
                         }
                     }
                     break;
@@ -279,11 +300,10 @@ public class QueryClass
     }
     /// <summary>Metodo para dar las recomendaciones</summary>
     /// <param name="word">String q contiene la palabra</param>
-    private string suggestion(string word)
+    private void suggestion(string word)
     {
         string a = suggestion_word(word);
-        BuildIndex.InsertWord(a, 0, 0, this);
-        //MOdifiquemos nuestro txt de la query por la palabra recomendada
+        //Modifiquemos nuestro txt de la query por la palabra recomendada
         for (int m = 0; m <= txt.Length - word.Length; m++)
         {
             if (word == txt.Substring(m, word.Length).ToLower())
@@ -292,7 +312,6 @@ public class QueryClass
                 break;
             }
         }
-        return a;
     }
     /// <summary>Metodo para encontrar la palabra mas cercana</summary>
     /// <param name="word">String q contiene la palabra</param>

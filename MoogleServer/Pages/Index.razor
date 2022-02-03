@@ -4,35 +4,35 @@
 
 <h1>🔍 Moogle!</h1>
 
-<input list="auto" class="p-1 my-4" @bind="query" @bind:event="oninput" placeholder="Introduzca su búsqueda" @onkeydown="Press">
+<input list="auto" class="p-1 my-4" @bind="query" @bind:event="oninput" placeholder="Introduzca su búsqueda" @onkeyup="Press">
 
 <button type="default" class="btn btn-primary" @onclick="RunQuery" >🔍 Buscar</button>
 <datalist id="auto" class="p-1 my-4">
     @foreach (var item in autoComp)
     {
-            <option value="@item"></option>
+        <option value="@item"></option>
     }
 </datalist>
 
 @if (!string.IsNullOrEmpty(result.Suggestion))
 {
-        <div class="suggestion">
-        <p>¿Quisiste decir <strong><a href="#">@result.Suggestion</a></strong>?</p>
+    <div class="suggestion">
+        <p>¿Quisiste decir <strong><a href="#" @onclick="Suggestion">@result.Suggestion</a></strong>?</p>
     </div>
 }
 
 <ul class="results">
     @foreach (var item in result.Items())
     {
-            <li>
-                <div class="item">
-                    <p class="title">@item.Title</p>
-                @for (int i = 0; i < item.Snippet.Length; i++)
-                {
-                            <p>... <a target='__blank' href=@(item.Title+"/"+(item.Pos_Snippet[i]-item.Pos_Snippet[i]%100)+"/"+item.Pos_Snippet[i])>@item.Snippet[i]</a> ...</p>
-                }
-                </div>
-            </li>
+        <li>
+            <div class="item">
+                <p class="title">@item.Title</p>
+                    @for (int i = 0; i < item.Snippet.Length; i++)
+                    {
+                        <p>... <a target='__blank' href=@(item.Title+"/"+(item.Pos_Snippet[i]-item.Pos_Snippet[i]%100)+"/"+item.Pos_Snippet[i])>@item.Snippet[i]</a> ...</p>
+                    }
+            </div>
+        </li>
     }
 </ul>
 
@@ -44,30 +44,17 @@
     {
         result = Moogle.Query(query);
     }
+    private void Suggestion()
+    {
+        query=result.Suggestion;
+        result = Moogle.Query(result.Suggestion);
+    }
     private void Press(KeyboardEventArgs e)
     {
         System.Text.StringBuilder query_aux = new System.Text.StringBuilder(query);
         if (e.Code == "Enter")
         {
             RunQuery();
-        }
-        if (e.Code == "Backspace")
-        {
-            if (query_aux.Length > 0)
-            {
-                query_aux.Remove(query_aux.Length - 1, 1);
-            }
-        }
-        try
-        {
-            if (e.Key.Length == 1)
-            {
-                query_aux.Insert(query_aux.Length, e.Key[0]);
-            }
-        }
-        catch (SystemException qwe)
-        {
-            return;
         }
         System.Text.StringBuilder sb = new System.Text.StringBuilder();
         int start = 0; int stop = 0; bool no_letter = false;

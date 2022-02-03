@@ -11,13 +11,20 @@ public static class Moogle
         // Modifique este método para responder a la búsqueda
         QueryClass query1 = new QueryClass(query);
         QueryIndex(query1);
+        if(query1.no_results)
+        {
+            return new SearchResult(new SearchItem[0],query1.txt);
+        }
         //Creamos un array y pasamos los resultados de la busqueda
         SearchItem[] items = new SearchItem[query1.Score.Count];
         for (int i = 0; i < query1.Score.Count; i++)
         {
             items[i] = new SearchItem(query1.resultsearchDoc[i].title, query1.SnippetResult[i], query1.Pos_SnippetResult[i], (float)query1.Score[i]);
         }
-        return new SearchResult(items, query1.txt);
+        string suggestion="";
+        if(query1.txt==query1.original) suggestion="";
+        else suggestion=query1.txt; 
+        return new SearchResult(items, suggestion);
     }
     /// <summary>Metodo para indexar nuestro corpus</summary>
     public static void Indexar()
@@ -31,7 +38,7 @@ public static class Moogle
             q++;
         }
         Document.cantdoc = q;
-        Document.max = new double[q];
+        Document.max = new int[q];
         //Inicializamos la frecuencia maximas de los documentos en 1
         for (int i = 0; i < Document.max.Length; i++)
         {
@@ -58,15 +65,16 @@ public static class Moogle
             word.Value.word_cant_doc = word_cantdoc(word.Value.weight_doc);
             for (int j = 0; j < Document.cantdoc; j++)
             {
-                word.Value.weight_doc[j] = (word.Value.weight_doc[j] / Document.max[j]) * Math.Log(Convert.ToDouble(Document.cantdoc) / word.Value.word_cant_doc);
+                word.Value.weight_doc[j] = (word.Value.weight_doc[j] / Document.max[j]) * Math.Log((double)Document.cantdoc / (double)word.Value.word_cant_doc);
+                Document.documents[j].norma += word.Value.weight_doc[j] * word.Value.weight_doc[j];
             }
         }
     }
     /// <summary>Metodo para determinar la cantidad de documentos que contienen a una palabra</summary>
     /// <param name="a">Arreglo con la frecuencia de la palabra en los documentos</param>
-    public static double word_cantdoc(double[] a)
+    public static int word_cantdoc(double[] a)
     {
-        double cant = 0;
+        int cant = 0;
         for (int i = 0; i < Document.cantdoc; i++)
         {
             if (a[i] != 0) cant++;
@@ -85,19 +93,27 @@ public static class Moogle
     /// <param name="query">Query</param>
     public static void TF_idfC(QueryClass query)
     {
-        int j = 0;
-        foreach (var word in BuildIndex.dic)
+        foreach (var word in query.words_query)
         {
             //Factor para modificar el peso de la palabra
             double a = 1;
             if (query.highest_relevance.ContainsKey(word.Key)) a = query.highest_relevance[word.Key];
-            if (query.words_Synonymous.IndexOf(word.Key) >= 0) a = 0.10;
-            if (query.words_Stemming.IndexOf(word.Key) >= 0) a = 0.20;
-            query.vectorC[j] = (a * word.Value.weigth_query / query.max) * Math.Log(Convert.ToDouble(Document.cantdoc) / word.Value.word_cant_doc);
-            word.Value.weigth_query = 0;
-            j++;
+            query.words_query[word.Key] = (a * word.Value / (double)query.max) * Math.Log((double)Document.cantdoc / (double)BuildIndex.dic[word.Key].word_cant_doc);
+            query.norma += query.words_query[word.Key] * query.words_query[word.Key];
         }
-        query.max = 1;
+        foreach (var word in query.words_Stemming_Syn)
+        {
+            //Comprobamos si la palabra es raiz o sinonimo
+            if (word.Value[0] != 0)
+            {
+                query.words_Stemming_Syn[word.Key][0] = ((word.Value[0] + word.Value[1]) / (double)query.max_Stemming_Syn) * Math.Log((double)Document.cantdoc / (double)BuildIndex.dic[word.Key].word_cant_doc);
+            }
+            else
+            {
+                query.words_Stemming_Syn[word.Key][0] = ((word.Value[0] + word.Value[1]) / (2 * (double)query.max_Stemming_Syn)) * Math.Log((double)Document.cantdoc / (double)BuildIndex.dic[word.Key].word_cant_doc);
+            }
+            query.norma_Stemming_Syn += query.words_Stemming_Syn[word.Key][0];
+        }
     }
     /// <summary>Metodo para calcular la similitud del coseno</summary>
     /// <param name="query">Query</param>
@@ -105,50 +121,51 @@ public static class Moogle
     {
         double[] score = new double[Document.cantdoc];
         double mod_query = 0, query_x_doc = 0, mod_doc = 0;
-        //Calculamos la normal de la query
-        for (int i = 0; i < BuildIndex.cantwords; i++)
-        {
-            mod_query += query.vectorC[i] * query.vectorC[i];
-        }
         for (int i = 0; i < Document.cantdoc; i++)
         {
             query_x_doc = 0; mod_doc = 0;
-            int ind_query = 0;
             //Lista para las palabras de la query presentes en el documento
             List<string> words_doc = new List<string>();
             //Lista para las palabras de la busqueda literal presentes en el documneto
             List<string> words_docLiteral = new List<string>();
-            //Lista para los sinonimos y raices de la query en el documento
-            List<string> words_doc_Syn_Stemming = new List<string>();
-            foreach (var word_dic in BuildIndex.dic)
+            foreach (var word_dic in query.words_query)
             {
-                //Calculamos el producto de los 2 vecotes y la norma del documento
-                query_x_doc += word_dic.Value.weight_doc[i] * query.vectorC[ind_query];
-                mod_doc += word_dic.Value.weight_doc[i] * word_dic.Value.weight_doc[i];
-                if (word_dic.Value.weight_doc[i] * query.vectorC[ind_query] != 0)
+                //Calculamos el producto de los 2 vectores
+                query_x_doc += BuildIndex.dic[word_dic.Key].weight_doc[i] * word_dic.Value;
+                if (BuildIndex.dic[word_dic.Key].weight_doc[i] * word_dic.Value != 0)
                 {
-                    if (!query.words_Synonymous.Contains(word_dic.Key) && !query.words_Stemming.Contains(word_dic.Key))
-                    {
-                        words_doc.Add(word_dic.Key);
-                    }
-                    else
-                    {
-                        words_doc_Syn_Stemming.Add(word_dic.Key);
-                    }
+                    words_doc.Add(word_dic.Key);
                 }
-                ind_query++;
-                if (word_dic.Value.Pos_doc != null)
+                if (BuildIndex.dic[word_dic.Key].Pos_doc != null)
                 {
                     words_docLiteral.Add(word_dic.Key);
                 }
             }
-            if (words_doc.Count == 0) words_doc = words_doc_Syn_Stemming;
+            double factor = 0;
+            if (words_doc.Count == 0)
+            {
+                //Si no tenemos resultados buscamos las raices y los sinonimos
+                foreach (var word_dic in query.words_Stemming_Syn)
+                {
+                    query_x_doc += BuildIndex.dic[word_dic.Key].weight_doc[i] * word_dic.Value[0];
+                    if (BuildIndex.dic[word_dic.Key].weight_doc[i] * word_dic.Value[0] != 0)
+                    {
+                        words_doc.Add(word_dic.Key);
+                    }
+                }
+                mod_query = query.norma_Stemming_Syn;
+                if (query_x_doc != 0) 
+                {
+                    factor = double.MinValue;
+                }
+            }
+            else mod_query = query.norma;
+            mod_doc = Document.documents[i].norma;
             if (mod_query * mod_doc != 0)
             {
                 //Calculamos la similitud del coseno
-                score[i] = (query_x_doc) / Math.Sqrt(mod_doc * mod_query);
+                score[i] = factor + query_x_doc / Math.Sqrt(mod_query * mod_doc);
             }
-            else score[i] = 0;
             if (score[i] != 0)
             {
                 ResultSearch(query, words_doc, words_docLiteral, score[i], Document.documents[i]);

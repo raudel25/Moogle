@@ -5,7 +5,7 @@ public class Document
     //Guardar una lista con todos los documentos del corpus
     public static List<Document> documents;
     //Guardar la frecuencia de la palabra que mas se repite por documento
-    public static double[] max;
+    public static int[] max;
     //Guardar el indice del documento
     public int index;
     //Guardar la cantidad de documentos
@@ -14,7 +14,7 @@ public class Document
     public string title;
     //Guardar la ruta del documento
     public string path;
-    //public static BuildIndex sistema;
+    public double norma = 0;
     public Document(string[] doc, string title, int q)
     {
         this.path = title;
