@@ -10,7 +10,7 @@ public class SearchResult
         {
             throw new ArgumentNullException("items");
         }
-        if (items.Length != 0) items = MergeSort(items, 0, items.Length - 1);
+        Array.Sort(items,(o1,o2)=>o2.Score.CompareTo(o1.Score));
         this.items = items;
         this.Suggestion = suggestion;
     }
@@ -28,39 +28,4 @@ public class SearchResult
     }
 
     public int Count { get { return this.items.Length; } }
-
-    static SearchItem[] MergeSort(SearchItem[] a, int b, int c)
-    {
-        if (b - c == 0) return new SearchItem[] { a[c] };
-        return Merge(MergeSort(a, b, (b + c) / 2), MergeSort(a, (b + c) / 2 + 1, c));
-    }
-    static SearchItem[] Merge(SearchItem[] a, SearchItem[] b)
-    {
-        SearchItem[] c = new SearchItem[a.Length + b.Length];
-        int i = 0; int j = 0;
-        while (i < a.Length && j < b.Length)
-        {
-            if (a[i].Score > b[j].Score)
-            {
-                c[i + j] = a[i];
-                i++;
-            }
-            else
-            {
-                c[i + j] = b[j];
-                j++;
-            }
-        }
-        while (i < a.Length)
-        {
-            c[i + j] = a[i];
-            i++;
-        }
-        while (j < b.Length)
-        {
-            c[i + j] = b[j];
-            j++;
-        }
-        return c;
-    }
 }

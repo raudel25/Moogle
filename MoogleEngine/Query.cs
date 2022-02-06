@@ -129,6 +129,7 @@ public class QueryClass
         }
         if (SearchLiteral)
         {
+            if(word=="\"") return true;
             //Comprobamos si las palabras pertenecientes a la busqueda han terminado
             if (word[word.Length - 1] == '"') SearchLiteral = false;
             word = Document.Sign_Puntuation(word);

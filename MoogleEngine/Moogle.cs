@@ -1,7 +1,7 @@
-﻿namespace MoogleEngine;
-using System.IO;
-using System.Text;
+﻿using System.Text;
 using System.Text.Json;
+
+namespace MoogleEngine;
 
 public static class Moogle
 {
@@ -19,7 +19,7 @@ public static class Moogle
         SearchItem[] items = new SearchItem[query1.Score.Count];
         for (int i = 0; i < query1.Score.Count; i++)
         {
-            items[i] = new SearchItem(query1.resultsearchDoc[i].title, query1.SnippetResult[i], query1.Pos_SnippetResult[i], (float)query1.Score[i]);
+            items[i] = new SearchItem(query1.resultsearchDoc[i].title, query1.SnippetResult[i], query1.Pos_SnippetResult[i], query1.Score[i]);
         }
         string suggestion="";
         if(query1.txt==query1.original) suggestion="";
@@ -203,7 +203,7 @@ public static class Moogle
             //Guardamos los resultados de nuetra busqueda
             query.resultsearchDoc.Add(doc);
             query.Snippet.Add(words_doc);
-            score = score * Close(words_doc, query, doc);
+            score = score + Close(words_doc, query, doc);
             query.Score.Add(score);
         }
     }
@@ -296,7 +296,7 @@ public static class Moogle
                         cant1++;
                         if (cant1 == Snippet_len) break;
                     }
-                    //Si no hemos alcanzad la longitud de nuestro snippet vamos a la linea siguiente
+                    //Si no hemos alcanzado la longitud de nuestro snippet vamos a la linea siguiente
                     if (cant1 < Snippet_len && linea_ind < doc.Length - 1)
                     {
                         int ind = linea_ind + 1;
@@ -331,32 +331,27 @@ public static class Moogle
     public static double Close(List<string> words, QueryClass query, Document document)
     {
         double sumScore = 0;
-        foreach (var i in query.Close)
+        foreach (var close_word in query.Close)
         {
+            bool close=true;
             //Comprobamos que las palabras del operador cercania esten en nuestra lista de palabras
             List<string> words_searchDist = new List<string>();
-            for (int j = 0; j < i.Count; j++)
+            for (int j = 0; j < close_word.Count; j++)
             {
-                if (words.Contains(i[j]))
+                if (!words.Contains(close_word[j]))
                 {
-                    words_searchDist.Add(i[j]);
-                }
+                    close=false;
+                    break;
+                }              
             }
-            if (words_searchDist.Count > 1)
+            //Si hemos encontrado todas las palabras de nuestro operador cercania buscamos la minima distancia
+            if (close)
             {
-                double n = (double)Shortest_Distance_Word(words_searchDist, document, words_searchDist.Count, 10).Item2;
-                //Si la distancia es menor a 100 procedemos a rankiarla
-                if (n <= 100)
-                {
-                    n = n * words_searchDist.Count / i.Count;
-                    sumScore += ((double)words_searchDist.Count / (double)i.Count) * (100 / (n - 1));
-                }
-                else sumScore = 0;
+                double n = (double)Shortest_Distance_Word(close_word, document, close_word.Count, 10).Item2;
+                sumScore += 100/(n-1);
             }
         }
-
-        if (sumScore > 0) return sumScore;
-        return 1;
+        return sumScore;
     }
     /// <summary>Metodo para encontrar la minima distancia de una lista de palabras</summary>
     /// <param name="words">Lista de palabras para buscar la cercania</param>
@@ -370,8 +365,8 @@ public static class Moogle
         List<int> index_words_in_range = new List<int>();
         //Guardamos en un arreglo de tuplas las posiciones de las palabras donde el primer indice corresponde al indice de la palabra en la lista 
         //Ordenamos los elementos de los arrays de tuplas por el numero de la posicion de la palabra
-        Tuple<int, int>[] Pos_words_Sorted = BuildTuple(BuildIndex.dic[words[0]].Pos_doc[document.index], 0);
-        for (int i = 1; i < words.Count; i++)
+        Tuple<int, int>[] Pos_words_Sorted = new Tuple<int, int>[0];
+        for (int i = 0; i < words.Count; i++)
         {
             Pos_words_Sorted = Sorted(Pos_words_Sorted, BuildTuple(BuildIndex.dic[words[i]].Pos_doc[document.index], i));
         }
@@ -446,7 +441,6 @@ public static class Moogle
                         }
                     }
                 }
-
             }
             //Si la minima distancia enontrada es menor a la esperada paramos
             if (minDist <= cota) break;
