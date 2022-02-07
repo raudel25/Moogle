@@ -37,16 +37,19 @@
 </ul>
 
 @code {
+    private static int cantsearch=0;
     private string query = "";
     private List<string> autoComp = new List<string>();
     private SearchResult result = new SearchResult();
     private void RunQuery()
     {
+        cantsearch++;
         result = Moogle.Query(query);
     }
     private void Suggestion()
     {
         query=result.Suggestion;
+        cantsearch++;
         result = Moogle.Query(result.Suggestion);
     }
     private void Press(KeyboardEventArgs e)
@@ -85,7 +88,7 @@
             {
                 if (auto[i] != aux[i]) change.Add(i);
             }
-            autoComp = Server.AutoCompletar(aux);
+            autoComp = Server.AutoComplete(aux);
             //Actualizar las mayusculas y minusculas y completar con la recomendacion
             for (int i = 0; i < autoComp.Count; i++)
             {

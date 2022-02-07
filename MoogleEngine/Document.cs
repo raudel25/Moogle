@@ -3,17 +3,17 @@ namespace MoogleEngine;
 public class Document
 {
     //Guardar una lista con todos los documentos del corpus
-    public static List<Document> documents;
+    public static List<Document> documents {get; set;}
     //Guardar la frecuencia de la palabra que mas se repite por documento
-    public static int[] max;
+    public static int[] max {get; set;}
     //Guardar el indice del documento
-    public int index;
+    public int index {get; private set;}
     //Guardar la cantidad de documentos
-    public static int cantdoc;
+    public static int cantdoc {get; set;}
     //Guardar el titulo del documento
-    public string title;
+    public string title {get; private set;}
     //Guardar la ruta del documento
-    public string path;
+    public string path {get; private set;}
     public double norma = 0;
     public Document(string[] doc, string title, int q)
     {
@@ -22,6 +22,7 @@ public class Document
         this.index = q;
         Token(doc, q);
     }
+    #region Token
     /// <summary>Metodo para eliminar todo lo q no sea alfanumerico</summary>
     /// <param name="doc">Texto del documento</param>
     /// <param name="index">Indice del documento</param>
@@ -69,7 +70,7 @@ public class Document
     /// <summary>Metodo para eliminar los signos de puntuacion</summary>
     /// <param name="s">Texto del documento</param>
     /// <param name="query">Query</param>
-    public static string Sign_Puntuation(string s, QueryClass query = null)
+    public static string Sign_Puntuation(string s, QueryClass query = null)   
     {
         int start = 0; int stop = 0;
         //Recorremos la palabra de izqueierda a derecha y paramos cuando hallemos una letra
@@ -116,4 +117,31 @@ public class Document
         //Devolvemos el substring que no contiene signos de puntuacion
         return s.Substring(start, stop - start + 1);
     }
+    #endregion
+    #region TF_IDF
+    /// <summary>Metodo para calcular el TF_idf de los documentos</summary>
+    public static void Tf_IdfDoc()
+    {
+        foreach (var word in BuildIndex.dic)
+        {
+            word.Value.word_cant_doc = word_cantdoc(word.Value.weight_doc);
+            for (int j = 0; j < Document.cantdoc; j++)
+            {
+                word.Value.weight_doc[j] = (word.Value.weight_doc[j] / Document.max[j]) * Math.Log((double)Document.cantdoc / (double)word.Value.word_cant_doc);
+                Document.documents[j].norma += word.Value.weight_doc[j] * word.Value.weight_doc[j];
+            }
+        }
+    }
+    /// <summary>Metodo para determinar la cantidad de documentos que contienen a una palabra</summary>
+    /// <param name="a">Arreglo con la frecuencia de la palabra en los documentos</param>
+    private static int word_cantdoc(double[] a)
+    {
+        int cant = 0;
+        for (int i = 0; i < Document.cantdoc; i++)
+        {
+            if (a[i] != 0) cant++;
+        }
+        return cant;
+    }
+    #endregion
 }

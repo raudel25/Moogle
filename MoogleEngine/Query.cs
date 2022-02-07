@@ -1,60 +1,68 @@
+using System.Text;
+
 namespace MoogleEngine;
 
-public class Synonymous
-{
-    public List<string[]> synonymous { get; set; }
-}
 public class QueryClass
 {
-    //Guardar los pesos de las palabras de la query
-    public Dictionary<string, double> words_query = new Dictionary<string, double>();
-    public double norma;
-    public double norma_Stemming_Syn;
+    #region Public_Property
     //Guardar los documentos que resultan de la busqueda
-    public List<Document> resultsearchDoc = new List<Document>();
-    //Guardar el score de cada documento que resulta de la busqueda
-    public List<double> Score = new List<double>();
-    //Guardar con las palabras encontradas en cada documento
-    public List<List<string>> Snippet = new List<List<string>>();
+    public List<Document> resultsearchDoc {get; private set;}
     //Guardar los Snippets resultantes de cada documento
-    public List<string[]> SnippetResult = new List<string[]>();
+    public List<string[]> SnippetResult {get; private set;}
     //Guardar la linea correspondiente a los Snippets en cada documento resultante de la busqueda
-    public List<int[]> Pos_SnippetResult = new List<int[]>();
-    //Guardar las palabras del operador Excluir
-    public List<string> Exclude = new List<string>();
-    //Guardar las palabras del operador Incluir
-    public List<string> Include = new List<string>();
-    //Guardar las palabras del operador Cercania por cada grupo de palabras cercanas
-    public List<List<string>> Close = new List<List<string>>();
-    //Guardar las palabras del operador Relevancia y su respectiva relevancia
-    public Dictionary<string, int> highest_relevance = new Dictionary<string, int>();
-    //Bool para la presencia de busqueda literal
-    public bool SearchLiteral;
-    //Guardar las palabras de la busqueda literal
-    public List<List<string>> SearchLiteral_words = new List<List<string>>();
-    //Guardar la posicion de las palabras de la busqueda literal
-    public List<List<int>> Pos_SearchLiteral = new List<List<int>>();
-    //Guardar los sinonimos y las palabras con la misma raiz q las de nuestra query
-    public Dictionary<string, double[]> words_Stemming_Syn = new Dictionary<string, double[]>();
-    //Guardar los sinonimos cargados de nuestro json
-    public static List<string[]> synonymous;
+    public List<int[]> Pos_SnippetResult {get; private set;}
+    //Guardar el score de cada documento que resulta de la busqueda
+    public List<double> Score {get; private set;}
     //Guardar el texto de nustra query para dar la sugerencia
-    public string txt;
+    public string txt {get; private set;}
     //Guardar el texto de la query original
-    public string original;
-    //Guardar la maxima frecuencia de la query
-    public int max = 1;
-    //Guardar la maxima frecuencia de la query con los sinonimos y las raices
-    public int max_Stemming_Syn = 1;
+    public string original {get; private set;}
     //Para determinar si no hay resultados
-    public bool no_results=false;
+    public bool no_results = false;
+    public static int Snippet_len = 20;
+    #endregion 
+    #region Private_Property
+    //Guardar los pesos de las palabras de la query
+    private Dictionary<string, double> words_query = new Dictionary<string, double>();
+     //Guardar los sinonimos y las palabras con la misma raiz q las de nuestra query
+    private Dictionary<string, double[]> words_Stemming_Syn = new Dictionary<string, double[]>();
+    private double norma {get; set;}
+    private double norma_Stemming_Syn {get; set;}
+    //Guardar con las palabras encontradas en cada documento
+    private List<List<string>> Snippet_words = new List<List<string>>();
+    //Guardar las palabras del operador Excluir
+    private List<string> Exclude = new List<string>();
+    //Guardar las palabras del operador Incluir
+    private List<string> Include = new List<string>();
+    //Guardar las palabras del operador Cercania por cada grupo de palabras cercanas
+    private List<List<string>> Close_Words = new List<List<string>>();
+    //Guardar las palabras del operador Relevancia y su respectiva relevancia
+    private Dictionary<string, int> highest_relevance = new Dictionary<string, int>();
+    //Bool para la presencia de busqueda literal
+    private bool SearchLiteral;
+    //Guardar las palabras de la busqueda literal
+    private List<List<string>> SearchLiteral_words = new List<List<string>>();
+    //Guardar la posicion de las palabras de la busqueda literal
+    private List<List<int>> Pos_SearchLiteral = new List<List<int>>();
+    //Guardar la maxima frecuencia de la query
+    private int max = 1;
+    //Guardar la maxima frecuencia de la query con los sinonimos y las raices
+    private int max_Stemming_Syn = 1;
+    #endregion
     public QueryClass(string s)
     {
         this.txt = s;
-        this.original=s;
-        //Quitamos los esapcios y los signos de puntiucion
+        this.original = s;
+        this.resultsearchDoc = new List<Document>();
+        this.Score= new List<double>();
+        this.SnippetResult = new List<string[]>();
+        this.Pos_SnippetResult = new List<int[]>();
         Document.Token(new string[] { s }, Document.cantdoc, this);
+        TF_idfC();
+        SimVectors();
+        Snippet();
     }
+    #region Frecuency_Query
     /// <summary>Metodo para calcular la frecuencia de la query</summary>
     /// <param name="word">String que contien la palabra</param>
     private void Frecuency_Query(string word)
@@ -73,6 +81,8 @@ public class QueryClass
         else words_Stemming_Syn[word][1]++;
         if (words_Stemming_Syn[word][0] + words_Stemming_Syn[word][1] > max_Stemming_Syn) max_Stemming_Syn = (int)(words_Stemming_Syn[word][0] + words_Stemming_Syn[word][1]);
     }
+    #endregion
+    #region Operators
     /// <summary>Metodo para los operadores de busqueda</summary>
     /// <param name="word">String que contiene los operadores</param>
     public void Operators(string word)
@@ -141,10 +151,9 @@ public class QueryClass
             }
             else
             {
-                suggestion(word);
                 //Si no esta la palabra en nuestro corpus no hay resultados
                 no_results=true;
-                //SearchLiteral_words[SearchLiteral_words.Count - 1].Add(a);
+                suggestion(word);
             }
             return true;
         }
@@ -178,7 +187,7 @@ public class QueryClass
             }
             if (close.Count != 0)
             {
-                Close.Add(close);
+                Close_Words.Add(close);
             }
             return true;
         }
@@ -256,6 +265,8 @@ public class QueryClass
         }
         return false;
     }
+    #endregion
+    #region Stemming_Synonymous
     /// <summary>Metodo para buscar las raices</summary>
     /// <param name="word">String q contiene la palabra</param>
     private void Search_Stemming(string word)
@@ -280,7 +291,7 @@ public class QueryClass
     private void Search_Synonymous(string word)
     {
         //Recorremos la lista de los sinonimos
-        foreach (var line in QueryClass.synonymous)
+        foreach (var line in BuildIndex.synonymous)
         {
             for (int i = 0; i < line.Length; i++)
             {
@@ -299,6 +310,8 @@ public class QueryClass
             }
         }
     }
+    #endregion
+    #region Suggestion
     /// <summary>Metodo para dar las recomendaciones</summary>
     /// <param name="word">String q contiene la palabra</param>
     private void suggestion(string word)
@@ -396,4 +409,268 @@ public class QueryClass
         //return porcentaje;
         return d[m, n];
     }
+    #endregion
+    #region TF_IDF
+    /// <summary>Metodo para calcular el Tf_idf de nuestra query</summary>
+    private void TF_idfC()
+    {
+        foreach (var word in words_query)
+        {
+            //Factor para modificar el peso de la palabra
+            double a = 1;
+            if (highest_relevance.ContainsKey(word.Key)) a = highest_relevance[word.Key];
+            words_query[word.Key] = (a * word.Value / (double)max) * Math.Log((double)Document.cantdoc / (double)BuildIndex.dic[word.Key].word_cant_doc);
+            norma += words_query[word.Key] * words_query[word.Key];
+        }
+        foreach (var word in words_Stemming_Syn)
+        {
+            //Comprobamos si la palabra es raiz o sinonimo
+            if (word.Value[0] != 0)
+            {
+                words_Stemming_Syn[word.Key][0] = ((word.Value[0] + word.Value[1]) / (double)max_Stemming_Syn) * Math.Log((double)Document.cantdoc / (double)BuildIndex.dic[word.Key].word_cant_doc);
+            }
+            else
+            {
+                words_Stemming_Syn[word.Key][0] = ((word.Value[0] + word.Value[1]) / (2 * (double)max_Stemming_Syn)) * Math.Log((double)Document.cantdoc / (double)BuildIndex.dic[word.Key].word_cant_doc);
+            }
+            norma_Stemming_Syn += words_Stemming_Syn[word.Key][0];
+        }
+    }
+    #endregion
+    #region Search_Result
+    /// <summary>Metodo para calcular la similitud del coseno</summary>
+    private void SimVectors()
+    {
+        double[] score = new double[Document.cantdoc];
+        double mod_query = 0, query_x_doc = 0, mod_doc = 0;
+        for (int i = 0; i < Document.cantdoc; i++)
+        {
+            query_x_doc = 0; mod_doc = 0;
+            //Lista para las palabras de la query presentes en el documento
+            List<string> words_doc = new List<string>();
+            //Lista para las palabras de la busqueda literal presentes en el documneto
+            List<string> words_docLiteral = new List<string>();
+            foreach (var word_dic in words_query)
+            {
+                //Calculamos el producto de los 2 vectores
+                query_x_doc += BuildIndex.dic[word_dic.Key].weight_doc[i] * word_dic.Value;
+                if (BuildIndex.dic[word_dic.Key].weight_doc[i] * word_dic.Value != 0)
+                {
+                    words_doc.Add(word_dic.Key);
+                }
+                if (BuildIndex.dic[word_dic.Key].Pos_doc != null)
+                {
+                    words_docLiteral.Add(word_dic.Key);
+                }
+            }
+            double factor = 0;
+            if (words_doc.Count == 0)
+            {
+                //Si no tenemos resultados buscamos las raices y los sinonimos
+                foreach (var word_dic in words_Stemming_Syn)
+                {
+                    query_x_doc += BuildIndex.dic[word_dic.Key].weight_doc[i] * word_dic.Value[0];
+                    if (BuildIndex.dic[word_dic.Key].weight_doc[i] * word_dic.Value[0] != 0)
+                    {
+                        words_doc.Add(word_dic.Key);
+                    }
+                }
+                mod_query = norma_Stemming_Syn;
+                if (query_x_doc != 0) 
+                {
+                    factor = double.MinValue;
+                }
+            }
+            else mod_query = norma;
+            mod_doc = Document.documents[i].norma;
+            if (mod_query * mod_doc != 0)
+            {
+                //Calculamos la similitud del coseno
+                score[i] = factor + query_x_doc / Math.Sqrt(mod_query * mod_doc);
+            }
+            if (score[i] != 0)
+            {
+                ResultSearch(words_doc, words_docLiteral, score[i], Document.documents[i]);
+            }
+        }
+    }
+    /// <summary>Metodo para determinar si el documento puede ser resultado de la busqueda</summary>
+    /// <param name="words_doc">Lista para las palabras de la query presentes en el documento</param>
+    /// <param name="words_docLiteral">Lista para las palabras de la busqueda literal presentes en el documneto</param>
+    /// <param name="score">Score del documento</param>
+    /// <param name="doc">Documento</param>
+    private void ResultSearch(List<string> words_doc, List<string> words_docLiteral, double score, Document doc)
+    {
+        bool result = true;
+        //Comprobamos el operador de Exclusion
+        for (int m = 0; m < Exclude.Count; m++)
+        {
+            if (BuildIndex.dic[Exclude[m]].weight_doc[doc.index] != 0)
+            {
+                result = false;
+            }
+        }
+        //Comprobamos el operador de Inclusion
+        for (int m = 0; m < Include.Count; m++)
+        {
+            if (BuildIndex.dic[Include[m]].weight_doc[doc.index] == 0)
+            {
+                result = false;
+            }
+        }
+        if (result) result = SearchLiteral_Operator(words_docLiteral, doc);
+        if (result)
+        {
+            //Guardamos los resultados de nuetra busqueda
+            resultsearchDoc.Add(doc);
+            Snippet_words.Add(words_doc);
+            score = score + Close(words_doc, doc);
+            Score.Add(score);
+        }
+    }
+    /// <summary>Metodo para comprobar la busqueda literal</summary>
+    /// <param name="words_doc">Lista para las palabras de la busqueda literal presentes en el documneto</param>
+    /// <param name="doc">Documento</param>
+    private bool SearchLiteral_Operator(List<string> words_doc, Document doc)
+    {
+        List<int> l = new List<int>();
+        for (int i = 0; i < SearchLiteral_words.Count; i++)
+        {
+            //Evaluamos los parametros para la busqueda literal
+            for (int j = 0; j < SearchLiteral_words[i].Count; j++)
+            {
+                if (BuildIndex.dic[SearchLiteral_words[i][j]].Pos_doc[doc.index] == null)
+                {
+                    return false;
+                }
+            }
+            Tuple<int, int, List<string>> t = Distance_Word.Search_Distance(SearchLiteral_words[i], doc,Distance_Word.Distance.SearchLiteral);
+            if (t.Item2 > SearchLiteral_words[i].Count)
+            {
+                return false;
+            }
+            //Guardamos la posicion de la busqueda literal encontrada
+            l.Add(t.Item1);
+        }
+        //Guardamos las posiciones de la busqueda literal encontrada
+        Pos_SearchLiteral.Add(l);
+        return true;
+    }
+    /// <summary>Metodo obtener el Ranking de la cercania</summary>
+    /// <param name="words">Lista de palabras</param>
+    /// <param name="document">Documento</param>
+    private double Close(List<string> words, Document document)
+    {
+        double sumScore = 0;
+        foreach (var word_list in Close_Words)
+        {
+            bool close=true;
+            //Comprobamos que las palabras del operador cercania esten en nuestra lista de palabras
+            List<string> words_searchDist = new List<string>();
+            for (int j = 0; j < word_list.Count; j++)
+            {
+                if (!words.Contains(word_list[j]))
+                {
+                    close=false;
+                    break;
+                }              
+            }
+            //Si hemos encontrado todas las palabras de nuestro operador cercania buscamos la minima distancia
+            if (close)
+            {
+                double n = (double)Distance_Word.Search_Distance(word_list, document, Distance_Word.Distance.Close).Item2;
+                sumScore += 100/(n-1);
+            }
+        }
+        return sumScore;
+    }
+    #endregion
+    #region Snippet
+    /// <summary>Metodo para buscar los snippets</summary>
+    private void Snippet()
+    {
+        for (int i = 0; i < resultsearchDoc.Count; i++)
+        {
+            List<int> words_list = new List<int>();
+            //Comprobamos si tenemos resultados de busqueda literal
+            if (SearchLiteral_words.Count > 0)
+            {
+                for (int x = 0; x < SearchLiteral_words.Count; x++)
+                {
+                    //Removemos la palabra de la busqueda literal, de la lista de palabras del snippet
+                    foreach (var y in SearchLiteral_words[x])
+                    {
+                        if (Snippet_words[i].Contains(y)) Snippet_words[i].Remove(y);
+                    }
+                    //Guardamos la posicion en la lista de posiciones de los snippets
+                    words_list.Add(Pos_SearchLiteral[i][x]);
+                }
+            }
+            //Buscamos la mayor cantidad de palabras de nuestro resultado que esten contenidas en una ventana de tamaño Snippet_len
+            while (Snippet_words[i].Count != 0)
+            {
+                Tuple<int, int, List<string>> tuple = Distance_Word.Search_Distance(Snippet_words[i], resultsearchDoc[i],Distance_Word.Distance.Snippet);
+                words_list.Add(tuple.Item1);
+                //Actualizamos nuestra lista de palabras
+                Snippet_words[i] = tuple.Item3;
+            }
+            BuildSinipped(resultsearchDoc[i], words_list);
+        }
+    }
+    /// <summary>Metodo para construir los snippets</summary>
+    /// <param name="document">Documento</param>
+    /// <param name="Snippetwords">Lista de las posiciones de las palabras</param>
+    private void BuildSinipped(Document document, List<int> Snippetwords)
+    {
+        string[] doc = File.ReadAllLines(document.path);
+        string[] addSnippet = new string[Snippetwords.Count];
+        int[] addposSnippet = new int[Snippetwords.Count];
+        //Recorremos el documento
+        for (int i = 0; i < Snippetwords.Count; i++)
+        {
+            int cant = 0;
+            for (int linea_ind = 0; linea_ind < doc.Length; linea_ind++)
+            {
+                string[] linea = doc[linea_ind].Split(' ');
+                if (Snippetwords[i] <= cant + linea.Length - 1)
+                {
+                    //Si nos encotramos la posicion de la palabra procedemos a construir el snippet
+                    int j = Snippetwords[i] - cant;
+                    int cant1 = 0;
+                    StringBuilder sb = new StringBuilder();
+                    for (int w = j; w < linea.Length; w++)
+                    {
+                        sb.Append(linea[w] + " ");
+                        cant1++;
+                        if (cant1 == Snippet_len) break;
+                    }
+                    //Si no hemos alcanzado la longitud de nuestro snippet vamos a la linea siguiente
+                    if (cant1 < Snippet_len && linea_ind < doc.Length - 1)
+                    {
+                        int ind = linea_ind + 1;
+                        if (doc[linea_ind + 1] == "" && linea_ind < doc.Length - 2)
+                        {
+                            ind = linea_ind + 2;
+                        }
+                        string[] newlinea = doc[ind].Split(' ');
+                        for (int w = 0; w < newlinea.Length; w++)
+                        {
+                            sb.Append(newlinea[w] + " ");
+                            cant1++;
+                            if (cant1 == Snippet_len) break;
+                        }
+                    }
+                    //Guardamos el snippet
+                    addSnippet[i] = sb.ToString();
+                    addposSnippet[i] = linea_ind;
+                    break;
+                }
+                cant += linea.Length;
+            }
+        }
+        //Guardamos lo snippets del documento
+        SnippetResult.Add(addSnippet);
+        Pos_SnippetResult.Add(addposSnippet);
+    }
+    #endregion
 }

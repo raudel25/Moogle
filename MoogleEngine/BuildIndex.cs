@@ -2,9 +2,10 @@ namespace MoogleEngine;
 
 public static class BuildIndex
 {
+    //Guardar los sinonimos cargados de nuestro json
+    public static List<string[]> synonymous {get; set;}
     //Guardamos las palabras de nuestro corpus
     public static Dictionary<string, DataStructure> dic = new Dictionary<string, DataStructure>();
-    public static int cantwords;
     /// <summary>Metodo para el indexar los terminos en el corpus</summary>
     /// <param name="word">Palabra a indexar</param>
     /// <param name="index">Indice del documento</param>
@@ -17,7 +18,6 @@ public static class BuildIndex
             data.weight_doc = new double[Document.cantdoc];
             data.Pos_doc = new List<int>[Document.cantdoc];
             dic.Add(word, data);
-            cantwords++;
         }
         if (dic[word].weight_doc[index] == 0)
         {
@@ -38,4 +38,8 @@ public class DataStructure
     public double word_cant_doc { get; set; }
     //Guardamos las posiciones de la palabra en cada documento
     public List<int>[] Pos_doc { get; set; }
+}
+public class Synonymous
+{
+    public List<string[]> synonymous { get; set; }
 }

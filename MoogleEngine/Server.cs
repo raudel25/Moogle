@@ -5,7 +5,7 @@ public static class Server
     /// <summary>Renderizar el documento</summary>
     /// <param name="path">Ruta del documento</param>
     /// <param name="line">Linea donde se encuentra el snippet</param>
-    public static List<string> leer(string path, int line)
+    public static List<string> Read(string path, int line)
     {
         string[] doc;
         doc = File.ReadAllLines("..//Content//" + path + ".txt");
@@ -15,13 +15,13 @@ public static class Server
         for (int i = line; i < doc.Length; i++)
         {
             words.Add(doc[i]);
-            if (i == line + 100) break;
+            if (i == line + 99) break;
         }
         return words;
     }
     /// <summary>Metodo para Autocompletar la query</summary>
     /// <param name="word">Query</param>
-    public static List<string> AutoCompletar(string word)
+    public static List<string> AutoComplete(string word)
     {
         List<string> auto=new List<string>();
         if(word=="") 

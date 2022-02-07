@@ -5,17 +5,21 @@
 <h1>🔍 Moogle!</h1>
 <h3>@id</h3>
 
-<ul class="book">
-    <p class="book1">
-        @foreach (var (item, index) in Server.leer(id, page).Select((value, i) => (value, i)))
+<ul>
+    <p align="justify">
+        @foreach (var (item, index) in Server.Read(id, page).Select((value, i) => (value, i)))
         {
             @if (index + page == pos)
             {
-                <strong>@item</strong><br>
+                <strong>@(item+" ")</strong>
             }
             else
             {
-                @item<br>
+                @(item+" ")
+            }
+            @if(item=="")
+            {
+                <br><br>
             }
         }
     </p>
@@ -43,5 +47,5 @@
     public int pos { get; set; }
     [Parameter]
     public int page { get; set; }
-    public int newpage { get; set; }
+    private int newpage { get; set; }
 }
