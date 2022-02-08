@@ -5,6 +5,7 @@ public static class Server
     /// <summary>Renderizar el documento</summary>
     /// <param name="path">Ruta del documento</param>
     /// <param name="line">Linea donde se encuentra el snippet</param>
+    /// <returns>Parte del documento a renderizar</returns>
     public static List<string> Read(string path, int line)
     {
         string[] doc;
@@ -21,6 +22,7 @@ public static class Server
     }
     /// <summary>Metodo para Autocompletar la query</summary>
     /// <param name="word">Query</param>
+    /// <returns>Palabras para auto completar</returns>
     public static List<string> AutoComplete(string word)
     {
         List<string> auto=new List<string>();

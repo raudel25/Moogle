@@ -6,22 +6,26 @@ public static class Snowball
 {
     /// <summary>Metodo para extraer la raiz de una palabra</summary>
     /// <param name="word">Palabra para extraer la raiz</param>
+    /// <returns>Raiz de la palabra</returns>
     public static string Stemmer(string word)
     {
         Tuple<int, int, int> t = R1_R2_RV(word);
         int r1 = t.Item1;
         int r2 = t.Item2;
         int rv = t.Item3;
+        //Vamos evaluando cada uno de los pasos si la palabra no tiene cambio continuamos con otro
         string word1 = Step0(word, r1, r2, rv);
         if (word1 == word) word1 = Step1(word, r1, r2, rv);
         if (word1 == word) word1 = Step2_a(word, r1, r2, rv);
         if (word1 == word) word1 = Step2_b1(word, r1, r2, rv);
         if (word1 == word) word1 = Step2_b2(word, r1, r2, rv);
+        //Realizamos siempre el paso 3
         word1 = Step3_a(word1, r1, r2, rv);
         if (word1 == word) word1 = Step3_b(word, r1, r2, rv);
         return word1;
     }
     /// <summary>Metodo para determinar las regiones del lemmatizador</summary>
+    /// <returns>Numero de caracteres desde el inicio de la palabra no contenidos en la region indicada</returns>
     static Tuple<int, int, int> R1_R2_RV(string word)
     {
         int r1 = word.Length;
@@ -81,6 +85,7 @@ public static class Snowball
         return new Tuple<int, int, int>(r1, r2, rv);
     }
     /// <summary>Pronombre adjunto, gerundios e infinitivos</summary>
+    /// <returns>Raiz de la palabra luego de realizar el paso</returns>
     static string Step0(string word, int r1, int r2, int rv)
     {
         int index = word.Length;
@@ -129,6 +134,7 @@ public static class Snowball
         return word.Substring(0, index);
     }
     /// <summary>Eliminación de sufijos estándar</summary>
+    /// <returns>Raiz de la palabra luego de realizar el paso</returns>
     static string Step1(string word, int r1, int r2, int rv)
     {
         int index = word.Length;
@@ -147,6 +153,7 @@ public static class Snowball
         return word.Substring(0, index);
     }
     /// <summary>Sufijos verbales que empiezan por y</summary>
+    /// <returns>Raiz de la palabra luego de realizar el paso</returns>
     static string Step2_a(string word, int r1, int r2, int rv)
     {
         int index = word.Length;
@@ -165,6 +172,7 @@ public static class Snowball
         return word.Substring(0, index);
     }
     /// <summary>Otros sufijos verbales</summary>
+    /// <returns>Raiz de la palabra luego de realizar el paso</returns>
     static string Step2_b1(string word, int r1, int r2, int rv)
     {
         int index = word.Length;
@@ -193,6 +201,7 @@ public static class Snowball
         return word.Substring(0, index);
     }
     /// <summary>Otros sufijos verbales</summary>
+    /// <returns>Raiz de la palabra luego de realizar el paso</returns>
     static string Step2_b2(string word, int r1, int r2, int rv)
     {
         int index = word.Length;
@@ -211,6 +220,7 @@ public static class Snowball
         return word.Substring(0, index);
     }
     /// <summary>Sufijo residual</summary>
+    /// <returns>Raiz de la palabra luego de realizar el paso</returns>
     static string Step3_a(string word, int r1, int r2, int rv)
     {
         int index = word.Length;
@@ -229,6 +239,7 @@ public static class Snowball
         return word.Substring(0, index);
     }
     /// <summary>Sufijo residual</summary>
+    /// <returns>Raiz de la palabra luego de realizar el paso</returns>
     static string Step3_b(string word, int r1, int r2, int rv)
     {
         int index = word.Length;

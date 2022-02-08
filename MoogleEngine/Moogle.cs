@@ -36,12 +36,6 @@ public static class Moogle
             q++;
         }
         Document.cantdoc = q;
-        Document.max = new int[q];
-        //Inicializamos la frecuencia maximas de los documentos en 1
-        for (int i = 0; i < Document.max.Length; i++)
-        {
-            Document.max[i] = 1;
-        }
         q = 0;
         foreach (var i in list)
         {

@@ -10,7 +10,7 @@ public static class BuildIndex
     /// <param name="word">Palabra a indexar</param>
     /// <param name="index">Indice del documento</param>
     /// <param name="pos">Posicion de la palabra en el documento</param>
-    public static void InsertWord(string word, int index, int pos)
+    public static void InsertWord(string word, Document document, int pos)
     {
         if (!dic.ContainsKey(word))
         {
@@ -19,14 +19,14 @@ public static class BuildIndex
             data.Pos_doc = new List<int>[Document.cantdoc];
             dic.Add(word, data);
         }
-        if (dic[word].weight_doc[index] == 0)
+        if (dic[word].weight_doc[document.index] == 0)
         {
-            dic[word].Pos_doc[index] = new List<int>();
+            dic[word].Pos_doc[document.index] = new List<int>();
         }
-        dic[word].weight_doc[index]++;
-        dic[word].Pos_doc[index].Add(pos);
+        dic[word].weight_doc[document.index]++;
+        dic[word].Pos_doc[document.index].Add(pos);
         //Llevamos la cuenta de la maxima frecuencia en el documento
-        if (dic[word].weight_doc[index] > Document.max[index]) Document.max[index] = (int)dic[word].weight_doc[index];
+        if (dic[word].weight_doc[document.index] > document.max) document.max = (int)dic[word].weight_doc[document.index];
     }
 
 }

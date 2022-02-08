@@ -5,7 +5,7 @@ public class Document
     //Guardar una lista con todos los documentos del corpus
     public static List<Document> documents {get; set;}
     //Guardar la frecuencia de la palabra que mas se repite por documento
-    public static int[] max {get; set;}
+    public int max {get; set;}
     //Guardar el indice del documento
     public int index {get; private set;}
     //Guardar la cantidad de documentos
@@ -14,12 +14,14 @@ public class Document
     public string title {get; private set;}
     //Guardar la ruta del documento
     public string path {get; private set;}
-    public double norma = 0;
+    public double norma {get; set;}
     public Document(string[] doc, string title, int q)
     {
+        this.max=1;
         this.path = title;
         this.title = title.Substring(12, title.Length - 5 - 12 + 1);
         this.index = q;
+        this.norma=0;
         Token(doc, q);
     }
     #region Token
@@ -27,7 +29,7 @@ public class Document
     /// <param name="doc">Texto del documento</param>
     /// <param name="index">Indice del documento</param>
     /// <param name="query">Query</param>
-    public static void Token(string[] doc, int index, QueryClass query = null)
+    private void Token(string[] doc, int index)
     {
         int cant = 0;
         //Recorremos cada linea del documento y llevamos un contadorcon la posicion de la palabra
@@ -45,7 +47,7 @@ public class Document
                     continue;
                 }
                 //Quitamos los signos de puntuacion
-                word = Sign_Puntuation(word, query);
+                word = Sign_Puntuation(word);
                 //Si solo es un signo de puntuacion seguimos
                 if (word == "")
                 {
@@ -53,16 +55,8 @@ public class Document
                     continue;
                 }
                 word = word.ToLower();
-                //Si la palabra es del query vamos al metodo de los operadores de busqueda
-                if (query != null)
-                {
-                    query.Operators(word);
-                }
-                else
-                {
-                    //Insertamos la palabra en el sistema
-                    BuildIndex.InsertWord(word, index, cant);
-                }
+                //Insertamos la palabra en el sistema
+                BuildIndex.InsertWord(word, this, cant);
                 cant++;
             }
         }
@@ -70,7 +64,8 @@ public class Document
     /// <summary>Metodo para eliminar los signos de puntuacion</summary>
     /// <param name="s">Texto del documento</param>
     /// <param name="query">Query</param>
-    public static string Sign_Puntuation(string s, QueryClass query = null)   
+    /// <returns>Una palabra tras eliminar los extremos no alfanumericos</returns>
+    public static string Sign_Puntuation(string s, bool query = false)   
     {
         int start = 0; int stop = 0;
         //Recorremos la palabra de izqueierda a derecha y paramos cuando hallemos una letra
@@ -79,7 +74,7 @@ public class Document
             bool sig = false;
             bool operators = false;
             //Si la palabra es parte de la query excluimos los signos de los operadores
-            if (query != null)
+            if (query)
             {
                 if (s[i] == '!' || s[i] == '*' || s[i] == '^' || s[i] == '"') operators = true;
             }
@@ -100,7 +95,7 @@ public class Document
         {
             bool sig = false;
             bool operadores = false;
-            if (query != null)
+            if (query)
             {
                 if (s[s.Length - 1 - i] == '"') operadores = true;
             }
@@ -127,7 +122,7 @@ public class Document
             word.Value.word_cant_doc = word_cantdoc(word.Value.weight_doc);
             for (int j = 0; j < Document.cantdoc; j++)
             {
-                word.Value.weight_doc[j] = (word.Value.weight_doc[j] / Document.max[j]) * Math.Log((double)Document.cantdoc / (double)word.Value.word_cant_doc);
+                word.Value.weight_doc[j] = (word.Value.weight_doc[j] / Document.documents[j].max) * Math.Log((double)Document.cantdoc / (double)word.Value.word_cant_doc);
                 Document.documents[j].norma += word.Value.weight_doc[j] * word.Value.weight_doc[j];
             }
         }

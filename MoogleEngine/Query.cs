@@ -57,7 +57,7 @@ public class QueryClass
         this.Score= new List<double>();
         this.SnippetResult = new List<string[]>();
         this.Pos_SnippetResult = new List<int[]>();
-        Document.Token(new string[] { s }, Document.cantdoc, this);
+        Operators();
         TF_idfC();
         SimVectors();
         Snippet();
@@ -84,50 +84,40 @@ public class QueryClass
     #endregion
     #region Operators
     /// <summary>Metodo para los operadores de busqueda</summary>
-    /// <param name="word">String que contiene los operadores</param>
-    public void Operators(string word)
+    public void Operators()
     {
-        bool operators = false;
-        if (!operators && SearchLiteral_Operator(word))
+        //Tokenizamos nuestro query
+        string[] s=original.Split(' ');
+        for(int i=0;i<s.Length;i++)
         {
-            operators = true;
-        }
-        if (!operators && Close_Operator(word))
-        {
-            operators = true;
-        }
-        if (!operators && Exclude_Operator(word))
-        {
-            operators = true;
-        }
-        if (!operators && Include_Operator(word))
-        {
-            operators = true;
-        }
-        if (!operators && highest_relevance_Operator(word))
-        {
-            operators = true;
-        }
-        //Si no hemos encontrado un operador procedemos la busqueda de la palabra
-        if (!operators)
-        {
+            string word = s[i];
+            if(word == "") continue;
+            word = Document.Sign_Puntuation(word,true);
+            if(word == "") continue;
+            word = word.ToLower();
+            if (SearchLiteral_Operator(word)) continue;
+            if (Close_Operator(word)) continue;
+            if (Exclude_Operator(word)) continue;
+            if (Include_Operator(word)) continue;
+            if (highest_relevance_Operator(word)) continue;
             //Comprobamos si la palabra a buscar existe en nuestro sistema
-            if (BuildIndex.dic.ContainsKey(word))
-            {
-                Frecuency_Query(word);
-            }
-            else
-            {
-                //Si la palabra no existe procedemos a dar una recomendacion
-                suggestion(word);
-            }
-            //Buscamos los sinonimos y las raices de la palabra
-            Search_Stemming(word);
-            Search_Synonymous(word);
+                if (BuildIndex.dic.ContainsKey(word))
+                {
+                    Frecuency_Query(word);
+                }
+                else
+                {
+                    //Si la palabra no existe procedemos a dar una recomendacion
+                    suggestion(word);
+                }
+                //Buscamos los sinonimos y las raices de la palabra
+                Search_Stemming(word);
+                Search_Synonymous(word);
         }
     }
     /// <summary>Metodo para el operador de busqueda literal</summary>
     /// <param name="word">String que contiene los operadores</param>
+    /// <returns>Bool indicando si el operador fue encontrado</returns>
     private bool SearchLiteral_Operator(string word)
     {
         if (word[0] == '"' && !SearchLiteral)
@@ -161,6 +151,7 @@ public class QueryClass
     }
     /// <summary>Metodo para el operador cercania</summary>
     /// <param name="word">String que contiene los operadores</param>
+    /// <returns>Bool indicando si el operador fue encontrado</returns>
     private bool Close_Operator(string word)
     {
         List<string> close = new List<string>();
@@ -195,6 +186,7 @@ public class QueryClass
     }
     /// <summary>Metodo para el operador exclusion</summary>
     /// <param name="word">String que contiene los operadores</param>
+    /// <returns>Bool indicando si el operador fue encontrado</returns>
     private bool Exclude_Operator(string word)
     {
         if (word[0] == '!')
@@ -216,6 +208,7 @@ public class QueryClass
     }
     /// <summary>Metodo para el operador inclusion</summary>
     /// <param name="word">String que contiene los operadores</param>
+    /// <returns>Bool indicando si el operador fue encontrado</returns>
     private bool Include_Operator(string word)
     {
         if (word[0] == '^')
@@ -239,6 +232,7 @@ public class QueryClass
     }
     /// <summary>Metodo para el operador MayorRelevancia</summary>
     /// <param name="word">String que contiene los operadores</param>
+    /// <returns>Bool indicando si el operador fue encontrado</returns>
     private bool highest_relevance_Operator(string word)
     {
         if (word[0] == '*')
@@ -329,6 +323,7 @@ public class QueryClass
     }
     /// <summary>Metodo para encontrar la palabra mas cercana</summary>
     /// <param name="word">String q contiene la palabra</param>
+    /// <returns>Palabra con la sugerencia a la busqueda</returns>
     private string suggestion_word(string word)
     {
         string suggestion = "";
@@ -450,6 +445,7 @@ public class QueryClass
             List<string> words_doc = new List<string>();
             //Lista para las palabras de la busqueda literal presentes en el documneto
             List<string> words_docLiteral = new List<string>();
+            List<string> words_no_doc =new List<string>();
             foreach (var word_dic in words_query)
             {
                 //Calculamos el producto de los 2 vectores
@@ -458,7 +454,7 @@ public class QueryClass
                 {
                     words_doc.Add(word_dic.Key);
                 }
-                if (BuildIndex.dic[word_dic.Key].Pos_doc != null)
+                if (BuildIndex.dic[word_dic.Key].Pos_doc[i] != null)
                 {
                     words_docLiteral.Add(word_dic.Key);
                 }
@@ -531,9 +527,11 @@ public class QueryClass
     /// <summary>Metodo para comprobar la busqueda literal</summary>
     /// <param name="words_doc">Lista para las palabras de la busqueda literal presentes en el documneto</param>
     /// <param name="doc">Documento</param>
+    /// <returns>Bool indicando si el documento es valido para el operador busqueda literal</returns>
     private bool SearchLiteral_Operator(List<string> words_doc, Document doc)
     {
         List<int> l = new List<int>();
+        //System.Console.WriteLine(SearchLiteral_words.Count);
         for (int i = 0; i < SearchLiteral_words.Count; i++)
         {
             //Evaluamos los parametros para la busqueda literal
@@ -559,6 +557,7 @@ public class QueryClass
     /// <summary>Metodo obtener el Ranking de la cercania</summary>
     /// <param name="words">Lista de palabras</param>
     /// <param name="document">Documento</param>
+    /// <returns>Cantidad a incrementar en el score por el operador cercania</returns>
     private double Close(List<string> words, Document document)
     {
         double sumScore = 0;

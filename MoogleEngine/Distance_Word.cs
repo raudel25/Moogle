@@ -12,6 +12,7 @@ public static class Distance_Word
     /// <param name="words">Lista de palabras para buscar la cercania</param>
     /// <param name="document">Documento donde estan las palabras</param>
     /// <param name="d">Referencia a la estructura donde se busca la cercania</param>
+    /// <returns>Tupla con la posicion, la minima distancia y las palabras que no fueron contenidas</returns>
     public static Tuple<int, int, List<string>> Search_Distance(List<string> words,Document document,Distance d)
     {
         switch(d)
@@ -23,13 +24,14 @@ public static class Distance_Word
             default:
                 return Shortest_Distance_Word(words, document, words.Count, 10, false);       
         }
-    }
+    }   
     /// <summary>Metodo para encontrar la minima distancia de una lista de palabras</summary>
     /// <param name="words">Lista de palabras para buscar la cercania</param>
     /// <param name="document">Documento donde estan las palabras</param>
     /// <param name="cantmin">Cantidad minima de palabras de la lista en las q queremos buscar la minima distancia</param>
     /// <param name="cota">Maxima distancia que podemos encontrar entre las palabras</param>
     /// <param name="SearchLiteral">Presencia de la busqueda literal</param>
+    /// <returns>Tupla con la posicion, la minima distancia y las palabras que no fueron contenidas</returns>
     private static Tuple<int, int, List<string>> Shortest_Distance_Word(List<string> words, Document document, int cantmin, int cota, bool SearchLiteral)
     {
         List<int> l = new List<int>();
@@ -131,13 +133,14 @@ public static class Distance_Word
     ///<sumary>Mezcla ordenada de las tuplas correspondientes a las posiciones de las palabras</sumary>
     /// <param name="a">Array de tuplas</param>
     /// <param name="b">Array de tuplas</param>
+    /// <returns>Array ordenado</returns>
     private static Tuple<int, int>[] Sorted(Tuple<int, int>[] a, Tuple<int, int>[] b)
     {
         Tuple<int, int>[] c = new Tuple<int, int>[a.Length + b.Length];
         int i = 0; int j = 0;
         while (i < a.Length && j < b.Length)
         {
-            if (a[i].Item2 < b[j].Item2)
+            if (a[i].Item2 <= b[j].Item2)
             {
                 c[i + j] = a[i];
                 i++;
@@ -163,6 +166,7 @@ public static class Distance_Word
     ///<sumary>Metodo para crear las tuplas de las posiciones de las palabras</sumary>
     /// <param name="words_pos">Lista de posiciones de la palabra</param>
     /// <param name="index">Indice de la palabra</param>
+    /// <returns>Tuplas con el indice de la palabra en la lista y la posiciion de la palabra</returns>
     private static Tuple<int, int>[] BuildTuple(List<int> words_pos, int index)
     {
         Tuple<int, int>[] tuple = new Tuple<int, int>[words_pos.Count];
@@ -176,6 +180,7 @@ public static class Distance_Word
     ///<sumary>Metodo para determinar si la cantidad de palabras correcta esta contenida en la cola</sumary>
     /// <param name="posList">Frecuencia de cada palabra en la cola</param>
     /// <param name="cant">Frecuencia de cada palabra en la cola</param>
+    /// <returns>Un bool que indica si esta la minima cantidad de palabras contenidas y una lista con estas palabras</returns>
     private static Tuple<bool, List<int>> AllContains(int[] posList, int cant)
     {
         List<int> words_in_range = new List<int>();
