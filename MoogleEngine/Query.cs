@@ -13,6 +13,8 @@ public class QueryClass
     public List<int[]> Pos_SnippetResult {get; private set;}
     //Guardar el score de cada documento que resulta de la busqueda
     public List<double> Score {get; private set;}
+    //Guardar las palabras que no estan en el documento que vamos a devolver
+    public List<List<string>> Words_not_result {get; private set;}
     //Guardar el texto de nustra query para dar la sugerencia
     public string txt {get; private set;}
     //Guardar el texto de la query original
@@ -57,6 +59,7 @@ public class QueryClass
         this.Score= new List<double>();
         this.SnippetResult = new List<string[]>();
         this.Pos_SnippetResult = new List<int[]>();
+        this.Words_not_result=new List<List<string>>();
         Operators();
         TF_idfC();
         SimVectors();
@@ -361,48 +364,40 @@ public class QueryClass
         }
         return suggestion;
     }
-    private static double LevenshteinDistance(string s, string t)
+    private static double LevenshteinDistance(string a, string b)
     {
-        double porcentaje = 0;
-
         // d es una tabla con m+1 renglones y n+1 columnas
         int costo = 0;
-        int m = s.Length;
-        int n = t.Length;
-        double[,] d = new double[m + 1, n + 1];
-
+        int m = a.Length;
+        int n = b.Length;
+        double[,] change = new double[m + 1, n + 1];
         // Verifica que exista algo que comparar
         if (n == 0) return m;
         if (m == 0) return n;
-
         // Llena la primera columna y la primera fila.
-        for (int i = 0; i <= m; d[i, 0] = i++) ;
-        for (int j = 0; j <= n; d[0, j] = j++) ;
-
-
-        /// recorre la matriz llenando cada unos de los pesos.
-        /// i columnas, j renglones
+        for (int i = 0; i <= m; i++)
+        {
+            change[i, 0] = i;
+        }
+        for (int j = 0; j <= n; j++)
+        {
+            change[0, j] = j;
+        }
+        // recorre la matriz llenando cada unos de los pesos.
         for (int i = 1; i <= m; i++)
         {
             // recorre para j
             for (int j = 1; j <= n; j++)
             {
-                /// si son iguales en posiciones equidistantes el peso es 0
-                /// de lo contrario el peso suma a uno.
-                costo = (s[i - 1] == t[j - 1]) ? 0 : 1;
-                d[i, j] = System.Math.Min(System.Math.Min(d[i - 1, j] + 1,  //Eliminacion
-                            d[i, j - 1] + 1),                             //Insercion 
-                            d[i - 1, j - 1] + costo);                     //Sustitucion
+                // si son iguales en posiciones equidistantes el peso es 0
+                // de lo contrario el peso suma a uno.
+                costo = (a[i - 1] == b[j - 1]) ? 0 : 1;
+                change[i, j] = System.Math.Min(System.Math.Min(change[i - 1, j] + 1,  //Eliminacion
+                            change[i, j - 1] + 1),                             //Insercion 
+                            change[i - 1, j - 1] + costo);                     //Sustitucion
             }
         }
-
-        /// Calculamos el porcentaje de cambios en la palabra.
-        if (s.Length > t.Length)
-            porcentaje = (1 - (d[m, n] / (double)s.Length)) * 100;
-        else
-            porcentaje = (1 - (d[m, n] / (double)t.Length)) * 100;
-        //return porcentaje;
-        return d[m, n];
+        return change[m, n];
     }
     #endregion
     #region TF_IDF
@@ -445,6 +440,7 @@ public class QueryClass
             List<string> words_doc = new List<string>();
             //Lista para las palabras de la busqueda literal presentes en el documneto
             List<string> words_docLiteral = new List<string>();
+            //Lista para las palabras que no estan en el documento
             List<string> words_no_doc =new List<string>();
             foreach (var word_dic in words_query)
             {
@@ -458,6 +454,7 @@ public class QueryClass
                 {
                     words_docLiteral.Add(word_dic.Key);
                 }
+                else words_no_doc.Add(word_dic.Key);
             }
             double factor = 0;
             if (words_doc.Count == 0)
@@ -486,7 +483,7 @@ public class QueryClass
             }
             if (score[i] != 0)
             {
-                ResultSearch(words_doc, words_docLiteral, score[i], Document.documents[i]);
+                ResultSearch(words_doc, words_no_doc, words_docLiteral, score[i], Document.documents[i]);
             }
         }
     }
@@ -495,7 +492,7 @@ public class QueryClass
     /// <param name="words_docLiteral">Lista para las palabras de la busqueda literal presentes en el documneto</param>
     /// <param name="score">Score del documento</param>
     /// <param name="doc">Documento</param>
-    private void ResultSearch(List<string> words_doc, List<string> words_docLiteral, double score, Document doc)
+    private void ResultSearch(List<string> words_doc,List<string> words_no_doc, List<string> words_docLiteral, double score, Document doc)
     {
         bool result = true;
         //Comprobamos el operador de Exclusion
@@ -522,6 +519,7 @@ public class QueryClass
             Snippet_words.Add(words_doc);
             score = score + Close(words_doc, doc);
             Score.Add(score);
+            Words_not_result.Add(words_no_doc);
         }
     }
     /// <summary>Metodo para comprobar la busqueda literal</summary>

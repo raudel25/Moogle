@@ -17,7 +17,7 @@ public static class Moogle
         SearchItem[] items = new SearchItem[query1.Score.Count];
         for (int i = 0; i < query1.Score.Count; i++)
         {
-            items[i] = new SearchItem(query1.resultsearchDoc[i].title, query1.SnippetResult[i], query1.Pos_SnippetResult[i], query1.Score[i]);
+            items[i] = new SearchItem(query1.resultsearchDoc[i].title, query1.SnippetResult[i], query1.Pos_SnippetResult[i], query1.Score[i], query1.Words_not_result[i]);
         }
         string suggestion="";
         if(query1.txt==query1.original) suggestion="";

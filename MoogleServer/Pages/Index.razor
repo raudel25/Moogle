@@ -26,30 +26,32 @@
     {
         <li>
             <div class="item">
-                <p class="title">@item.Title</p>
+                <p class="title" style="font-size: 18px;"><a onmouseover="this.style.color='blue'" onmouseout="this.style.color='black'" style="color: black; font-size: 18px; text-decoration: none;"  target='__blank' href=@(item.Title+"/"+0+"/"+(-1))>@item.Title</a></p>
                     @for (int i = 0; i < item.Snippet.Length; i++)
                     {
-                        <p>... <a target='__blank' href=@(item.Title+"/"+(item.Pos_Snippet[i]-item.Pos_Snippet[i]%100)+"/"+item.Pos_Snippet[i])>@item.Snippet[i]</a> ...</p>
+                        <p>... <a onmouseover="this.style.color='blue'" onmouseout="this.style.color='black'" style="color: black; text-decoration: none;"  target='__blank' href=@(item.Title+"/"+(item.Pos_Snippet[i]-item.Pos_Snippet[i]%100)+"/"+item.Pos_Snippet[i])>@item.Snippet[i]</a> ...</p>
+                    }
+                    @foreach (var item1 in item.Word_no_doc)
+                    {
+                        <span style="text-decoration: line-through; font-size: 15px;">@(item1+" ")</span>
                     }
             </div>
         </li>
+        <br>
     }
 </ul>
 
 @code {
-    private static int cantsearch=0;
     private string query = "";
     private List<string> autoComp = new List<string>();
     private SearchResult result = new SearchResult();
     private void RunQuery()
     {
-        cantsearch++;
         result = Moogle.Query(query);
     }
     private void Suggestion()
     {
         query=result.Suggestion;
-        cantsearch++;
         result = Moogle.Query(result.Suggestion);
     }
     private void Press(KeyboardEventArgs e)
