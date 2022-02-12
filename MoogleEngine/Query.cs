@@ -498,7 +498,7 @@ public class QueryClass
         //Comprobamos el operador de Exclusion
         for (int m = 0; m < Exclude.Count; m++)
         {
-            if (BuildIndex.dic[Exclude[m]].weight_doc[doc.index] != 0)
+            if (BuildIndex.dic[Exclude[m]].Pos_doc[doc.index] != null)
             {
                 result = false;
             }
@@ -506,7 +506,7 @@ public class QueryClass
         //Comprobamos el operador de Inclusion
         for (int m = 0; m < Include.Count; m++)
         {
-            if (BuildIndex.dic[Include[m]].weight_doc[doc.index] == 0)
+            if (BuildIndex.dic[Include[m]].Pos_doc[doc.index] == null)
             {
                 result = false;
             }

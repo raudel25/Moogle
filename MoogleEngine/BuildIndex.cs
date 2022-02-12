@@ -8,7 +8,7 @@ public static class BuildIndex
     public static Dictionary<string, DataStructure> dic = new Dictionary<string, DataStructure>();
     /// <summary>Metodo para el indexar los terminos en el corpus</summary>
     /// <param name="word">Palabra a indexar</param>
-    /// <param name="index">Indice del documento</param>
+    /// <param name="document">Documento donde encontramos la palabra</param>
     /// <param name="pos">Posicion de la palabra en el documento</param>
     public static void InsertWord(string word, Document document, int pos)
     {
@@ -28,7 +28,6 @@ public static class BuildIndex
         //Llevamos la cuenta de la maxima frecuencia en el documento
         if (dic[word].weight_doc[document.index] > document.max) document.max = (int)dic[word].weight_doc[document.index];
     }
-
 }
 public class DataStructure
 {
