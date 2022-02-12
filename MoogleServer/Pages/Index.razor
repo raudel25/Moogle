@@ -26,14 +26,14 @@
     {
         <li>
             <div class="item">
-                <p class="title" style="font-size: 18px;"><a onmouseover="this.style.color='blue'" onmouseout="this.style.color='black'" style="color: black; font-size: 18px; text-decoration: none;"  target='__blank' href=@(item.Title+"/"+0+"/"+(-1))>@item.Title</a></p>
+                <p class="title"><a onmouseover="this.style.color='blue'" onmouseout="this.style.color='black'" style="color: black; font-size:large; text-decoration: none;"  target='__blank' href=@(item.Title+"/"+0+"/"+(-1))>@item.Title</a></p>
                     @for (int i = 0; i < item.Snippet.Length; i++)
                     {
-                        <p>... <a onmouseover="this.style.color='blue'" onmouseout="this.style.color='black'" style="color: black; text-decoration: none;"  target='__blank' href=@(item.Title+"/"+(item.Pos_Snippet[i]-item.Pos_Snippet[i]%100)+"/"+item.Pos_Snippet[i])>@item.Snippet[i]</a> ...</p>
+                        <p>... <a onmouseover="this.style.color='blue'" onmouseout="this.style.color='black'" style="color: black; text-decoration: none; font-size:medium;"  target='__blank' href=@(item.Title+"/"+(item.Pos_Snippet[i]-item.Pos_Snippet[i]%100)+"/"+item.Pos_Snippet[i])>@item.Snippet[i]</a> ...</p>
                     }
                     @foreach (var item1 in item.Word_no_doc)
                     {
-                        <span style="text-decoration: line-through; font-size: 15px;">@(item1+" ")</span>
+                        <span style="text-decoration: line-through; font-size:small;">@(item1+" ")</span>
                     }
             </div>
         </li>

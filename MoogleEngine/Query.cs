@@ -104,7 +104,7 @@ public class QueryClass
             if (Include_Operator(word)) continue;
             if (highest_relevance_Operator(word)) continue;
             //Comprobamos si la palabra a buscar existe en nuestro sistema
-                if (BuildIndex.dic.ContainsKey(word))
+                if (Corpus_Data.vocabulary.ContainsKey(word))
                 {
                     Frecuency_Query(word);
                 }
@@ -137,7 +137,7 @@ public class QueryClass
             if (word[word.Length - 1] == '"') SearchLiteral = false;
             word = Document.Sign_Puntuation(word);
             if (word == "") return true;
-            if (BuildIndex.dic.ContainsKey(word))
+            if (Corpus_Data.vocabulary.ContainsKey(word))
             {
                 SearchLiteral_words[SearchLiteral_words.Count - 1].Add(word);
                 Frecuency_Query(word);
@@ -166,7 +166,7 @@ public class QueryClass
             {
                 if (close_words[m] == "") continue;
                 close_words[m] = Document.Sign_Puntuation(close_words[m]);
-                if (BuildIndex.dic.ContainsKey(close_words[m]))
+                if (Corpus_Data.vocabulary.ContainsKey(close_words[m]))
                 {
                     Frecuency_Query(close_words[m]);
                 }
@@ -196,7 +196,7 @@ public class QueryClass
         {
             word = Document.Sign_Puntuation(word);
             if (word == "") return true;
-            if (BuildIndex.dic.ContainsKey(word))
+            if (Corpus_Data.vocabulary.ContainsKey(word))
             {
                 Exclude.Add(word);
                 Frecuency_Query(word);
@@ -218,7 +218,7 @@ public class QueryClass
         {
             word = Document.Sign_Puntuation(word);
             if (word == "") return true;
-            if (BuildIndex.dic.ContainsKey(word))
+            if (Corpus_Data.vocabulary.ContainsKey(word))
             {
                 Include.Add(word);
                 Frecuency_Query(word);
@@ -249,7 +249,7 @@ public class QueryClass
             }
             word = Document.Sign_Puntuation(word);
             if (word == "") return true;
-            if (BuildIndex.dic.ContainsKey(word))
+            if (Corpus_Data.vocabulary.ContainsKey(word))
             {
                 highest_relevance.Add(word, a + 1);
                 Frecuency_Query(word);
@@ -271,7 +271,7 @@ public class QueryClass
         //Hallamos la raiz de la palabra
         string stemmer = Snowball.Stemmer(word);
         if (stemmer == "") return;
-        foreach (var i in BuildIndex.dic)
+        foreach (var i in Corpus_Data.vocabulary)
         {
             //Comprobamos q las primeras letras sean iguales
             if (i.Key[0] == stemmer[0] && word != i.Key)
@@ -288,7 +288,7 @@ public class QueryClass
     private void Search_Synonymous(string word)
     {
         //Recorremos la lista de los sinonimos
-        foreach (var line in BuildIndex.synonymous)
+        foreach (var line in Corpus_Data.synonymous)
         {
             for (int i = 0; i < line.Length; i++)
             {
@@ -297,7 +297,7 @@ public class QueryClass
                     //Si nos encontramos una palabra igual a word todas las palabras del arreglo seran sus sinonimos 
                     for (int m = 0; m < line.Length; m++)
                     {
-                        if (line[m] != word && BuildIndex.dic.ContainsKey(line[m]))
+                        if (line[m] != word && Corpus_Data.vocabulary.ContainsKey(line[m]))
                         {
                             Frecuency_Query_Stemming_Syn(line[m], false); ;
                         }
@@ -332,18 +332,18 @@ public class QueryClass
         string suggestion = "";
         double suggestionTF_IDF = 0;
         double changes = int.MaxValue;
-        foreach (var i in BuildIndex.dic)
+        foreach (var word_dic in Corpus_Data.vocabulary)
         {
-            double dist = LevenshteinDistance(word, i.Key);
+            double dist = LevenshteinDistance(word, word_dic.Key);
             //Nos quedamos con la palabra que posea menos cambios
             if (dist < changes)
             {
-                suggestion = i.Key;
+                suggestion = word_dic.Key;
                 changes = dist;
                 double sum = 0;
                 for (int j = 0; j < Document.cantdoc; j++)
                 {
-                    sum += i.Value.weight_doc[j];
+                    sum += word_dic.Value.weight_doc[j];
                 }
                 suggestionTF_IDF = sum;
             }
@@ -353,12 +353,12 @@ public class QueryClass
                 double sum = 0;
                 for (int j = 0; j < Document.cantdoc; j++)
                 {
-                    sum += i.Value.weight_doc[j];
+                    sum += word_dic.Value.weight_doc[j];
                 }
                 if (sum > suggestionTF_IDF)
                 {
                     suggestionTF_IDF = sum;
-                    suggestion = i.Key;
+                    suggestion = word_dic.Key;
                 }
             }
         }
@@ -383,10 +383,9 @@ public class QueryClass
         {
             change[0, j] = j;
         }
-        // recorre la matriz llenando cada unos de los pesos.
+        // recorremos la matriz llenando cada unos de los pesos.
         for (int i = 1; i <= m; i++)
         {
-            // recorre para j
             for (int j = 1; j <= n; j++)
             {
                 // si son iguales en posiciones equidistantes el peso es 0
@@ -409,7 +408,7 @@ public class QueryClass
             //Factor para modificar el peso de la palabra
             double a = 1;
             if (highest_relevance.ContainsKey(word.Key)) a = highest_relevance[word.Key];
-            words_query[word.Key] = (a * word.Value / (double)max) * Math.Log((double)Document.cantdoc / (double)BuildIndex.dic[word.Key].word_cant_doc);
+            words_query[word.Key] = (a * word.Value / (double)max) * Math.Log((double)Document.cantdoc / (double)Corpus_Data.vocabulary[word.Key].word_cant_doc);
             norma += words_query[word.Key] * words_query[word.Key];
         }
         foreach (var word in words_Stemming_Syn)
@@ -417,11 +416,11 @@ public class QueryClass
             //Comprobamos si la palabra es raiz o sinonimo
             if (word.Value[0] != 0)
             {
-                words_Stemming_Syn[word.Key][0] = ((word.Value[0] + word.Value[1]) / (double)max_Stemming_Syn) * Math.Log((double)Document.cantdoc / (double)BuildIndex.dic[word.Key].word_cant_doc);
+                words_Stemming_Syn[word.Key][0] = ((word.Value[0] + word.Value[1]) / (double)max_Stemming_Syn) * Math.Log((double)Document.cantdoc / (double)Corpus_Data.vocabulary[word.Key].word_cant_doc);
             }
             else
             {
-                words_Stemming_Syn[word.Key][0] = ((word.Value[0] + word.Value[1]) / (2 * (double)max_Stemming_Syn)) * Math.Log((double)Document.cantdoc / (double)BuildIndex.dic[word.Key].word_cant_doc);
+                words_Stemming_Syn[word.Key][0] = ((word.Value[0] + word.Value[1]) / (2 * (double)max_Stemming_Syn)) * Math.Log((double)Document.cantdoc / (double)Corpus_Data.vocabulary[word.Key].word_cant_doc);
             }
             norma_Stemming_Syn += words_Stemming_Syn[word.Key][0];
         }
@@ -445,12 +444,12 @@ public class QueryClass
             foreach (var word_dic in words_query)
             {
                 //Calculamos el producto de los 2 vectores
-                query_x_doc += BuildIndex.dic[word_dic.Key].weight_doc[i] * word_dic.Value;
-                if (BuildIndex.dic[word_dic.Key].weight_doc[i] * word_dic.Value != 0)
+                query_x_doc += Corpus_Data.vocabulary[word_dic.Key].weight_doc[i] * word_dic.Value;
+                if (Corpus_Data.vocabulary[word_dic.Key].weight_doc[i] * word_dic.Value != 0)
                 {
                     words_doc.Add(word_dic.Key);
                 }
-                if (BuildIndex.dic[word_dic.Key].Pos_doc[i] != null)
+                if (Corpus_Data.vocabulary[word_dic.Key].Pos_doc[i] != null)
                 {
                     words_docLiteral.Add(word_dic.Key);
                 }
@@ -462,8 +461,8 @@ public class QueryClass
                 //Si no tenemos resultados buscamos las raices y los sinonimos
                 foreach (var word_dic in words_Stemming_Syn)
                 {
-                    query_x_doc += BuildIndex.dic[word_dic.Key].weight_doc[i] * word_dic.Value[0];
-                    if (BuildIndex.dic[word_dic.Key].weight_doc[i] * word_dic.Value[0] != 0)
+                    query_x_doc += Corpus_Data.vocabulary[word_dic.Key].weight_doc[i] * word_dic.Value[0];
+                    if (Corpus_Data.vocabulary[word_dic.Key].weight_doc[i] * word_dic.Value[0] != 0)
                     {
                         words_doc.Add(word_dic.Key);
                     }
@@ -498,7 +497,7 @@ public class QueryClass
         //Comprobamos el operador de Exclusion
         for (int m = 0; m < Exclude.Count; m++)
         {
-            if (BuildIndex.dic[Exclude[m]].Pos_doc[doc.index] != null)
+            if (Corpus_Data.vocabulary[Exclude[m]].Pos_doc[doc.index] != null)
             {
                 result = false;
             }
@@ -506,7 +505,7 @@ public class QueryClass
         //Comprobamos el operador de Inclusion
         for (int m = 0; m < Include.Count; m++)
         {
-            if (BuildIndex.dic[Include[m]].Pos_doc[doc.index] == null)
+            if (Corpus_Data.vocabulary[Include[m]].Pos_doc[doc.index] == null)
             {
                 result = false;
             }
@@ -528,28 +527,22 @@ public class QueryClass
     /// <returns>Bool indicando si el documento es valido para el operador busqueda literal</returns>
     private bool SearchLiteral_Operator(List<string> words_doc, Document doc)
     {
-        List<int> l = new List<int>();
+        List<int> literal = new List<int>();
         //System.Console.WriteLine(SearchLiteral_words.Count);
         for (int i = 0; i < SearchLiteral_words.Count; i++)
         {
             //Evaluamos los parametros para la busqueda literal
             for (int j = 0; j < SearchLiteral_words[i].Count; j++)
             {
-                if (BuildIndex.dic[SearchLiteral_words[i][j]].Pos_doc[doc.index] == null)
-                {
-                    return false;
-                }
+                if (Corpus_Data.vocabulary[SearchLiteral_words[i][j]].Pos_doc[doc.index] == null) return false;
             }
             Tuple<int, int, List<string>> t = Distance_Word.Search_Distance(SearchLiteral_words[i], doc,Distance_Word.Distance.SearchLiteral);
-            if (t.Item2 > SearchLiteral_words[i].Count)
-            {
-                return false;
-            }
+            if (t.Item1 == -1) return false;
             //Guardamos la posicion de la busqueda literal encontrada
-            l.Add(t.Item1);
+            literal.Add(t.Item1);
         }
         //Guardamos las posiciones de la busqueda literal encontrada
-        Pos_SearchLiteral.Add(l);
+        Pos_SearchLiteral.Add(literal);
         return true;
     }
     /// <summary>Metodo obtener el Ranking de la cercania</summary>

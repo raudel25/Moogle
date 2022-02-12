@@ -4,12 +4,12 @@ public class Document
 {
     //Guardar una lista con todos los documentos del corpus
     public static List<Document> documents {get; set;}
+    //Guardar la cantidad de documentos
+    public static int cantdoc {get; set;}
     //Guardar la frecuencia de la palabra que mas se repite por documento
     public int max {get; set;}
     //Guardar el indice del documento
     public int index {get; private set;}
-    //Guardar la cantidad de documentos
-    public static int cantdoc {get; set;}
     //Guardar el titulo del documento
     public string title {get; private set;}
     //Guardar la ruta del documento
@@ -28,7 +28,6 @@ public class Document
     /// <summary>Metodo para eliminar todo lo q no sea alfanumerico</summary>
     /// <param name="doc">Texto del documento</param>
     /// <param name="index">Indice del documento</param>
-    /// <param name="query">Query</param>
     private void Token(string[] doc, int index)
     {
         int cant = 0;
@@ -56,7 +55,7 @@ public class Document
                 }
                 word = word.ToLower();
                 //Insertamos la palabra en el sistema
-                BuildIndex.InsertWord(word, this, cant);
+                Corpus_Data.InsertWord(word, this, cant);
                 cant++;
             }
         }
@@ -117,7 +116,7 @@ public class Document
     /// <summary>Metodo para calcular el TF_idf de los documentos</summary>
     public static void Tf_IdfDoc()
     {
-        foreach (var word in BuildIndex.dic)
+        foreach (var word in Corpus_Data.vocabulary)
         {
             word.Value.word_cant_doc = word_cantdoc(word.Value.weight_doc);
             for (int j = 0; j < Document.cantdoc; j++)
@@ -128,13 +127,13 @@ public class Document
         }
     }
     /// <summary>Metodo para determinar la cantidad de documentos que contienen a una palabra</summary>
-    /// <param name="a">Arreglo con la frecuencia de la palabra en los documentos</param>
-    private static int word_cantdoc(double[] a)
+    /// <param name="words">Arreglo con la frecuencia de la palabra en los documentos</param>
+    private static int word_cantdoc(double[] words)
     {
         int cant = 0;
         for (int i = 0; i < Document.cantdoc; i++)
         {
-            if (a[i] != 0) cant++;
+            if (words[i] != 0) cant++;
         }
         return cant;
     }

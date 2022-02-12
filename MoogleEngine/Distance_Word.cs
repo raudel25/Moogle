@@ -18,13 +18,55 @@ public static class Distance_Word
         switch(d)
         {
             case Distance.Snippet: 
-                return Shortest_Distance_Word(words, document, 1, QueryClass.Snippet_len,false);
+                return Shortest_Distance_Word(words, document, 1, QueryClass.Snippet_len);
             case Distance.SearchLiteral:
-                return Shortest_Distance_Word(words, document, words.Count, 10, true);
+                return Literal(words,document);
             default:
-                return Shortest_Distance_Word(words, document, words.Count, 10, false);       
+                return Shortest_Distance_Word(words, document, words.Count, 10);       
         }
     }   
+    private static Tuple<int, int, List<string>> Literal(List<string> words,Document document)
+    {
+        Tuple<int, int>[] Pos_words_Sorted = new Tuple<int, int>[0];
+        for (int i = 0; i < words.Count; i++)
+        {
+            Pos_words_Sorted = Sorted(Pos_words_Sorted, BuildTuple(Corpus_Data.vocabulary[words[i]].Pos_doc[document.index], i));
+        }
+        int ind=0;
+        int pos=Pos_words_Sorted[0].Item2;
+        int pos_literal=-1;
+        List<int> ind_word=new List<int>();
+        bool literal=false;
+        for(int i=0;i<Pos_words_Sorted.Length;i++)
+        {
+            if(pos==Pos_words_Sorted[i].Item2) ind_word.Add(Pos_words_Sorted[i].Item1);
+            else
+            {
+                if(ind_word.Contains(ind) )
+                {
+                    if(ind==words.Count-1)
+                    {
+                        if(pos_literal==-1) pos_literal=pos-words.Count+1;
+                        else
+                        {
+                            Random rnd=new Random();
+                            if(rnd.Next(2)==0) pos_literal=pos-words.Count+1;
+                        }
+                        literal=true;
+                        ind=0;
+                    }
+                    if(Pos_words_Sorted[i].Item2==pos+1) ind++;
+                    else ind=0;
+                }
+                else ind=0; 
+                ind_word=new List<int>();
+                ind_word.Add(Pos_words_Sorted[i].Item1);
+                pos=Pos_words_Sorted[i].Item2;
+            }
+        }
+        if(literal) return new Tuple<int, int, List<string>>(pos_literal,words.Count,new List<string>());
+        return new Tuple<int, int, List<string>>(-1,0,new List<string>());
+    }
     /// <summary>Metodo para encontrar la minima distancia de una lista de palabras</summary>
     /// <param name="words">Lista de palabras para buscar la cercania</param>
     /// <param name="document">Documento donde estan las palabras</param>
@@ -32,16 +74,16 @@ public static class Distance_Word
     /// <param name="cota">Maxima distancia que podemos encontrar entre las palabras</param>
     /// <param name="SearchLiteral">Presencia de la busqueda literal</param>
     /// <returns>Tupla con la posicion, la minima distancia y las palabras que no fueron contenidas</returns>
-    private static Tuple<int, int, List<string>> Shortest_Distance_Word(List<string> words, Document document, int cantmin, int cota, bool SearchLiteral)
+    private static Tuple<int, int, List<string>> Shortest_Distance_Word(List<string> words, Document document, int cantmin, int cota)
     {
-        List<int> l = new List<int>();
+        List<int> list_aux = new List<int>();
         List<int> index_words_in_range = new List<int>();
         //Guardamos en un arreglo de tuplas las posiciones de las palabras donde el primer indice corresponde al indice de la palabra en la lista 
         //Ordenamos los elementos de los arrays de tuplas por el numero de la posicion de la palabra
         Tuple<int, int>[] Pos_words_Sorted = new Tuple<int, int>[0];
         for (int i = 0; i < words.Count; i++)
         {
-            Pos_words_Sorted = Sorted(Pos_words_Sorted, BuildTuple(BuildIndex.dic[words[i]].Pos_doc[document.index], i));
+            Pos_words_Sorted = Sorted(Pos_words_Sorted, BuildTuple(Corpus_Data.vocabulary[words[i]].Pos_doc[document.index], i));
         }
         int minDist = int.MaxValue;
         int pos = 0;
@@ -60,7 +102,7 @@ public static class Distance_Word
                 if (all.Item1)
                 {
                     //Si la cantidad de palabras correcta esta en la cola tratamos de ver cuantas podemos sacar
-                    l = all.Item2;
+                    list_aux = all.Item2;
                     while (true)
                     {
                         //Buscamos la posible palabra a eliminar de la cola
@@ -70,7 +112,7 @@ public static class Distance_Word
                         if (tuple.Item1)
                         {
                             //Si la cantidad de palabras correctas en la cola no se altera sacamos la palabra de la cola
-                            l = tuple.Item2;
+                            list_aux = tuple.Item2;
                             search_min_dist.Dequeue();
                         }
                         else
@@ -79,37 +121,19 @@ public static class Distance_Word
                             break;
                         }
                     }
-                    //Si estamos en precencia de la busqueda literal comprobamos el orden de las palabras en la cola
-                    bool orden = true;
-                    if (SearchLiteral)
-                    {
-                        int comp = -1;
-                        if (search_min_dist.Count == words.Count)
-                        {
-                            foreach (var m in search_min_dist)
-                            {
-                                if (m.Item1 <= comp)
-                                {
-                                    orden = false;
-                                    break;
-                                }
-                                comp = m.Item1;
-                            }
-                        }
-                    }
                     //Comprobamos si la distancia obtenida es menor que la q teniamos
-                    if (orden && Pos_words_Sorted[i].Item2 - search_min_dist.Peek().Item2 + 1 < minDist)
+                    if (Pos_words_Sorted[i].Item2 - search_min_dist.Peek().Item2 + 1 < minDist)
                     {
-                        index_words_in_range = l;
+                        index_words_in_range = list_aux;
                         minDist = Pos_words_Sorted[i].Item2 - search_min_dist.Peek().Item2 + 1;
                         pos = search_min_dist.Peek().Item2;
                     }
-                    if (orden && Pos_words_Sorted[i].Item2 - search_min_dist.Peek().Item2 + 1 == minDist)
+                    if (Pos_words_Sorted[i].Item2 - search_min_dist.Peek().Item2 + 1 == minDist)
                     {
                         Random random = new Random();
                         if (random.Next(2) == 0)
                         {
-                            index_words_in_range = l;
+                            index_words_in_range = list_aux;
                             pos = search_min_dist.Peek().Item2;
                         }
                     }
@@ -134,34 +158,34 @@ public static class Distance_Word
     /// <param name="a">Array de tuplas</param>
     /// <param name="b">Array de tuplas</param>
     /// <returns>Array ordenado</returns>
-    private static Tuple<int, int>[] Sorted(Tuple<int, int>[] a, Tuple<int, int>[] b)
+    private static Tuple<int, int>[] Sorted(Tuple<int, int>[] words1, Tuple<int, int>[] words2)
     {
-        Tuple<int, int>[] c = new Tuple<int, int>[a.Length + b.Length];
+        Tuple<int, int>[] words3 = new Tuple<int, int>[words1.Length + words2.Length];
         int i = 0; int j = 0;
-        while (i < a.Length && j < b.Length)
+        while (i < words1.Length && j < words2.Length)
         {
-            if (a[i].Item2 <= b[j].Item2)
+            if (words1[i].Item2 <= words2[j].Item2)
             {
-                c[i + j] = a[i];
+                words3[i + j] = words1[i];
                 i++;
             }
             else
             {
-                c[i + j] = b[j];
+                words3[i + j] = words2[j];
                 j++;
             }
         }
-        while (i < a.Length)
+        while (i < words1.Length)
         {
-            c[i + j] = a[i];
+            words3[i + j] = words1[i];
             i++;
         }
-        while (j < b.Length)
+        while (j < words2.Length)
         {
-            c[i + j] = b[j];
+            words3[i + j] = words2[j];
             j++;
         }
-        return c;
+        return words3;
     }
     ///<sumary>Metodo para crear las tuplas de las posiciones de las palabras</sumary>
     /// <param name="words_pos">Lista de posiciones de la palabra</param>

@@ -46,7 +46,7 @@ public static class Moogle
         //Deserializamos nuestra base de datos de sinonimos
         string jsonstring = File.ReadAllText("..//synonymous.json");
         Synonymous sin = JsonSerializer.Deserialize<Synonymous>(jsonstring);
-        BuildIndex.synonymous = sin.synonymous;
+        Corpus_Data.synonymous = sin.synonymous;
         Document.Tf_IdfDoc();
     } 
 }

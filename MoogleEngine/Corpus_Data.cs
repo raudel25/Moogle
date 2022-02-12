@@ -1,32 +1,32 @@
 namespace MoogleEngine;
 
-public static class BuildIndex
+public static class Corpus_Data
 {
     //Guardar los sinonimos cargados de nuestro json
     public static List<string[]> synonymous {get; set;}
     //Guardamos las palabras de nuestro corpus
-    public static Dictionary<string, DataStructure> dic = new Dictionary<string, DataStructure>();
+    public static Dictionary<string, DataStructure> vocabulary = new Dictionary<string, DataStructure>();
     /// <summary>Metodo para el indexar los terminos en el corpus</summary>
     /// <param name="word">Palabra a indexar</param>
     /// <param name="document">Documento donde encontramos la palabra</param>
     /// <param name="pos">Posicion de la palabra en el documento</param>
     public static void InsertWord(string word, Document document, int pos)
     {
-        if (!dic.ContainsKey(word))
+        if (!vocabulary.ContainsKey(word))
         {
             DataStructure data = new DataStructure();
             data.weight_doc = new double[Document.cantdoc];
             data.Pos_doc = new List<int>[Document.cantdoc];
-            dic.Add(word, data);
+            vocabulary.Add(word, data);
         }
-        if (dic[word].weight_doc[document.index] == 0)
+        if (vocabulary[word].weight_doc[document.index] == 0)
         {
-            dic[word].Pos_doc[document.index] = new List<int>();
+            vocabulary[word].Pos_doc[document.index] = new List<int>();
         }
-        dic[word].weight_doc[document.index]++;
-        dic[word].Pos_doc[document.index].Add(pos);
+        vocabulary[word].weight_doc[document.index]++;
+        vocabulary[word].Pos_doc[document.index].Add(pos);
         //Llevamos la cuenta de la maxima frecuencia en el documento
-        if (dic[word].weight_doc[document.index] > document.max) document.max = (int)dic[word].weight_doc[document.index];
+        if (vocabulary[word].weight_doc[document.index] > document.max) document.max = (int)vocabulary[word].weight_doc[document.index];
     }
 }
 public class DataStructure

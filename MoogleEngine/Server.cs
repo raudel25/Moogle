@@ -31,7 +31,7 @@ public static class Server
             return auto;
         }
         //Recorremos nuestro corpus
-        foreach(var i in BuildIndex.dic)
+        foreach(var i in Corpus_Data.vocabulary)
         {
             if(i.Key.Length>=word.Length)
             {
