@@ -25,7 +25,7 @@ public static class Moogle
         return new SearchResult(items, suggestion);    
     }
     /// <summary>Metodo para indexar nuestro corpus</summary>
-    public static void Indexar()
+    public static void Index_Corpus()
     {
         var list = Directory.EnumerateFiles("..//Content", "*.txt");
         Document.documents = new List<Document>();

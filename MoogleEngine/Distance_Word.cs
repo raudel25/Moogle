@@ -25,8 +25,14 @@ public static class Distance_Word
                 return Shortest_Distance_Word(words, document, words.Count, 10);       
         }
     }   
+    /// <summary>Metodo para determinar la busqueda literal</summary>
+    /// <param name="words">Lista de palabras para busqueda literal</param>
+    /// <param name="document">Documento donde estan las palabras</param>
+    /// <returns>Tupla con la posicion de la busqueda literal</returns>
     private static Tuple<int, int, List<string>> Literal(List<string> words,Document document)
     {
+        //Guardamos en un arreglo de tuplas las posiciones de las palabras donde el primer indice corresponde al indice de la palabra en la lista 
+        //Ordenamos los elementos de los arrays de tuplas por el numero de la posicion de la palabra
         Tuple<int, int>[] Pos_words_Sorted = new Tuple<int, int>[0];
         for (int i = 0; i < words.Count; i++)
         {
@@ -37,13 +43,17 @@ public static class Distance_Word
         int pos_literal=-1;
         List<int> ind_word=new List<int>();
         bool literal=false;
+        //Recorrmos la posiciones de la palabras
         for(int i=0;i<Pos_words_Sorted.Length;i++)
         {
+            //Si encontramos dos indices iguales estamos en presencia de la misma palabra
             if(pos==Pos_words_Sorted[i].Item2) ind_word.Add(Pos_words_Sorted[i].Item1);
             else
             {
+                //Si encontramos un indice diferente revisamos si es correcto el indice de las palabras que sin iguales
                 if(ind_word.Contains(ind) )
                 {
+                    //Si llegamos al ultimo indice encontramos una posicion correcta
                     if(ind==words.Count-1)
                     {
                         if(pos_literal==-1) pos_literal=pos-words.Count+1;
@@ -55,15 +65,18 @@ public static class Distance_Word
                         literal=true;
                         ind=0;
                     }
+                    //Si la posicion actual es el sucesor de la anterior avanzamos un indice
                     if(Pos_words_Sorted[i].Item2==pos+1) ind++;
                     else ind=0;
                 }
                 else ind=0; 
+                //Como hemos encontrado una palabra diferente creamos una nueva lista de indices
                 ind_word=new List<int>();
                 ind_word.Add(Pos_words_Sorted[i].Item1);
                 pos=Pos_words_Sorted[i].Item2;
             }
         }
+        //Si hemos encontrado una posicion correcta la devolvemos de lo contrario devlovemos -1
         if(literal) return new Tuple<int, int, List<string>>(pos_literal,words.Count,new List<string>());
         return new Tuple<int, int, List<string>>(-1,0,new List<string>());
     }
@@ -72,7 +85,6 @@ public static class Distance_Word
     /// <param name="document">Documento donde estan las palabras</param>
     /// <param name="cantmin">Cantidad minima de palabras de la lista en las q queremos buscar la minima distancia</param>
     /// <param name="cota">Maxima distancia que podemos encontrar entre las palabras</param>
-    /// <param name="SearchLiteral">Presencia de la busqueda literal</param>
     /// <returns>Tupla con la posicion, la minima distancia y las palabras que no fueron contenidas</returns>
     private static Tuple<int, int, List<string>> Shortest_Distance_Word(List<string> words, Document document, int cantmin, int cota)
     {
