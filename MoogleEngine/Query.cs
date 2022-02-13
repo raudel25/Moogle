@@ -135,12 +135,13 @@ public class QueryClass
             if(word=="\"") return true;
             //Comprobamos si las palabras pertenecientes a la busqueda han terminado
             if (word[word.Length - 1] == '"') SearchLiteral = false;
-            word = Document.Sign_Puntuation(word);
+            //Comprobamos si estamos en presencia de un comodin
+            if(word !="*") word = Document.Sign_Puntuation(word);
             if (word == "") return true;
-            if (Corpus_Data.vocabulary.ContainsKey(word))
+            if (Corpus_Data.vocabulary.ContainsKey(word)||word=="*")
             {
                 SearchLiteral_words[SearchLiteral_words.Count - 1].Add(word);
-                Frecuency_Query(word);
+                if(word !="*") Frecuency_Query(word);
             }
             else
             {
@@ -534,6 +535,7 @@ public class QueryClass
             //Evaluamos los parametros para la busqueda literal
             for (int j = 0; j < SearchLiteral_words[i].Count; j++)
             {
+                if(SearchLiteral_words[i][j]=="*") continue;
                 if (Corpus_Data.vocabulary[SearchLiteral_words[i][j]].Pos_doc[doc.index] == null) return false;
             }
             Tuple<int, int, List<string>> t = Distance_Word.Search_Distance(SearchLiteral_words[i], doc,Distance_Word.Distance.SearchLiteral);

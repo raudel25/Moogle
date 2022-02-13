@@ -34,9 +34,16 @@ public static class Distance_Word
         //Guardamos en un arreglo de tuplas las posiciones de las palabras donde el primer indice corresponde al indice de la palabra en la lista 
         //Ordenamos los elementos de los arrays de tuplas por el numero de la posicion de la palabra
         Tuple<int, int>[] Pos_words_Sorted = new Tuple<int, int>[0];
+        int pos_rnd=0;
         for (int i = 0; i < words.Count; i++)
         {
-            Pos_words_Sorted = Sorted(Pos_words_Sorted, BuildTuple(Corpus_Data.vocabulary[words[i]].Pos_doc[document.index], i));
+            //Comprobamos la presencia de un comodin
+            if(words[i]=="*")
+            {
+                pos_rnd++;
+                continue;
+            }
+            Pos_words_Sorted = Sorted(Pos_words_Sorted, BuildTuple(Corpus_Data.vocabulary[words[i]].Pos_doc[document.index], i,pos_rnd));
         }
         int ind=0;
         int pos=Pos_words_Sorted[0].Item2;
@@ -54,13 +61,13 @@ public static class Distance_Word
                 if(ind_word.Contains(ind) )
                 {
                     //Si llegamos al ultimo indice encontramos una posicion correcta
-                    if(ind==words.Count-1)
+                    if(ind==words.Count-1-pos_rnd)
                     {
-                        if(pos_literal==-1) pos_literal=pos-words.Count+1;
+                        if(pos_literal==-1) pos_literal=pos-words.Count+1+pos_rnd;
                         else
                         {
                             Random rnd=new Random();
-                            if(rnd.Next(2)==0) pos_literal=pos-words.Count+1;
+                            if(rnd.Next(2)==0) pos_literal=pos-words.Count+1+pos_rnd;
                         }
                         literal=true;
                         ind=0;
@@ -74,6 +81,19 @@ public static class Distance_Word
                 ind_word=new List<int>();
                 ind_word.Add(Pos_words_Sorted[i].Item1);
                 pos=Pos_words_Sorted[i].Item2;
+            }
+        }
+        if(ind_word.Contains(ind) )
+        {
+            if(ind==words.Count-1-pos_rnd)
+            {
+                if(pos_literal==-1) pos_literal=pos-words.Count+1+pos_rnd;
+                else
+                {
+                    Random rnd=new Random();
+                    if(rnd.Next(2)==0) pos_literal=pos-words.Count+1+pos_rnd;
+                }
+                literal=true;
             }
         }
         //Si hemos encontrado una posicion correcta la devolvemos de lo contrario devlovemos -1
@@ -202,13 +222,14 @@ public static class Distance_Word
     ///<sumary>Metodo para crear las tuplas de las posiciones de las palabras</sumary>
     /// <param name="words_pos">Lista de posiciones de la palabra</param>
     /// <param name="index">Indice de la palabra</param>
+    /// <param name="pos_rnd">Ajuste para la posicion y el indice en caso de existir un comodin</param>
     /// <returns>Tuplas con el indice de la palabra en la lista y la posiciion de la palabra</returns>
-    private static Tuple<int, int>[] BuildTuple(List<int> words_pos, int index)
+    private static Tuple<int, int>[] BuildTuple(List<int> words_pos, int index,int pos_rnd=0)
     {
         Tuple<int, int>[] tuple = new Tuple<int, int>[words_pos.Count];
         for (int i = 0; i < tuple.Length; i++)
         {
-            Tuple<int, int> t1 = new Tuple<int, int>(index, words_pos[i]);
+            Tuple<int, int> t1 = new Tuple<int, int>(index-pos_rnd, words_pos[i]-pos_rnd);
             tuple[i] = t1;
         }
         return tuple;

@@ -8,7 +8,6 @@ public static class Moogle
     {
         // Modifique este método para responder a la búsqueda
         QueryClass query1 = new QueryClass(query);
-        //QueryIndex(query1);
         if(query1.no_results)
         {
             return new SearchResult(new SearchItem[0],query1.txt);
