@@ -40,19 +40,11 @@ public class Document
             {
                 string word = s[j];
                 //Si nos encontramos una linea vacia seguimos
-                if (word == "")
-                {
-                    cant++;
-                    continue;
-                }
+                if (word == "") continue;
                 //Quitamos los signos de puntuacion
                 word = Sign_Puntuation(word);
                 //Si solo es un signo de puntuacion seguimos
-                if (word == "")
-                {
-                    cant++;
-                    continue;
-                }
+                if (word == "")  continue;
                 word = word.ToLower();
                 //Insertamos la palabra en el sistema
                 Corpus_Data.InsertWord(word, this, cant);

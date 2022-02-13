@@ -614,20 +614,20 @@ public class QueryClass
     /// <param name="Snippetwords">Lista de las posiciones de las palabras</param>
     private void BuildSinipped(Document document, List<int> Snippetwords)
     {
+        Snippetwords.Sort();
         string[] doc = File.ReadAllLines(document.path);
         string[] addSnippet = new string[Snippetwords.Count];
         int[] addposSnippet = new int[Snippetwords.Count];
         //Recorremos el documento
-        for (int i = 0; i < Snippetwords.Count; i++)
+        int i=0;
+        int cant = 0;
+        for (int linea_ind = 0; linea_ind < doc.Length; linea_ind++)
         {
-            int cant = 0;
-            for (int linea_ind = 0; linea_ind < doc.Length; linea_ind++)
+            string[] linea = doc[linea_ind].Split(' ');
+            for(int j=0;j<linea.Length;j++)
             {
-                string[] linea = doc[linea_ind].Split(' ');
-                if (Snippetwords[i] <= cant + linea.Length - 1)
+                if(cant==Snippetwords[i])
                 {
-                    //Si nos encotramos la posicion de la palabra procedemos a construir el snippet
-                    int j = Snippetwords[i] - cant;
                     int cant1 = 0;
                     StringBuilder sb = new StringBuilder();
                     for (int w = j; w < linea.Length; w++)
@@ -655,10 +655,20 @@ public class QueryClass
                     //Guardamos el snippet
                     addSnippet[i] = sb.ToString();
                     addposSnippet[i] = linea_ind;
-                    break;
+                    //Comprobamos el proximi indice
+                    i++;
                 }
-                cant += linea.Length;
+                if(i==Snippetwords.Count) break; 
+                string word = linea[j];
+                //Si nos encontramos una linea vacia seguimos
+                if (word == "") continue;
+                //Quitamos los signos de puntuacion
+                word = Document.Sign_Puntuation(word);
+                //Si solo es un signo de puntuacion seguimos
+                if (word == "") continue;
+                cant++;                    
             }
+            if(i==Snippetwords.Count) break;                
         }
         //Guardamos lo snippets del documento
         SnippetResult.Add(addSnippet);
