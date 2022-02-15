@@ -85,6 +85,7 @@ public class QueryClass
         if (words_Stemming_Syn[word][0] + words_Stemming_Syn[word][1] > max_Stemming_Syn) max_Stemming_Syn = (int)(words_Stemming_Syn[word][0] + words_Stemming_Syn[word][1]);
     }
     #endregion
+
     #region Operators
     /// <summary>Metodo para los operadores de busqueda</summary>
     public void Operators()
@@ -103,19 +104,20 @@ public class QueryClass
             if (Exclude_Operator(word)) continue;
             if (Include_Operator(word)) continue;
             if (highest_relevance_Operator(word)) continue;
+            word=Document.Sign_Puntuation(word);
             //Comprobamos si la palabra a buscar existe en nuestro sistema
-                if (Corpus_Data.vocabulary.ContainsKey(word))
-                {
-                    Frecuency_Query(word);
-                }
-                else
-                {
-                    //Si la palabra no existe procedemos a dar una recomendacion
-                    suggestion(word);
-                }
-                //Buscamos los sinonimos y las raices de la palabra
-                Search_Stemming(word);
-                Search_Synonymous(word);
+            if (Corpus_Data.vocabulary.ContainsKey(word))
+            {
+                Frecuency_Query(word);
+            }
+            else
+            {
+                //Si la palabra no existe procedemos a dar una recomendacion
+                suggestion(word);
+            }
+            //Buscamos los sinonimos y las raices de la palabra
+            Search_Stemming(word);
+            Search_Synonymous(word);
         }
     }
     /// <summary>Metodo para el operador de busqueda literal</summary>
@@ -136,12 +138,13 @@ public class QueryClass
             //Comprobamos si las palabras pertenecientes a la busqueda han terminado
             if (word[word.Length - 1] == '"') SearchLiteral = false;
             //Comprobamos si estamos en presencia de un comodin
-            if(word !="*") word = Document.Sign_Puntuation(word);
+            if(word=="\"?"||word=="?\"") word="?";
+            if(word !="?") word = Document.Sign_Puntuation(word);
             if (word == "") return true;
-            if (Corpus_Data.vocabulary.ContainsKey(word)||word=="*")
+            if (Corpus_Data.vocabulary.ContainsKey(word)||word=="?")
             {
                 SearchLiteral_words[SearchLiteral_words.Count - 1].Add(word);
-                if(word !="*") Frecuency_Query(word);
+                if(word !="?") Frecuency_Query(word);
             }
             else
             {
@@ -264,6 +267,7 @@ public class QueryClass
         return false;
     }
     #endregion
+
     #region Stemming_Synonymous
     /// <summary>Metodo para buscar las raices</summary>
     /// <param name="word">String q contiene la palabra</param>
@@ -309,6 +313,7 @@ public class QueryClass
         }
     }
     #endregion
+
     #region Suggestion
     /// <summary>Metodo para dar las recomendaciones</summary>
     /// <param name="word">String q contiene la palabra</param>
@@ -332,10 +337,10 @@ public class QueryClass
     {
         string suggestion = "";
         double suggestionTF_IDF = 0;
-        double changes = int.MaxValue;
+        int changes = int.MaxValue;
         foreach (var word_dic in Corpus_Data.vocabulary)
         {
-            double dist = LevenshteinDistance(word, word_dic.Key);
+            int dist = Levenshtein_Distance(word, word_dic.Key);
             //Nos quedamos con la palabra que posea menos cambios
             if (dist < changes)
             {
@@ -365,41 +370,84 @@ public class QueryClass
         }
         return suggestion;
     }
-    private static double LevenshteinDistance(string a, string b)
+    /// <summary>Metodo para calcular la similitud entre dos palabras</summary>
+    /// <param name="a">Palabra para realizar los cambios</param>
+    /// <param name="b">Palabra original</param>
+    /// <returns>Cantidad de cambios entre una palabra y otra</returns>
+    private static int Levenshtein_Distance(string a, string b)
     {
-        // d es una tabla con m+1 renglones y n+1 columnas
-        int costo = 0;
+        int cost = 0;
         int m = a.Length;
         int n = b.Length;
-        double[,] change = new double[m + 1, n + 1];
-        // Verifica que exista algo que comparar
+        int[,] change = new int[m + 1, n + 1];
         if (n == 0) return m;
         if (m == 0) return n;
-        // Llena la primera columna y la primera fila.
+        // Llenamos la primera columna y la primera fila.
         for (int i = 0; i <= m; i++)
         {
-            change[i, 0] = i;
+            change[i, 0] = 4*i;
+            if(i>0)
+            {
+                if(a[i-1]=='h') change[i,0]-=2;
+            }
         }
         for (int j = 0; j <= n; j++)
         {
-            change[0, j] = j;
+            change[0, j] = 4*j;
+            if(j>0)
+            {
+                if(b[j-1]=='h') change[0,j]-=2;
+            }
         }
-        // recorremos la matriz llenando cada unos de los pesos.
         for (int i = 1; i <= m; i++)
         {
             for (int j = 1; j <= n; j++)
             {
-                // si son iguales en posiciones equidistantes el peso es 0
-                // de lo contrario el peso suma a uno.
-                costo = (a[i - 1] == b[j - 1]) ? 0 : 1;
-                change[i, j] = System.Math.Min(System.Math.Min(change[i - 1, j] + 1,  //Eliminacion
-                            change[i, j - 1] + 1),                             //Insercion 
-                            change[i - 1, j - 1] + costo);                     //Sustitucion
+                //Damos menos peso a los errores ortograficos
+                cost = (a[i - 1] == b[j - 1]) ? 0 : OrtograficRule(a[i-1],b[j-1]);
+                change[i, j] = Math.Min(Math.Min(change[i - 1, j] + ((a[i - 1]=='h') ? 2 : 4),  //Eliminacion
+                            change[i, j - 1] + ((b[j - 1]=='h') ? 2 : 4)),                             //Insercion 
+                            change[i - 1, j - 1] + cost);                     //Sustitucion
             }
         }
         return change[m, n];
     }
+    /// <summary>Determinar los errores ortograficos mas comunes</summary>
+    /// <param name="a">Caracter a cambiar</param>
+    /// <param name="b">Caraacter original</param>
+    /// <returns>Peso reducido segun la regla</returns>
+    private static int OrtograficRule(char a,char b)
+    {
+        int min; int max;
+        if((int)a>(int)b)
+        {
+            min=(int)b; max=(int)a;
+        }
+        else
+        {
+            min=(int)a; max=(int)b;
+        }
+        //Vocales con tilde
+        if(min==97 && 224<=max && max<=229) return 1;
+        if(min==101 && 232<=max && max<=235) return 1;
+        if(min==105 && 236<=max && max<=239) return 1;
+        if(min==111 && 242<=max && max<=246) return 1;
+        if(min==117 && 249<=max && max<=252) return 1;
+        //c-s c-z j-g v-b
+        if(min==99 && max==115) return 2;
+        if(min==115 && max==122) return 2;
+        if(min==103 && max==106) return 2;
+        if(min==98 && max==118) return 2;
+        //m-n ñ-n x-c x-s l-r
+        if(min==109 && max==110) return 3;
+        if(min==110 && max==241) return 3;
+        if(min==99 && max==120) return 3;
+        if(min==115 && max==120) return 3;
+        if(min==108 && max==114) return 3;
+        return 4;
+    }
     #endregion
+
     #region TF_IDF
     /// <summary>Metodo para calcular el Tf_idf de nuestra query</summary>
     private void TF_idfC()
@@ -427,6 +475,7 @@ public class QueryClass
         }
     }
     #endregion
+
     #region Search_Result
     /// <summary>Metodo para calcular la similitud del coseno</summary>
     private void SimVectors()
@@ -535,7 +584,7 @@ public class QueryClass
             //Evaluamos los parametros para la busqueda literal
             for (int j = 0; j < SearchLiteral_words[i].Count; j++)
             {
-                if(SearchLiteral_words[i][j]=="*") continue;
+                if(SearchLiteral_words[i][j]=="?") continue;
                 if (Corpus_Data.vocabulary[SearchLiteral_words[i][j]].Pos_doc[doc.index] == null) return false;
             }
             Tuple<int, int, List<string>> t = Distance_Word.Search_Distance(SearchLiteral_words[i], doc,Distance_Word.Distance.SearchLiteral);
@@ -556,6 +605,7 @@ public class QueryClass
         double sumScore = 0;
         foreach (var word_list in Close_Words)
         {
+            if(word_list.Count==1) continue;
             bool close=true;
             //Comprobamos que las palabras del operador cercania esten en nuestra lista de palabras
             List<string> words_searchDist = new List<string>();
@@ -577,6 +627,7 @@ public class QueryClass
         return sumScore;
     }
     #endregion
+    
     #region Snippet
     /// <summary>Metodo para buscar los snippets</summary>
     private void Snippet()

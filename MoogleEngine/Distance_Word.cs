@@ -38,7 +38,7 @@ public static class Distance_Word
         for (int i = 0; i < words.Count; i++)
         {
             //Comprobamos la presencia de un comodin
-            if(words[i]=="*")
+            if(words[i]=="?")
             {
                 pos_rnd++;
                 continue;

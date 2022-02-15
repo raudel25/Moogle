@@ -62,19 +62,19 @@ public class Document
         //Recorremos la palabra de izqueierda a derecha y paramos cuando hallemos una letra
         for (int i = 0; i < s.Length; i++)
         {
-            bool sig = false;
+            bool next = false;
             bool operators = false;
             //Si la palabra es parte de la query excluimos los signos de los operadores
             if (query)
             {
-                if (s[i] == '!' || s[i] == '*' || s[i] == '^' || s[i] == '"') operators = true;
+                if (s[i] == '!' || s[i] == '*' || s[i] == '^' || s[i] == '"' || s[i] == '?') operators = true;
             }
             //Si nos encontramos una letra paramos y guardamos la posicion
             if (!operators && !char.IsLetterOrDigit(s[i]))
             {
-                sig = true;
+                next = true;
             }
-            if (!sig)
+            if (!next)
             {
                 start = i; break;
             }
@@ -84,18 +84,18 @@ public class Document
         //Recorremos la palabra de derecha a izquierda y paramos cuando hallemos una letra
         for (int i = 0; i < s.Length; i++)
         {
-            bool sig = false;
-            bool operadores = false;
+            bool next = false;
+            bool operators = false;
             if (query)
             {
-                if (s[s.Length - 1 - i] == '"') operadores = true;
+                if (s[s.Length - 1 - i] == '"'||s[s.Length - 1 - i] == '?') operators = true;
             }
             //Si nos encontramos una letra paramos y guardamos la posicion
-            if (!operadores && !char.IsLetterOrDigit(s[s.Length - 1 - i]))
+            if (!operators && !char.IsLetterOrDigit(s[s.Length - 1 - i]))
             {
-                sig = true;
+                next = true;
             }
-            if (!sig)
+            if (!next)
             {
                 stop = s.Length - 1 - i; break;
             }
@@ -104,6 +104,7 @@ public class Document
         return s.Substring(start, stop - start + 1);
     }
     #endregion
+    
     #region TF_IDF
     /// <summary>Metodo para calcular el TF_idf de los documentos</summary>
     public static void Tf_IdfDoc()
