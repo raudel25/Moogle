@@ -7,22 +7,32 @@ public static class Moogle
     public static SearchResult Query(string query)
     {
         // Modifique este método para responder a la búsqueda
-        QueryClass query1 = new QueryClass(query);
-        if(query1.no_results)
-        {
-            return new SearchResult(new SearchItem[0],query1.txt);
-        }
-        //Creamos un array y pasamos los resultados de la busqueda
-        SearchItem[] items = new SearchItem[query1.Score.Count];
-        for (int i = 0; i < query1.Score.Count; i++)
-        {
-            items[i] = new SearchItem(query1.resultsearchDoc[i].title, query1.SnippetResult[i], query1.Pos_SnippetResult[i], query1.Score[i], query1.Words_not_result[i]);
-        }
+        QueryClass query_object = new QueryClass(query);
+        //Comprobando la sugerencia
         string suggestion="";
-        if(query1.txt==query1.original) suggestion="";
-        else suggestion=query1.txt; 
-        return new SearchResult(items, suggestion);    
+        if(query_object.txt==query_object.original) suggestion="";
+        else suggestion=query_object.txt;
+        if(query_object.txt=="") return new SearchResult(BuildItem(query_object));
+        else
+        {
+            QueryClass suggestion_object=new QueryClass(suggestion);
+            return new SearchResult(BuildItem(query_object),BuildItem(suggestion_object),suggestion);
+        }
     }
+    /// <summary>Construyendo el arreglo de SearchItem</summary>
+    /// <param name="query">Query</param>
+    /// <returns>Arreglo de SearchItem correspondiente a la query</returns>
+
+    public static SearchItem[] BuildItem(QueryClass query)
+    {
+        SearchItem[] items = new SearchItem[query.Score.Count];
+        for (int i = 0; i < query.Score.Count; i++)
+        {
+            items[i] = new SearchItem(query.resultsearchDoc[i].title, query.SnippetResult[i], query.Pos_SnippetResult[i], query.Score[i], query.Words_not_result[i]);
+        }
+        return items;
+    }
+
     /// <summary>Metodo para indexar nuestro corpus</summary>
     public static void Index_Corpus()
     {

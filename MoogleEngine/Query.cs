@@ -61,6 +61,7 @@ public class QueryClass
         this.Pos_SnippetResult = new List<int[]>();
         this.Words_not_result=new List<List<string>>();
         Operators();
+        if(no_results) return;
         TF_idfC();
         SimVectors();
         Snippet();

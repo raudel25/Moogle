@@ -20,6 +20,15 @@
         <p>¿Quisiste decir <strong><a href="#" @onclick="Suggestion">@result.Suggestion</a></strong>?</p>
     </div>
 }
+else
+{
+    @if(result.Count==0 && cantSearch!=0)
+    {
+        <br>
+        <img src="No_Results.jpg" width="400px" height="400px">
+        <h5>No hay resultados para su búsqueda</h5>
+    }
+}
 
 <ul class="results">
     @foreach (var item in result.Items())
@@ -45,14 +54,17 @@
     private string query = "";
     private List<string> autoComp = new List<string>();
     private SearchResult result = new SearchResult();
+    private int cantSearch=0;
     private void RunQuery()
     {
+        cantSearch++;
         result = Moogle.Query(query);
     }
     private void Suggestion()
     {
+        cantSearch++;
         query=result.Suggestion;
-        result = Moogle.Query(result.Suggestion);
+        result = result.Query_Suggestion;
     }
     private void Press(KeyboardEventArgs e)
     {
