@@ -27,19 +27,23 @@
     </p>
 </ul>
 
-<a target='__blank' href=@(id+"/"+(pos-pos%100)+"/"+pos)><button type="default"
-        class="btn btn-primary">Resultado</button></a>
-
-<input type="number" class="p-1 my-4" @bind="newpage" @bind:event="oninput">
-
-<a target='__blank' href=@(id+"/"+(newpage*100)+"/"+pos)><button type="default" class="btn btn-primary">Ir</button></a>
-
-<ul class="buttons">
+<ul>
     <a target='__blank' href=@(id+"/"+(page-100)+"/"+pos)><button type="default" class="btn btn-primary"
-            margin-right="5px">Anterior</button></a>
+        style="margin-right:30px; border-radius:50px;">Anterior</button></a>
+
+    <input type="number" class="p-1 my-4" @bind="newpage" @bind:event="oninput" 
+        style="width: 100px; text-align:center; border-radius:50px" margin-left="100px">
+
+    <a target='__blank' href=@(id+"/"+(newpage*100)+"/"+pos)><button type="default" class="btn btn-primary" 
+        style="border-radius:50px;">Ir</button></a>
 
     <a target='__blank' href=@(id+"/"+(page+100)+"/"+pos)><button type="default" class="btn btn-primary"
-            margin-left="5px">Proximo</button></a>
+        style="margin-left:30px; border-radius:50px;">Proximo</button></a>
+</ul>
+
+<ul>
+    <a target='__blank' href=@(id+"/"+(pos-pos%100)+"/"+pos)><button type="default" class="btn btn-primary"
+        style="border-radius:50px;">Resultado</button></a> 
 </ul>
 
 @code {

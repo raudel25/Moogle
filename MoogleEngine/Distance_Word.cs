@@ -110,6 +110,8 @@ public static class Distance_Word
     {
         List<int> list_aux = new List<int>();
         List<int> index_words_in_range = new List<int>();
+        int[] ocurrence=new int[words.Count];
+        Ocurrence_word(words,ocurrence);
         //Guardamos en un arreglo de tuplas las posiciones de las palabras donde el primer indice corresponde al indice de la palabra en la lista 
         //Ordenamos los elementos de los arrays de tuplas por el numero de la posicion de la palabra
         Tuple<int, int>[] Pos_words_Sorted = new Tuple<int, int>[0];
@@ -130,7 +132,7 @@ public static class Distance_Word
             {
                 search_min_dist.Enqueue(Pos_words_Sorted[i]);
                 posList[Pos_words_Sorted[i].Item1]++;
-                Tuple<bool, List<int>> all = AllContains(posList, j);
+                Tuple<bool, List<int>> all = AllContains(posList, j,ocurrence);
                 if (all.Item1)
                 {
                     //Si la cantidad de palabras correcta esta en la cola tratamos de ver cuantas podemos sacar
@@ -140,7 +142,7 @@ public static class Distance_Word
                         //Buscamos la posible palabra a eliminar de la cola
                         Tuple<int, int> eliminate = search_min_dist.Peek();
                         posList[eliminate.Item1]--;
-                        Tuple<bool, List<int>> tuple = AllContains(posList, j);
+                        Tuple<bool, List<int>> tuple = AllContains(posList, j, ocurrence);
                         if (tuple.Item1)
                         {
                             //Si la cantidad de palabras correctas en la cola no se altera sacamos la palabra de la cola
@@ -186,9 +188,9 @@ public static class Distance_Word
         //Retornamos una tupla con la posicion encontrada, la menor distancia y las palabras que no fueron contenidas
         return new Tuple<int, int, List<string>>(pos, minDist, words_not_range);
     }
-    ///<sumary>Mezcla ordenada de las tuplas correspondientes a las posiciones de las palabras</sumary>
-    /// <param name="a">Array de tuplas</param>
-    /// <param name="b">Array de tuplas</param>
+    ///<summary>Mezcla ordenada de las tuplas correspondientes a las posiciones de las palabras</summary>
+    /// <param name="words1">Array de tuplas</param>
+    /// <param name="words2">Array de tuplas</param>
     /// <returns>Array ordenado</returns>
     private static Tuple<int, int>[] Sorted(Tuple<int, int>[] words1, Tuple<int, int>[] words2)
     {
@@ -219,7 +221,7 @@ public static class Distance_Word
         }
         return words3;
     }
-    ///<sumary>Metodo para crear las tuplas de las posiciones de las palabras</sumary>
+    /// <summary>Metodo para crear las tuplas de las posiciones de las palabras</summary>
     /// <param name="words_pos">Lista de posiciones de la palabra</param>
     /// <param name="index">Indice de la palabra</param>
     /// <param name="pos_rnd">Ajuste para la posicion y el indice en caso de existir un comodin</param>
@@ -234,17 +236,36 @@ public static class Distance_Word
         }
         return tuple;
     }
-    ///<sumary>Metodo para determinar si la cantidad de palabras correcta esta contenida en la cola</sumary>
+    /// <summary>Metodo para determinar la cantidad de ocurrencia de las palabras<summary>
+    /// <param name="words">Lista de palabras</param>
+    /// <param name="ocurrence">Cantidad de ocurrencias de la palabra</param>
+    private static void Ocurrence_word(List<string> words, int[] ocurrence)
+    {
+        for(int i=0;i<words.Count;i++)
+        {
+            if(ocurrence[i]!=0) continue;
+            int cant=0;
+            for(int j=i;j<words.Count;j++)
+            {
+                if(words[i]==words[j]) cant++;
+            }
+            for(int j=i;j<words.Count;j++)
+            {
+                if(words[i]==words[j]) ocurrence[j]=cant;
+            }
+        }
+    }
+    /// <summary>Metodo para determinar si la cantidad de palabras correcta esta contenida en la cola</summary>
     /// <param name="posList">Frecuencia de cada palabra en la cola</param>
     /// <param name="cant">Frecuencia de cada palabra en la cola</param>
     /// <returns>Un bool que indica si esta la minima cantidad de palabras contenidas y una lista con estas palabras</returns>
-    private static Tuple<bool, List<int>> AllContains(int[] posList, int cant)
+    private static Tuple<bool, List<int>> AllContains(int[] posList, int cant,int[] ocurrence)
     {
         List<int> words_in_range = new List<int>();
         for (int i = 0; i < posList.Length; i++)
         {
             //Contamos la cantidad de palabras cuya frecuencia es diferente de 0
-            if (posList[i] != 0)
+            if (posList[i] >= ocurrence[i])
             {
                 //Lista de indice de las palabras contenidas en la cola
                 words_in_range.Add(i);

@@ -4,15 +4,17 @@
 
 <h1>🔍 Moogle!</h1>
 
-<input list="auto" class="p-1 my-4" @bind="query" @bind:event="oninput" placeholder="Introduzca su búsqueda" @onkeyup="Press">
+<ul>
+    <input list="auto" class="p-1 my-4" style="border-radius: 20px; width:300px;" @bind="query" @bind:event="oninput" placeholder="Introduzca su búsqueda" @onkeyup="Press">
 
-<button type="default" class="btn btn-primary" @onclick="RunQuery" >🔍 Buscar</button>
-<datalist id="auto" class="p-1 my-4">
-    @foreach (var item in autoComp)
-    {
-        <option value="@item"></option>
-    }
-</datalist>
+    <button type="default" class="btn btn-primary" style="border-radius: 50px;" @onclick="RunQuery" >🔍 Buscar</button>
+    <datalist id="auto" class="p-1 my-4">
+        @foreach (var item in autoComp)
+        {
+            <option value="@item"></option>
+        }
+    </datalist>
+</ul>
 
 @if (!string.IsNullOrEmpty(result.Suggestion))
 {
@@ -22,30 +24,34 @@
 }
 else
 {
-    @if(result.Count==0 && cantSearch!=0)
+    @if(result.Count==0 && Search)
     {
         <br>
-        <img src="No_Results.jpg" width="400px" height="400px">
+        <img src="/No_Results.jpg" width="400px" height="400px">
         <h5>No hay resultados para su búsqueda</h5>
     }
 }
 
+@if(!Search)
+{
+    <br>
+    <img src="Start Search.jpg" width="400px" height="400px">
+}
+
 <ul class="results">
     @foreach (var item in result.Items())
-    {
-        <li>
-            <div class="item">
-                <p class="title"><a onmouseover="this.style.color='blue'" onmouseout="this.style.color='black'" style="color: black; font-size:large; text-decoration: none;"  target='__blank' href=@(item.Title+"/"+0+"/"+(-1))>@item.Title</a></p>
-                    @for (int i = 0; i < item.Snippet.Length; i++)
-                    {
-                        <p>... <a onmouseover="this.style.color='blue'" onmouseout="this.style.color='black'" style="color: black; text-decoration: none; font-size:medium;"  target='__blank' href=@(item.Title+"/"+(item.Pos_Snippet[i]-item.Pos_Snippet[i]%100)+"/"+item.Pos_Snippet[i])>@item.Snippet[i]</a> ...</p>
-                    }
-                    @foreach (var item1 in item.Word_no_doc)
-                    {
-                        <span style="text-decoration: line-through; font-size:small;">@(item1+" ")</span>
-                    }
-            </div>
-        </li>
+    {    
+        <div class="item">
+            <p class="title"><a onmouseover="this.style.color='blue'" onmouseout="this.style.color='black'" style="color: black; font-size:large; text-decoration: none;"  target='__blank' href=@(item.Title+"/"+0+"/"+(-1))>@item.Title</a></p>
+                @for (int i = 0; i < item.Snippet.Length; i++)
+                {
+                    <p>... <a onmouseover="this.style.color='blue'" onmouseout="this.style.color='black'" style="color: black; text-decoration: none; font-size:medium;"  target='__blank' href=@(item.Title+"/"+(item.Pos_Snippet[i]-item.Pos_Snippet[i]%100)+"/"+item.Pos_Snippet[i])>@item.Snippet[i]</a> ...</p>
+                }
+                @foreach (var item1 in item.Word_no_doc)
+                {
+                    <span style="text-decoration: line-through; font-size:small;">@(item1+" ")</span>
+                }
+        </div>       
         <br>
     }
 </ul>
@@ -54,15 +60,15 @@ else
     private string query = "";
     private List<string> autoComp = new List<string>();
     private SearchResult result = new SearchResult();
-    private int cantSearch=0;
+    private bool Search=false;
     private void RunQuery()
     {
-        cantSearch++;
+        Search=true;
         result = Moogle.Query(query);
     }
     private void Suggestion()
     {
-        cantSearch++;
+        Search=true;
         query=result.Suggestion;
         result = result.Query_Suggestion;
     }

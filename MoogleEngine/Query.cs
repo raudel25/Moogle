@@ -106,6 +106,7 @@ public class QueryClass
             if (Include_Operator(word)) continue;
             if (highest_relevance_Operator(word)) continue;
             word=Document.Sign_Puntuation(word);
+            if(word=="") continue;
             //Comprobamos si la palabra a buscar existe en nuestro sistema
             if (Corpus_Data.vocabulary.ContainsKey(word))
             {
@@ -179,10 +180,7 @@ public class QueryClass
                 {   
                     suggestion(close_words[m]);
                 }
-                if (!close.Contains(close_words[m]))
-                {
-                    close.Add(close_words[m]);
-                }
+                close.Add(close_words[m]);
             }
             if (close.Count != 0)
             {
@@ -277,14 +275,14 @@ public class QueryClass
         //Hallamos la raiz de la palabra
         string stemmer = Snowball.Stemmer(word);
         if (stemmer == "") return;
-        foreach (var i in Corpus_Data.vocabulary)
+        foreach (var word_dic in Corpus_Data.vocabulary)
         {
             //Comprobamos q las primeras letras sean iguales
-            if (i.Key[0] == stemmer[0] && word != i.Key)
+            if (word_dic.Key[0] == stemmer[0] && word != word_dic.Key)
             {
-                if (Snowball.Stemmer(i.Key) == stemmer)
+                if (Snowball.Stemmer(word_dic.Key) == stemmer)
                 {
-                    Frecuency_Query_Stemming_Syn(i.Key, true);
+                    Frecuency_Query_Stemming_Syn(word_dic.Key, true);
                 }
             }
         }
@@ -606,7 +604,6 @@ public class QueryClass
         double sumScore = 0;
         foreach (var word_list in Close_Words)
         {
-            if(word_list.Count==1) continue;
             bool close=true;
             //Comprobamos que las palabras del operador cercania esten en nuestra lista de palabras
             List<string> words_searchDist = new List<string>();
