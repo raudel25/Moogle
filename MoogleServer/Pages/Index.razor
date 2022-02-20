@@ -5,7 +5,7 @@
 <h1>🔍 Moogle!</h1>
 
 <ul>
-    <input list="auto" class="p-1 my-4" style="border-radius: 20px; width:300px;" @bind="query" @bind:event="oninput" placeholder="Introduzca su búsqueda" @onkeyup="Press">
+    <input list="auto" class="p-1 my-4" style="border-radius: 20px; width:400px; text-indent: 3%; border: groove 2px;" @bind="query" @bind:event="oninput" placeholder="Introduzca su búsqueda" @onkeyup="Press">
 
     <button type="default" class="btn btn-primary" style="border-radius: 50px;" @onclick="RunQuery" >🔍 Buscar</button>
     <datalist id="auto" class="p-1 my-4">
@@ -26,16 +26,18 @@ else
 {
     @if(result.Count==0 && Search)
     {
-        <br>
-        <img src="/No_Results.jpg" width="400px" height="400px">
-        <h5>No hay resultados para su búsqueda</h5>
+        <ul>
+            <img src="/No_Results.jpg" width="350px" height="350px">
+            <h5>No hay resultados para su búsqueda</h5>
+        </ul>
     }
 }
 
 @if(!Search)
 {
-    <br>
-    <img src="Start Search.jpg" width="400px" height="400px">
+    <ul>
+        <img src="Start Search.jpg" width="350px" height="350px">
+    </ul>
 }
 
 <ul class="results">

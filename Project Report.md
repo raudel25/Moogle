@@ -51,3 +51,7 @@ Se añadió al proyecto una nueva página `Doc.razor`, donde se le brinda al usu
 
 - Cada etiqueta `Tittle` y `Snippet` contiene un enlace a la página `Doc.razor`, la cual recive como parámetros el título del documento, la posición de la línea y la página donde se encuentra el *Snippet*.
 - La página `Doc.razor` llama al método `Read` de la clase `Server` el cual devuelve las 100 líneas de la página del documento que se quiere mostrar. Además está implmentada la posibilidad de visualizar la página anterior, la siguiente y cualquier página del documento a la que quiera acceder el usuario.
+
+## Diagrama de Flujo
+![](Proyecto_1.jpg)
+![](Proyecto_2.jpg)
