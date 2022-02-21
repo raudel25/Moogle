@@ -19,11 +19,11 @@ Estructura de la biblioteca de clases `MoogleEngine`.
 
 ### Procesamiento de la Query 
 
-- Cuando el usuario introduce una nueva *query* se crea un objeto de la clase `QueryClass` y en dicha clase se extraen las palabras de nuestra *query*.
+- Cuando el usuario introduce una nueva *Query* se crea un objeto de la clase `QueryClass` y en dicha clase se extraen las palabras de la *Query*.
 - Se identifican los operadores de búsqueda mediante el método `Operators`: se agregó al proyecto un nuevo operador de búsqueda, identificado por un par de comillas `""` (e.j., `"Licenciatura en Ciencias de la Computación"`) indica que que el texto dentro de las comillas **debe aparecer literalmente en cada uno de los documentos devueltos**, si dentro del texto que está en las comillas aparece un `?` (e.j., `"Licenciatura en ? de la Computación"`) indica que **cualquier palabra puede aparecer en esa posición**.
-- Una vez identificados los operadores se procede a comprobar la existencia de las palabras de la *query* en el corpus, en caso contrario, se llama al método `suggestion` donde se combina la *Distancia de Levenstein* con el peso de las palabras del Corpus y se construye la nueva *query* donde está incluida la palabra sugerida.
-- Para dar mejores resultados en la búsqueda al usuario se identifican las palabras que posean las mismas raíces o el mismo significado que las de la *query*, mediante la clase `Snowball` que se encarga de realizar el stemming en español y la lista `synonymous` de la clase `Corpus_Data`, la cual contiene un diccionario de sinónimos para el español.
-- Se procede a calcular el *TF-IDF* de las palabras de la *query*.
+- Una vez identificados los operadores se procede a comprobar la existencia de las palabras de la *Query* en el corpus, en caso contrario, se llama al método `suggestion` donde se combina la *Distancia de Levenstein* con el peso de las palabras del Corpus y se construye la nueva *Query* donde está incluida la palabra sugerida.
+- Para dar mejores resultados en la búsqueda al usuario se identifican las palabras que posean las mismas raíces o el mismo significado que las de la *Query*, mediante la clase `Snowball` que se encarga de realizar el stemming en español y la lista `synonymous` de la clase `Corpus_Data`, la cual contiene un diccionario de sinónimos para el español.
+- Se procede a calcular el *TF-IDF* de las palabras de la *Query*.
 
 ### Resultados de la Búsqueda
 
@@ -31,7 +31,7 @@ Estructura de la biblioteca de clases `MoogleEngine`.
 - Para tener en cuenta las condiciones de los operadores `Close` y `SearchLiteral`, se emplea la clase `Distance_Word` donde está el método `Shortest_Distance_Word` que devuelve la mínima distancia entre una lista de palabras en un determinado documento y el método `Literal` que se encarga de buscar en un documento y determinar la posición de las palabras que están especificadas en el operador `SearchLiteral`.
 - Se construye el *Snippet* de cada uno de los docuemnto mediante el método `Snippet`, si hay resultados del operador `SearchLiteral` se muestra una línea por cada grupo de palabras de dicho operador. Por otro lado se define un tamaño máximo de 20 palabras para cada línea, luego se llama al método `Shortest_Distance_Word` de la clase `Distance_Word`, el cual determina el máximo número de palabras resultantes de la búsqueda que ocupan una ventana del texto de tamaño 20 y las posiciones en que estas se encuentran, si todas estas palabras no fueron contenidas en dicha ventana se realiza el mismo procedimiento con las restantes.
 - Con las posiciones obtenidas en el método `Snippet`, se lee el documento y se guarda el texto contenido en dichas posiciones mediante el método `BuildSinipped`.
-- Una vez concluida la búsqueda, se comprueba que la sugerencia hecha al usuario es válida y se construye el objeto `SearchResult` que devuelve el método `Query` de la clase `Moogle`, mediante un arreglo de objetos `SearchItem`, que adicionalmente, contiene un arreglo de *SnippetResult*, *Pos_SnippetResult* y *Words_not_result*, con las líneas del *Snippet*, las posiciones de dichas líneas en el documento y la lista de palabras de la *query* que no fueron encontradas en el documento.
+- Una vez concluida la búsqueda, se comprueba que la sugerencia hecha al usuario es válida y se construye el objeto `SearchResult` que devuelve el método `Query` de la clase `Moogle`, mediante un arreglo de objetos `SearchItem`, que adicionalmente, contiene un arreglo de *SnippetResult*, *Pos_SnippetResult* y *Words_not_result*, con las líneas del *Snippet*, las posiciones de dichas líneas en el documento y la lista de palabras de la *Query* que no fueron encontradas en el documento.
 
 ## Implementación en Moogle Server 
 

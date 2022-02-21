@@ -19,11 +19,11 @@ public class QueryClass
     public string txt {get; private set;}
     //Guardar el texto de la query original
     public string original {get; private set;}
-    //Para determinar si no hay resultados
-    public bool no_results = false;
     public static int Snippet_len = 20;
     #endregion 
     #region Private_Property
+    //Para determinar si no hay resultados
+    private bool no_results = false;
     //Guardar los pesos de las palabras de la query
     private Dictionary<string, double> words_query = new Dictionary<string, double>();
      //Guardar los sinonimos y las palabras con la misma raiz q las de nuestra query
@@ -96,7 +96,6 @@ public class QueryClass
         for(int i=0;i<s.Length;i++)
         {
             string word = s[i];
-            if(word == "") continue;
             word = Document.Sign_Puntuation(word,true);
             if(word == "") continue;
             word = word.ToLower();
@@ -170,8 +169,8 @@ public class QueryClass
         {
             for (int m = 0; m < close_words.Length; m++)
             {
-                if (close_words[m] == "") continue;
                 close_words[m] = Document.Sign_Puntuation(close_words[m]);
+                if(close_words[m]=="") continue;
                 if (Corpus_Data.vocabulary.ContainsKey(close_words[m]))
                 {
                     Frecuency_Query(close_words[m]);
@@ -292,7 +291,7 @@ public class QueryClass
     private void Search_Synonymous(string word)
     {
         //Recorremos la lista de los sinonimos
-        foreach (var line in Corpus_Data.synonymous)
+        foreach (var line in Corpus_Data.synonymous!)
         {
             for (int i = 0; i < line.Length; i++)
             {
@@ -523,7 +522,7 @@ public class QueryClass
                 }
             }
             else mod_query = norma;
-            mod_doc = Document.documents[i].norma;
+            mod_doc = Document.documents![i].norma;
             if (mod_query * mod_doc != 0)
             {
                 //Calculamos la similitud del coseno
@@ -709,8 +708,6 @@ public class QueryClass
                 }
                 if(i==Snippetwords.Count) break; 
                 string word = linea[j];
-                //Si nos encontramos una linea vacia seguimos
-                if (word == "") continue;
                 //Quitamos los signos de puntuacion
                 word = Document.Sign_Puntuation(word);
                 //Si solo es un signo de puntuacion seguimos

@@ -3,7 +3,7 @@ namespace MoogleEngine;
 public class Document
 {
     //Guardar una lista con todos los documentos del corpus
-    public static List<Document> documents {get; set;}
+    public static List<Document>? documents {get; set;}
     //Guardar la cantidad de documentos
     public static int cantdoc {get; set;}
     //Guardar la frecuencia de la palabra que mas se repite por documento
@@ -39,8 +39,6 @@ public class Document
             for (int j = 0; j < s.Length; j++)
             {
                 string word = s[j];
-                //Si nos encontramos una linea vacia seguimos
-                if (word == "") continue;
                 //Quitamos los signos de puntuacion
                 word = Sign_Puntuation(word);
                 //Si solo es un signo de puntuacion seguimos
@@ -58,6 +56,7 @@ public class Document
     /// <returns>Una palabra tras eliminar los extremos no alfanumericos</returns>
     public static string Sign_Puntuation(string s, bool query = false)   
     {
+        if(s=="") return s;
         int start = 0; int stop = 0;
         //Recorremos la palabra de izqueierda a derecha y paramos cuando hallemos una letra
         for (int i = 0; i < s.Length; i++)
@@ -70,10 +69,7 @@ public class Document
                 if (s[i] == '!' || s[i] == '*' || s[i] == '^' || s[i] == '"' || s[i] == '?') operators = true;
             }
             //Si nos encontramos una letra paramos y guardamos la posicion
-            if (!operators && !char.IsLetterOrDigit(s[i]))
-            {
-                next = true;
-            }
+            if (!operators && !char.IsLetterOrDigit(s[i])) next = true;
             if (!next)
             {
                 start = i; break;
@@ -91,10 +87,7 @@ public class Document
                 if (s[s.Length - 1 - i] == '"'||s[s.Length - 1 - i] == '?') operators = true;
             }
             //Si nos encontramos una letra paramos y guardamos la posicion
-            if (!operators && !char.IsLetterOrDigit(s[s.Length - 1 - i]))
-            {
-                next = true;
-            }
+            if (!operators && !char.IsLetterOrDigit(s[s.Length - 1 - i])) next = true;
             if (!next)
             {
                 stop = s.Length - 1 - i; break;
@@ -114,7 +107,7 @@ public class Document
             word.Value.word_cant_doc = word_cantdoc(word.Value.weight_doc);
             for (int j = 0; j < Document.cantdoc; j++)
             {
-                word.Value.weight_doc[j] = (word.Value.weight_doc[j] / Document.documents[j].max) * Math.Log((double)Document.cantdoc / (double)word.Value.word_cant_doc);
+                word.Value.weight_doc[j] = (word.Value.weight_doc[j] / Document.documents![j].max) * Math.Log((double)Document.cantdoc / (double)word.Value.word_cant_doc);
                 Document.documents[j].norma += word.Value.weight_doc[j] * word.Value.weight_doc[j];
             }
         }

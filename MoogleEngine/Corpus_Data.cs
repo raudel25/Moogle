@@ -3,7 +3,7 @@ namespace MoogleEngine;
 public static class Corpus_Data
 {
     //Guardar los sinonimos cargados de nuestro json
-    public static List<string[]> synonymous {get; set;}
+    public static List<string[]>? synonymous {get; set;}
     //Guardamos las palabras de nuestro corpus
     public static Dictionary<string, DataStructure> vocabulary = new Dictionary<string, DataStructure>();
     /// <summary>Metodo para el indexar los terminos en el corpus</summary>
@@ -14,9 +14,7 @@ public static class Corpus_Data
     {
         if (!vocabulary.ContainsKey(word))
         {
-            DataStructure data = new DataStructure();
-            data.weight_doc = new double[Document.cantdoc];
-            data.Pos_doc = new List<int>[Document.cantdoc];
+            DataStructure data = new DataStructure(Document.cantdoc);
             vocabulary.Add(word, data);
         }
         if (vocabulary[word].weight_doc[document.index] == 0)
@@ -37,8 +35,13 @@ public class DataStructure
     public double word_cant_doc { get; set; }
     //Guardamos las posiciones de la palabra en cada documento
     public List<int>[] Pos_doc { get; set; }
+    public DataStructure(int n)
+    {
+        this.weight_doc=new double[n];
+        this.Pos_doc=new List<int>[n];
+    }
 }
 public class Synonymous
 {
-    public List<string[]> synonymous { get; set; }
+    public List<string[]>? synonymous { get; set; }
 }

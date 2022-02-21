@@ -10,8 +10,7 @@ public static class Moogle
         QueryClass query_object = new QueryClass(query);
         //Comprobando la sugerencia
         string suggestion="";
-        if(query_object.txt==query_object.original) suggestion="";
-        else suggestion=query_object.txt;
+        if(query_object.txt!=query_object.original) suggestion=query_object.txt;
         if(query_object.txt=="") return new SearchResult(BuildItem(query_object));
         else
         {
@@ -40,10 +39,7 @@ public static class Moogle
         Document.documents = new List<Document>();
         int q = 0;
         //Contamos la cantidad de documentos
-        foreach (var i in list)
-        {
-            q++;
-        }
+        foreach (var i in list) q++;
         Document.cantdoc = q;
         q = 0;
         foreach (var i in list)
@@ -54,8 +50,8 @@ public static class Moogle
         }
         //Deserializamos nuestra base de datos de sinonimos
         string jsonstring = File.ReadAllText("..//synonymous.json");
-        Synonymous sin = JsonSerializer.Deserialize<Synonymous>(jsonstring);
-        Corpus_Data.synonymous = sin.synonymous;
+        Synonymous sin = JsonSerializer.Deserialize<Synonymous>(jsonstring)!;
+        Corpus_Data.synonymous = sin!.synonymous;
         Document.Tf_IdfDoc();
     } 
 }

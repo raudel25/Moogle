@@ -10,7 +10,7 @@
 
 <ul>
     <p align="justify">
-        @foreach (var (item, index) in Server.Read(id, page).Select((value, i) => (value, i)))
+        @foreach (var (item, index) in Server.Read(id!, page).Select((value, i) => (value, i)))
         {
             @if (index + page == pos)
             {
@@ -49,7 +49,7 @@
 
 @code {
     [Parameter]
-    public string id { get; set; }
+    public string? id { get; set; }
     [Parameter]
     public int pos { get; set; }
     [Parameter]
