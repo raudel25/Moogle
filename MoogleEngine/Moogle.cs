@@ -8,26 +8,27 @@ public static class Moogle
     {
         // Modifique este método para responder a la búsqueda
         QueryClass query_object = new QueryClass(query);
-        //Comprobando la sugerencia
-        string suggestion="";
-        if(query_object.txt!=query_object.original) suggestion=query_object.txt;
-        if(query_object.txt=="") return new SearchResult(BuildItem(query_object));
-        else
+        //Comprobamos la sugerencia
+        if(query_object.suggestion_query=="") 
         {
-            QueryClass suggestion_object=new QueryClass(suggestion);
-            return new SearchResult(BuildItem(query_object),BuildItem(suggestion_object),suggestion);
+            return new SearchResult(BuildItem(query_object));
+        }
+        else
+        {        
+            QueryClass suggestion_object=new QueryClass(query_object.suggestion_query);
+            return new SearchResult(BuildItem(query_object),BuildItem(suggestion_object),query_object.suggestion_query);
         }
     }
     /// <summary>Construyendo el arreglo de SearchItem</summary>
     /// <param name="query">Query</param>
     /// <returns>Arreglo de SearchItem correspondiente a la query</returns>
-
-    public static SearchItem[] BuildItem(QueryClass query)
+    public static List<SearchItem> BuildItem(QueryClass query)
     {
-        SearchItem[] items = new SearchItem[query.Score.Count];
-        for (int i = 0; i < query.Score.Count; i++)
+        List<SearchItem> items = new List<SearchItem>();
+        for (int i = 0; i < Document.documents!.Count; i++)
         {
-            items[i] = new SearchItem(query.resultsearchDoc[i].title, query.SnippetResult[i], query.Pos_SnippetResult[i], query.Score[i], query.Words_not_result[i]);
+            Document_Result d=new Document_Result(Document.documents[i],query);
+            if(d.item!=null) items.Add(d.item);
         }
         return items;
     }

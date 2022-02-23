@@ -2,30 +2,30 @@ namespace MoogleEngine;
 
 public class SearchResult
 {
-    private SearchItem[] items;
+    private List<SearchItem> items;
 
-    public SearchResult(SearchItem[] items)
+    public SearchResult(List<SearchItem> items)
     {
         if (items == null)
         {
             throw new ArgumentNullException("items");
         }
-        Array.Sort(items,(o1,o2)=>o2.Score.CompareTo(o1.Score));
+        items.Sort((o1,o2)=>o2.Score.CompareTo(o1.Score));
         this.items = items;
         this.Suggestion = "";
         this.Query_Suggestion=null!;
     }
 
-    public SearchResult(SearchItem[] items, SearchItem[] Sugestion_Items ,string suggestion)
+    public SearchResult(List<SearchItem> items, List<SearchItem> Sugestion_Items ,string suggestion)
     {
         if (items == null!)
         {
             throw new ArgumentNullException("items");
         }
-        Array.Sort(items,(o1,o2)=>o2.Score.CompareTo(o1.Score));
+        items.Sort((o1,o2)=>o2.Score.CompareTo(o1.Score));
         this.items = items;
         //Comrobamos si la sugerencia es coreecta
-        if(Sugestion_Items.Length != 0)
+        if(Sugestion_Items.Count != 0)
         {
             this.Query_Suggestion=new SearchResult(Sugestion_Items);
         }
@@ -36,7 +36,7 @@ public class SearchResult
         } 
         this.Suggestion = suggestion;
     }
-    public SearchResult() : this(new SearchItem[0])
+    public SearchResult() : this(new List<SearchItem>())
     {
 
     }
@@ -48,6 +48,6 @@ public class SearchResult
         return this.items;
     }
 
-    public int Count { get { return this.items.Length; } }
+    public int Count { get { return this.items.Count; } }
     public SearchResult Query_Suggestion {get; set;}
 }

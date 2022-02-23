@@ -18,7 +18,7 @@ public static class Distance_Word
         switch(d)
         {
             case Distance.Snippet: 
-                return Shortest_Distance_Word(words, document, 1, QueryClass.Snippet_len);
+                return Shortest_Distance_Word(words, document, 1, Document_Result.Snippet_len);
             case Distance.SearchLiteral:
                 return Literal(words,document);
             default:
