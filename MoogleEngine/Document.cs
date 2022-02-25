@@ -3,25 +3,25 @@ namespace MoogleEngine;
 public class Document
 {
     //Guardar una lista con todos los documentos del corpus
-    public static List<Document>? documents {get; set;}
+    public static List<Document>? Documents {get; set;}
     //Guardar la cantidad de documentos
-    public static int cantdoc {get; set;}
+    public static int Cantdoc {get; set;}
     //Guardar la frecuencia de la palabra que mas se repite por documento
-    public int max {get; set;}
+    public int Max {get; set;}
     //Guardar el indice del documento
-    public int index {get; private set;}
+    public int Index {get; private set;}
     //Guardar el titulo del documento
-    public string title {get; private set;}
+    public string Title {get; private set;}
     //Guardar la ruta del documento
-    public string path {get; private set;}
-    public double norma {get; set;}
+    public string Path {get; private set;}
+    public double Norma {get; set;}
     public Document(string[] doc, string title, int q)
     {
-        this.max=1;
-        this.path = title;
-        this.title = title.Substring(12, title.Length - 5 - 12 + 1);
-        this.index = q;
-        this.norma=0;
+        this.Max=1;
+        this.Path = title;
+        this.Title = title.Substring(12, title.Length - 5 - 12 + 1);
+        this.Index = q;
+        this.Norma=0;
         Token(doc, q);
     }
     #region Token
@@ -102,13 +102,13 @@ public class Document
     /// <summary>Metodo para calcular el TF_idf de los documentos</summary>
     public static void Tf_IDFDoc()
     {
-        foreach (var word in Corpus_Data.vocabulary)
+        foreach (var word in Corpus_Data.Vocabulary)
         {
-            word.Value.word_cant_doc = word_cantdoc(word.Value.weight_doc);
-            for (int j = 0; j < Document.cantdoc; j++)
+            word.Value.Word_Cant_Doc = word_cantdoc(word.Value.Weight_Doc);
+            for (int j = 0; j < Document.Cantdoc; j++)
             {
-                word.Value.weight_doc[j] = (word.Value.weight_doc[j] / Document.documents![j].max) * Math.Log((double)Document.cantdoc / (double)word.Value.word_cant_doc);
-                Document.documents[j].norma += word.Value.weight_doc[j] * word.Value.weight_doc[j];
+                word.Value.Weight_Doc[j] = (word.Value.Weight_Doc[j] / Document.Documents![j].Max) * Math.Log((double)Document.Cantdoc / (double)word.Value.Word_Cant_Doc);
+                Document.Documents[j].Norma += word.Value.Weight_Doc[j] * word.Value.Weight_Doc[j];
             }
         }
     }
@@ -117,7 +117,7 @@ public class Document
     private static int word_cantdoc(double[] words)
     {
         int cant = 0;
-        for (int i = 0; i < Document.cantdoc; i++)
+        for (int i = 0; i < Document.Cantdoc; i++)
         {
             if (words[i] != 0) cant++;
         }

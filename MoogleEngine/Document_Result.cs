@@ -3,7 +3,7 @@ using System.Text;
 namespace MoogleEngine;
 public class Document_Result
 {
-    public SearchItem? item {get; set;}
+    public SearchItem? Item {get; set;}
     public static int Snippet_len=20;
     public Document_Result(Document document,QueryClass query)
     { 
@@ -21,7 +21,7 @@ public class Document_Result
         if(!ResultSearch(words_doc, words_no_doc, words_docLiteral, Pos_SearchLiteral, score, document, query)) return;
         //Buscamos los Snippets
         (string[],int[]) aux=Snippet(words_doc, Pos_SearchLiteral, document, query);
-        item = new SearchItem(document.title,aux.Item1,aux.Item2,score,words_no_doc);
+        Item = new SearchItem(document.Title,aux.Item1,aux.Item2,score,words_no_doc);
     }
     #region Search_Result
     /// <summary>Metodo para calcular la similitud del coseno</summary>
@@ -37,15 +37,15 @@ public class Document_Result
         double mod_query = 0, query_x_doc = 0, mod_doc = 0;
         query_x_doc = 0; mod_doc = 0;
             
-            foreach (var word_dic in query.words_query)
+            foreach (var word_dic in query.Words_Query)
             {
                 //Calculamos el producto de los 2 vectores
-                query_x_doc += Corpus_Data.vocabulary[word_dic.Key].weight_doc[document.index] * word_dic.Value;
-                if (Corpus_Data.vocabulary[word_dic.Key].weight_doc[document.index] * word_dic.Value != 0)
+                query_x_doc += Corpus_Data.Vocabulary[word_dic.Key].Weight_Doc[document.Index] * word_dic.Value;
+                if (Corpus_Data.Vocabulary[word_dic.Key].Weight_Doc[document.Index] * word_dic.Value != 0)
                 {
                     words_doc.Add(word_dic.Key);
                 }
-                if (Corpus_Data.vocabulary[word_dic.Key].Pos_doc[document.index] != null)
+                if (Corpus_Data.Vocabulary[word_dic.Key].Pos_Doc[document.Index] != null)
                 {
                     words_docLiteral.Add(word_dic.Key);
                 }
@@ -55,22 +55,22 @@ public class Document_Result
             if (words_doc.Count == 0)
             {
                 //Si no tenemos resultados buscamos las raices y los sinonimos
-                foreach (var word_dic in query.words_Stemming_Syn)
+                foreach (var word_dic in query.Words_Stemming_Syn)
                 {
-                    query_x_doc += Corpus_Data.vocabulary[word_dic.Key].weight_doc[document.index] * word_dic.Value[0];
-                    if (Corpus_Data.vocabulary[word_dic.Key].weight_doc[document.index] * word_dic.Value[0] != 0)
+                    query_x_doc += Corpus_Data.Vocabulary[word_dic.Key].Weight_Doc[document.Index] * word_dic.Value[0];
+                    if (Corpus_Data.Vocabulary[word_dic.Key].Weight_Doc[document.Index] * word_dic.Value[0] != 0)
                     {
                         words_doc.Add(word_dic.Key);
                     }
                 }
-                mod_query = query.norma_Stemming_Syn;
+                mod_query = query.Norma_Stemming_Syn;
                 if (query_x_doc != 0) 
                 {
                     factor = double.MinValue;
                 }
             }
-            else mod_query = query.norma;
-            mod_doc = Document.documents![document.index].norma;
+            else mod_query = query.Norma;
+            mod_doc = Document.Documents![document.Index].Norma;
             if (mod_query * mod_doc != 0)
             {
                 //Calculamos la similitud del coseno
@@ -90,7 +90,7 @@ public class Document_Result
         //Comprobamos el operador de Exclusion
         for (int m = 0; m < query.Exclude.Count; m++)
         {
-            if (Corpus_Data.vocabulary[query.Exclude[m]].Pos_doc[doc.index] != null)
+            if (Corpus_Data.Vocabulary[query.Exclude[m]].Pos_Doc[doc.Index] != null)
             {
                 return false;
             }
@@ -98,7 +98,7 @@ public class Document_Result
         //Comprobamos el operador de Inclusion
         for (int m = 0; m < query.Include.Count; m++)
         {
-            if (Corpus_Data.vocabulary[query.Include[m]].Pos_doc[doc.index] == null)
+            if (Corpus_Data.Vocabulary[query.Include[m]].Pos_Doc[doc.Index] == null)
             {
                 return false;
             }
@@ -112,15 +112,15 @@ public class Document_Result
     /// <returns>Bool indicando si el documento es valido para el operador busqueda literal</returns>
     private static bool SearchLiteral_Operator(List<string> words_doc, Document doc,QueryClass query, List<int> Pos_SearchLiteral)
     {
-        for (int i = 0; i < query.SearchLiteral_words.Count; i++)
+        for (int i = 0; i < query.SearchLiteral_Words.Count; i++)
         {
             //Evaluamos los parametros para la busqueda literal
-            for (int j = 0; j < query.SearchLiteral_words[i].Count; j++)
+            for (int j = 0; j < query.SearchLiteral_Words[i].Count; j++)
             {
-                if(query.SearchLiteral_words[i][j]=="?") continue;
-                if (Corpus_Data.vocabulary[query.SearchLiteral_words[i][j]].Pos_doc[doc.index] == null) return false;
+                if(query.SearchLiteral_Words[i][j]=="?") continue;
+                if (Corpus_Data.Vocabulary[query.SearchLiteral_Words[i][j]].Pos_Doc[doc.Index] == null) return false;
             }
-            int pos_literal = Distance_Word.Distance_Literal(query.SearchLiteral_words[i], doc);
+            int pos_literal = Distance_Word.Distance_Literal(query.SearchLiteral_Words[i], doc);
             if (pos_literal == -1) return false;
             //Guardamos la posicion de la busqueda literal encontrada
             Pos_SearchLiteral.Add(pos_literal);
@@ -168,12 +168,12 @@ public class Document_Result
     {
         List<int> words_list = new List<int>();
         //Comprobamos si tenemos resultados de busqueda literal
-        if (query.SearchLiteral_words.Count > 0)
+        if (query.SearchLiteral_Words.Count > 0)
             {
-                for (int x = 0; x < query.SearchLiteral_words.Count; x++)
+                for (int x = 0; x < query.SearchLiteral_Words.Count; x++)
                 {
                     //Removemos la palabra de la busqueda literal, de la lista de palabras del snippet
-                    foreach (var y in query.SearchLiteral_words[x])
+                    foreach (var y in query.SearchLiteral_Words[x])
                     {
                         if (Snippetwords.Contains(y)) Snippetwords.Remove(y);
                     }
@@ -198,7 +198,7 @@ public class Document_Result
     private static (string[],int[]) BuildSinipped(Document document, List<int> Snippetwords)
     {
         Snippetwords.Sort();
-        string[] doc = File.ReadAllLines(document.path);
+        string[] doc = File.ReadAllLines(document.Path);
         string[] addSnippet = new string[Snippetwords.Count];
         int[] addposSnippet = new int[Snippetwords.Count];
         //Recorremos el documento

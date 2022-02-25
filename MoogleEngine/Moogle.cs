@@ -8,14 +8,14 @@ public static class Moogle
     {
         QueryClass query_object = new QueryClass(query);
         //Comprobamos la sugerencia
-        if(query_object.suggestion_query=="") 
+        if(query_object.Suggestion_Query=="") 
         {
             return new SearchResult(BuildItem(query_object));
         }
         else
         {        
-            QueryClass suggestion_object=new QueryClass(query_object.suggestion_query);
-            return new SearchResult(BuildItem(query_object),BuildItem(suggestion_object),query_object.suggestion_query);
+            QueryClass suggestion_object=new QueryClass(query_object.Suggestion_Query);
+            return new SearchResult(BuildItem(query_object),BuildItem(suggestion_object),query_object.Suggestion_Query);
         }
     }
     /// <summary>Construyendo el arreglo de SearchItem</summary>
@@ -24,10 +24,10 @@ public static class Moogle
     public static List<SearchItem> BuildItem(QueryClass query)
     {
         List<SearchItem> items = new List<SearchItem>();
-        for (int i = 0; i < Document.documents!.Count; i++)
+        for (int i = 0; i < Document.Documents!.Count; i++)
         {
-            Document_Result d=new Document_Result(Document.documents[i],query);
-            if(d.item!=null) items.Add(d.item);
+            Document_Result d=new Document_Result(Document.Documents[i],query);
+            if(d.Item!=null) items.Add(d.Item);
         }
         return items;
     }
@@ -36,22 +36,22 @@ public static class Moogle
     public static void Index_Corpus()
     {
         var list = Directory.EnumerateFiles("..//Content", "*.txt");
-        Document.documents = new List<Document>();
+        Document.Documents = new List<Document>();
         int q = 0;
         //Contamos la cantidad de documentos
         foreach (var i in list) q++;
-        Document.cantdoc = q;
+        Document.Cantdoc = q;
         q = 0;
         foreach (var i in list)
         {
             Document d1 = new Document(File.ReadAllLines(i), i, q);
-            Document.documents.Add(d1);
+            Document.Documents.Add(d1);
             q++;
         }
         //Deserializamos nuestra base de datos de sinonimos
         string jsonstring = File.ReadAllText("..//synonymous.json");
         Synonymous sin = JsonSerializer.Deserialize<Synonymous>(jsonstring)!;
-        Corpus_Data.synonymous = sin!.synonymous;
+        Corpus_Data.Synonymous = sin!.synonymous;
         Document.Tf_IDFDoc();
     } 
 }

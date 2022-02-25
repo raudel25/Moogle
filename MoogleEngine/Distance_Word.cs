@@ -8,9 +8,9 @@ public static class Distance_Word
     /// <returns>Posicion de la busqueda literal</returns>
     public static int Distance_Literal(List<string> words,Document document)
     {
-        int pos_rnd=0;
         ((int,int)[],int) aux = List_Pos_Words(words,document);
         (int,int)[] Pos_words_Sorted = aux.Item1;
+        int pos_rnd=aux.Item2;
         int ind=0;
         int pos=Pos_words_Sorted[0].Item2;
         int pos_literal=-1;
@@ -159,7 +159,7 @@ public static class Distance_Word
                     continue;
                 }
             }
-            Pos_words_Sorted = Sorted(Pos_words_Sorted, BuildTuple(Corpus_Data.vocabulary[words[i]].Pos_doc[document.index], i,pos_rnd));
+            Pos_words_Sorted = Sorted(Pos_words_Sorted, BuildTuple(Corpus_Data.Vocabulary[words[i]].Pos_Doc[document.Index], i,pos_rnd));
         }
         return (Pos_words_Sorted,pos_rnd);
     }
