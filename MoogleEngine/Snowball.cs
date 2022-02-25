@@ -9,7 +9,7 @@ public static class Snowball
     /// <returns>Raiz de la palabra</returns>
     public static string Stemmer(string word)
     {
-        Tuple<int, int, int> t = R1_R2_RV(word);
+        (int, int, int) t = R1_R2_RV(word);
         int r1 = t.Item1;
         int r2 = t.Item2;
         int rv = t.Item3;
@@ -26,7 +26,7 @@ public static class Snowball
     }
     /// <summary>Metodo para determinar las regiones del lemmatizador</summary>
     /// <returns>Numero de caracteres desde el inicio de la palabra no contenidos en la region indicada</returns>
-    static Tuple<int, int, int> R1_R2_RV(string word)
+    static (int, int, int) R1_R2_RV(string word)
     {
         int r1 = word.Length;
         int r2 = word.Length;
@@ -82,7 +82,7 @@ public static class Snowball
                 rv = 3;
             }
         }
-        return new Tuple<int, int, int>(r1, r2, rv);
+        return new (r1, r2, rv);
     }
     /// <summary>Pronombre adjunto, gerundios e infinitivos</summary>
     /// <returns>Raiz de la palabra luego de realizar el paso</returns>

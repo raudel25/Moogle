@@ -6,7 +6,6 @@ public static class Moogle
 {
     public static SearchResult Query(string query)
     {
-        // Modifique este método para responder a la búsqueda
         QueryClass query_object = new QueryClass(query);
         //Comprobamos la sugerencia
         if(query_object.suggestion_query=="") 
@@ -53,6 +52,6 @@ public static class Moogle
         string jsonstring = File.ReadAllText("..//synonymous.json");
         Synonymous sin = JsonSerializer.Deserialize<Synonymous>(jsonstring)!;
         Corpus_Data.synonymous = sin!.synonymous;
-        Document.Tf_IdfDoc();
+        Document.Tf_IDFDoc();
     } 
 }

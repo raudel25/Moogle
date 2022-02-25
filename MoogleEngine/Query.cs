@@ -42,7 +42,7 @@ public class QueryClass
         this.highest_relevance = new Dictionary<string, int>();
         Operators(query);
         if(no_results) return;
-        TF_idfC();
+        TF_IDFC();
         //Comprobamos la sugerencia
         if(this.suggestion_query==query) this.suggestion_query="";
     }
@@ -73,7 +73,7 @@ public class QueryClass
     public void Operators(string query)
     {
         //Tokenizamos nuestro query
-        string[] s=query.Split(' ');
+        string[] s=query.Split();
         for(int i=0;i<s.Length;i++)
         {
             string word = s[i];
@@ -84,7 +84,7 @@ public class QueryClass
             if (Close_Operator(word)) continue;
             if (Exclude_Operator(word)) continue;
             if (Include_Operator(word)) continue;
-            if (highest_relevance_Operator(word)) continue;
+            if (Highest_relevance_Operator(word)) continue;
             word=Document.Sign_Puntuation(word);
             if(word=="") continue;
             //Comprobamos si la palabra a buscar existe en nuestro sistema
@@ -95,7 +95,7 @@ public class QueryClass
             else
             {
                 //Si la palabra no existe procedemos a dar una recomendacion
-                suggestion(word);
+                Suggestion(word);
             }
             //Buscamos los sinonimos y las raices de la palabra
             Search_Stemming(word);
@@ -132,7 +132,7 @@ public class QueryClass
             {
                 //Si no esta la palabra en nuestro corpus no hay resultados
                 no_results=true;
-                suggestion(word);
+                Suggestion(word);
             }
             return true;
         }
@@ -158,7 +158,7 @@ public class QueryClass
                 }
                 else
                 {   
-                    suggestion(close_words[m]);
+                    Suggestion(close_words[m]);
                 }
                 close.Add(close_words[m]);
             }
@@ -186,7 +186,7 @@ public class QueryClass
             }
             else
             {
-                suggestion(word);
+                Suggestion(word);
             }
             return true;
         }
@@ -208,7 +208,7 @@ public class QueryClass
             }
             else
             {
-                suggestion(word);
+                Suggestion(word);
                 //Si no esta la palabra en nuestro corpus no hay resultados
                 no_results=true;
             }
@@ -219,7 +219,7 @@ public class QueryClass
     /// <summary>Metodo para el operador MayorRelevancia</summary>
     /// <param name="word">String que contiene los operadores</param>
     /// <returns>Bool indicando si el operador fue encontrado</returns>
-    private bool highest_relevance_Operator(string word)
+    private bool Highest_relevance_Operator(string word)
     {
         if (word[0] == '*')
         {
@@ -234,12 +234,12 @@ public class QueryClass
             if (word == "") return true;
             if (Corpus_Data.vocabulary.ContainsKey(word))
             {
-                highest_relevance.Add(word, a + 1);
+                highest_relevance.Add(word, a + 1 );
                 Frecuency_Query(word);
             }
             else
             {
-                suggestion(word);
+                Suggestion(word);
             }
             return true;
         }
@@ -296,9 +296,9 @@ public class QueryClass
     #region Suggestion
     /// <summary>Metodo para dar las recomendaciones</summary>
     /// <param name="word">String q contiene la palabra</param>
-    private void suggestion(string word)
+    private void Suggestion(string word)
     {
-        string a = suggestion_word(word);
+        string a = Suggestion_word(word);
         //Modifiquemos nuestro txt de la query por la palabra recomendada
         for (int m = 0; m <= suggestion_query.Length - word.Length; m++)
         {
@@ -312,7 +312,7 @@ public class QueryClass
     /// <summary>Metodo para encontrar la palabra mas cercana</summary>
     /// <param name="word">String q contiene la palabra</param>
     /// <returns>Palabra con la sugerencia a la busqueda</returns>
-    private string suggestion_word(string word)
+    private static string Suggestion_word(string word)
     {
         string suggestion = "";
         double suggestionTF_IDF = 0;
@@ -445,14 +445,14 @@ public class QueryClass
 
     #region TF_IDF
     /// <summary>Metodo para calcular el Tf_idf de nuestra query</summary>
-    private void TF_idfC()
+    private void TF_IDFC()
     {
         foreach (var word in words_query)
         {
             //Factor para modificar el peso de la palabra
-            double a = 1;
+            double a = 0;
             if (highest_relevance.ContainsKey(word.Key)) a = highest_relevance[word.Key];
-            words_query[word.Key] = (a * word.Value / (double)max) * Math.Log((double)Document.cantdoc / (double)Corpus_Data.vocabulary[word.Key].word_cant_doc);
+            words_query[word.Key] = (Math.Pow(Math.E, a) * word.Value / (double)max) * Math.Log((double)Document.cantdoc / (double)Corpus_Data.vocabulary[word.Key].word_cant_doc);
             norma += words_query[word.Key] * words_query[word.Key];
         }
         foreach (var word in words_Stemming_Syn)

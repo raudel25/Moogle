@@ -73,61 +73,56 @@ Cuando el usuario introduce una nueva *Query* se crea un objeto de la clase `Que
 
 Por cada documento se crea un objeto `Document_Result` y se analizan los requisitos de este con respecto a la búsqueda:
 - Se comparan los datos de los vectores documento almacenados en `Corpus_Data`, con el vector consulta mediante el método `SimVectors` y se calcula el *Score* de cada documento teniendo en cuenta la influencia de los operadores mediante el método `ResultSearch`.
-- Para tener en cuenta las condiciones de los operadores `Close` y `SearchLiteral`, se emplea la clase `Distance_Word` donde está el método `Shortest_Distance_Word` que devuelve la mínima distancia entre una lista de palabras en un determinado documento y el método `Literal` que se encarga de buscar en un documento y determinar la posición de las palabras que están especificadas en el operador `SearchLiteral`.
-- Se construye el *Snippet* de cada uno de los docuemnto mediante el método `Snippet`, si hay resultados del operador `SearchLiteral` se muestra una línea por cada grupo de palabras de dicho operador. Por otro lado se define un tamaño máximo de 20 palabras para cada línea, luego se llama al método `Shortest_Distance_Word` de la clase `Distance_Word`, el cual determina el máximo número de palabras resultantes de la búsqueda que ocupan una ventana del texto de tamaño 20 y las posiciones en que estas se encuentran, si todas estas palabras no fueron contenidas en dicha ventana se realiza el mismo procedimiento con las restantes.
+- Para tener en cuenta las condiciones de los operadores `Close` y `SearchLiteral`, se emplea la clase `Distance_Word` donde está el método `Distance_Close` que devuelve la mínima distancia entre una lista de palabras en un determinado documento y el método `Distance_Literal` que se encarga de buscar en un documento y determinar la posición de las palabras que están especificadas en el operador `SearchLiteral`.
+- Se construye el *Snippet* de cada uno de los docuemnto mediante el método `Snippet`, si hay resultados del operador `SearchLiteral` se muestra una línea por cada grupo de palabras de dicho operador. Por otro lado se define un tamaño máximo de 20 palabras para cada línea, luego se llama al método `Distance_Snippet` de la clase `Distance_Word`, el cual determina el máximo número de palabras resultantes de la búsqueda que ocupan una ventana del texto de tamaño 20 y las posiciones en que estas se encuentran, si todas estas palabras no fueron contenidas en dicha ventana se realiza el mismo procedimiento con las restantes, hasta obtener com máximo 5 *Snippets* por documento.
 - Con las posiciones obtenidas en el método `Snippet`, se lee el documento y se guarda el texto contenido en dichas posiciones mediante el método `BuildSinipped`.
-- Una vez concluida la búsqueda, se comprueba que la sugerencia hecha al usuario es válida y se construye el objeto `SearchResult` que devuelve el método `Query` de la clase `Moogle`, mediante una lista de objetos `SearchItem`, que adicionalmente, contiene un arreglo de *SnippetResult*, *Pos_SnippetResult* y *Words_not_result*, con las líneas del *Snippet*, las posiciones de dichas líneas en el documento y la lista de palabras de la *Query* que no fueron encontradas en el documento.
+- Una vez concluida la búsqueda, se comprueba que la sugerencia hecha al usuario es válida y se construye el objeto `SearchResult` que devuelve el método `Query` de la clase `Moogle`, mediante una lista de objetos `SearchItem`, que adicionalmente, contiene un arreglo con las líneas del *Snippet*, las posiciones de dichas líneas en el documento y la lista de palabras de la *Query* que no fueron encontradas en el documento.
 
 ### Implementación para la mínima distancia entre un grupo de palabras
 
 ```cs
-search_min_dist = new Queue<Tuple<int, int>>();
-posList = new int[words.Count];
+//Recorremos el array buscando la minima ventana q contenga a todas las palabras
 for (int i = 0; i < Pos_words_Sorted.Length; i++)
 {
     search_min_dist.Enqueue(Pos_words_Sorted[i]);
     posList[Pos_words_Sorted[i].Item1]++;
-    Tuple<bool, List<int>> all = AllContains(posList, j,ocurrence);
-    if (all.Item1)
+    if(posList[Pos_words_Sorted[i].Item1]==ocurrence[Pos_words_Sorted[i].Item1]) contains++;
+    if (contains == min_words)
     {
-        //Si la cantidad de palabras correcta esta en la cola tratamos de ver cuantas 
-        //podemos sacar
-        list_aux = all.Item2;
-        while (true)
+    //Si la cantidad de palabras correcta esta en la cola tratamos de ver cuantas podemos
+    //sacar
+        (int, int) eliminate;
+        while(true)
         {
             //Buscamos la posible palabra a eliminar de la cola
-            Tuple<int, int> eliminate = search_min_dist.Peek();
-            posList[eliminate.Item1]--;
-            Tuple<bool, List<int>> tuple = AllContains(posList, j, ocurrence);
-            if (tuple.Item1)
-            {
-                //Si la cantidad de palabras correctas en la cola no se altera sacamos la
-                //palabra de la cola
-                list_aux = tuple.Item2;
-                search_min_dist.Dequeue();
-            }
+            eliminate = search_min_dist.Peek();
+            if(posList[eliminate.Item1]==ocurrence[eliminate.Item1]) break;
             else
             {
-                posList[eliminate.Item1]++;
-                break;
+                search_min_dist.Dequeue();
+                posList[eliminate.Item1]--;
             }
         }
         //Comprobamos si la distancia obtenida es menor que la q teniamos
         if (Pos_words_Sorted[i].Item2 - search_min_dist.Peek().Item2 + 1 < minDist)
         {
-            index_words_in_range = list_aux;
-            minDist = Pos_words_Sorted[i].Item2 - search_min_dist.Peek().Item2 + 1;
+            Words_Not_Range(words,posList,ocurrence,words_not_range);
             pos = search_min_dist.Peek().Item2;
+            minDist = Pos_words_Sorted[i].Item2 - search_min_dist.Peek().Item2 + 1;
         }
-        if (Pos_words_Sorted[i].Item2 - search_min_dist.Peek().Item2 + 1 == minDist)
+        else if (Pos_words_Sorted[i].Item2 - search_min_dist.Peek().Item2 + 1 == minDist)
         {
             Random random = new Random();
             if (random.Next(2) == 0)
             {
-                index_words_in_range = list_aux;
+                Words_Not_Range(words,posList,ocurrence,words_not_range);
                 pos = search_min_dist.Peek().Item2;
             }
         }
+        //Sacamos de la cola
+        contains--;
+        posList[eliminate.Item1]--;
+        search_min_dist.Dequeue();
     }
 }
 ```

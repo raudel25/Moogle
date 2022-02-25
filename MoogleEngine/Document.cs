@@ -35,7 +35,7 @@ public class Document
         for (int i = 0; i < doc.Length; i++)
         {
             //Separamos por espacios
-            string[] s = doc[i].Split(' ');
+            string[] s = doc[i].Split();
             for (int j = 0; j < s.Length; j++)
             {
                 string word = s[j];
@@ -100,7 +100,7 @@ public class Document
     
     #region TF_IDF
     /// <summary>Metodo para calcular el TF_idf de los documentos</summary>
-    public static void Tf_IdfDoc()
+    public static void Tf_IDFDoc()
     {
         foreach (var word in Corpus_Data.vocabulary)
         {
