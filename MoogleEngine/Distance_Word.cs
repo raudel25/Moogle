@@ -179,13 +179,16 @@ public static class Distance_Word
             //Si llegamos al ultimo indice encontramos una posicion correcta
             if(ind==words.Count-1-cant_rnd)
             {
-                if(pos_literal==-1) pos_literal=pos-words.Count+1+cant_rnd;
-                else
+                if(pos-words.Count+1+cant_rnd >= 0)
                 {
-                    Random rnd=new Random();
-                    if(rnd.Next(2)==0) pos_literal=pos-words.Count+1+cant_rnd;
+                    if(pos_literal == -1) pos_literal=pos-words.Count+1+cant_rnd;
+                    else
+                    {
+                        Random rnd=new Random();
+                        if(rnd.Next(2)==0) pos_literal=pos-words.Count+1+cant_rnd;
+                    }
+                    literal=true;
                 }
-                literal=true;
                 ind=0;
             }
             return true;
