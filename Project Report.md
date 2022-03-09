@@ -70,7 +70,7 @@ Cuando el usuario introduce una nueva *Query* se crea un objeto de la clase `Que
 Dentro de la clase `QueryClass`, se toma el string que contiene a la *Query* y se procede a separar por espacios y a eliminar los signos de puntuación que no pertenezcan a la identificación de un operador:
 - Se identifican los operadores de búsqueda mediante el método `Operators`. 
 - Se agregó al proyecto un nuevo operador de búsqueda: *Búsqueda Literal*, cuya explicación aparece en la descripción del proyecto.
-- Para el operador de cercanía se consideró la distancia entre *A~B~C* como la mínima ventana del texto que contiene a *A*, *B* y *C* en cualquier orden.
+- Para el operador de cercanía se consideró la distancia entre `A~B~C` como la mínima ventana del texto que contiene a `A`, `B` y `C` en cualquier orden.
 - Una vez identificados los operadores se procede a comprobar la existencia de las palabras de la *Query* en el corpus, en caso contrario, se llama al método `Suggestion`. 
 
 ### Sugerencia
@@ -90,7 +90,7 @@ Para dar mejores resultados en la búsqueda al usuario se identifican las palabr
 
 En la clase `QueryClass` tenemos los diccionarios `Words_Query` y `Words_Stemming_Syn`, los cuales guardan las palabras de la *Query* y las palabras que resultan de la búsqueda de las palabras con la misma raíz y el mismo significado que las de la *Query*, ambos grupos de palabras con su frecuencia respectivamente.
 - Se procede a calcular el *TF-IDF* de las palabras de `Words_Query` y `Words_Stemming_Syn` (en el caso de los sinónimos se divide su frecuencia entre dos, para que posean menos peso las palabras que tienen la misma raíz) y almacenar el resultado en el propio diccionario respectivamente.
-Nota: Aquí se hace una diferenciación entre dos *Query*, una con las palabras originales y otra para las palabras con la misma raíz y el mismo significado. 
+Nota: Aquí se hace una diferenciación entre dos *Querys*, una con las palabras originales y otra para las palabras con la misma raíz y el mismo significado. 
 - En el caso del operador *Mayor Relevancia*, a la hora de calcular el *TF-IDF*, de las palabras que poseen dicho operador, se multiplica la frecuencia de la palabra por el número e, elevado a la cantidad de asteriscos más uno que posea la palabra.
 
 ### Resultados de la Búsqueda
@@ -235,8 +235,3 @@ Se añadió al proyecto una nueva página `Doc.razor`, donde se le brinda al usu
 
 - Cada etiqueta `Tittle` y `Snippet` contiene un enlace a la página `Doc.razor`, la cual recibe como parámetros el título del documento, la posición de la línea y la página donde se encuentra el *Snippet*.
 - La página `Doc.razor` llama al método `Read` de la clase `Server` el cual devuelve las 100 líneas de la página del documento que se quiere mostrar. Además está implementada la posibilidad de visualizar la página anterior, la siguiente y cualquier página del documento a la que quiera acceder el usuario.
-
-## Diagrama de Flujo
-
-![](Proyecto_1.png)
-![](Proyecto_2.png)
