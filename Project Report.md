@@ -112,7 +112,7 @@ Se determina si el documento cumple con los parámetros de los operadores median
 
 ### Snippet
 
-- Se construye el *Snippet* del docuemento mediante el método `Snippet`, si hay resultados del operador `SearchLiteral` se muestra una línea por cada grupo de palabras de dicho operador. Por otro lado se define un tamaño máximo de 20 palabras para cada línea, luego se llama al método `Distance_Snippet` de la clase `Distance_Word`, el cual determina el máximo número de palabras resultantes de la búsqueda que ocupan una ventana del texto de tamaño 20 y las posiciones en que estas se encuentran, si todas estas palabras no fueron contenidas en dicha ventana se realiza el mismo procedimiento con las restantes, hasta obtener como máximo 5 *Snippets* por documento.
+- Se construye el *Snippet* del documento mediante el método `Snippet`, si hay resultados del operador `SearchLiteral` se muestra una línea por cada grupo de palabras de dicho operador. Por otro lado se define un tamaño máximo de 20 palabras para cada línea, luego se llama al método `Distance_Snippet` de la clase `Distance_Word`, el cual determina el máximo número de palabras resultantes de la búsqueda que ocupan una ventana del texto de tamaño 20 y las posiciones en que estas se encuentran, si todas estas palabras no fueron contenidas en dicha ventana se realiza el mismo procedimiento con las restantes, hasta obtener como máximo 5 *Snippets* por documento.
 - Con las posiciones obtenidas en el método `Snippet`, se lee el documento y se guarda el texto contenido en dichas posiciones mediante el método `BuildSinipped`.
 
 ### Resultados Obtenidos
@@ -229,7 +229,7 @@ Se añadió al proyecto una nueva página `Doc.razor`, donde se le brinda al usu
 
 ### Suggestion
 
-- Se utilizó el evento `onclick` que llama al método `Suggestion` el cual permite realizar una nueva consulta con la query `suggestion`.
+- Se utilizó el evento `onclick` que llama al método `Suggestion` el cual permite realizar una nueva consulta con la *Query* `suggestion`.
 
 ### Visualizar el Documento
 
