@@ -2,19 +2,23 @@
 
 <PageTitle>Moogle!</PageTitle>
 
-<h1>🔍 Moogle!</h1>
+<div>
+    <h1>🔍 Moogle!</h1>
 
-<ul>
-    <input list="auto" class="p-1 my-4" style="border-radius: 20px; width:400px; text-indent: 3%; border: groove 2px;" @bind="query" @bind:event="oninput" placeholder="Introduzca su búsqueda" @onkeyup="Press">
+    <div style="display:inline-flex;">
+        <input list="auto" class="search"  @bind="query" @bind:event="oninput" placeholder="Introduzca su búsqueda" @onkeyup="Press">
 
-    <button type="default" class="btn btn-primary" style="border-radius: 50px;" @onclick="RunQuery" >🔍 Buscar</button>
-    <datalist id="auto" class="p-1 my-4">
-        @foreach (var item in autoComp)
-        {
-            <option value="@item"></option>
-        }
-    </datalist>
-</ul>
+        <button type="default" class="btn-eliminate" @onclick="EliminateQuery">⨯</button>
+
+        <button type="default" class="btn-search"  @onclick="RunQuery" ><img src="/Search.jpg" align="left" width="32px" height="32px"></button>
+        <datalist id="auto">
+            @foreach (var item in autoComp)
+            {
+                <option value="@item"></option>
+            }
+        </datalist>
+    </div>
+</div>
 
 @if (!string.IsNullOrEmpty(result.Suggestion))
 {
@@ -28,7 +32,7 @@ else
     {
         <ul>
             <img src="/No_Results.jpg" width="350px" height="350px">
-            <h5>No hay resultados para su búsqueda</h5>
+            <h5>No hay resultados para su búsqueda😢</h5>
         </ul>
     }
 }
@@ -49,10 +53,24 @@ else
                 {
                     <p>... <a onmouseover="this.style.color='blue'" onmouseout="this.style.color='black'" style="color: black; text-decoration: none; font-size:medium;"  target='__blank' href=@(item.Title+"/"+(item.Pos_Snippet[i]-item.Pos_Snippet[i]%100)+"/"+item.Pos_Snippet[i])>@item.Snippet[i]</a> ...</p>
                 }
+                <div style="font-size:small;">
+                @if(item.Word_no_doc.Count!=0)
+                {
+                    <span>Falta(n): </span>
+                }
                 @foreach (var item1 in item.Word_no_doc)
                 {
-                    <span style="text-decoration: line-through; font-size:small;">@(item1+" ")</span>
+                    <span style="text-decoration: line-through;">@(item1+" ")</span>       
                 }
+                @if(item.Word_no_doc.Count!=0)
+                {
+                    <span> | Incluir: </span>
+                }
+                @foreach (var item1 in item.Word_no_doc)
+                {
+                    <span><a href="#" @onclick="()=>Include(item1)" onmouseover="this.style.color='blue'" onmouseout="this.style.color='black'" style="color: black; text-decoration: none;">@(item1+" ")</a></span>
+                }
+                </div>
         </div>       
         <br>
     }
@@ -63,6 +81,11 @@ else
     private List<string> autoComp = new List<string>();
     private SearchResult result = new SearchResult();
     private bool Search=false;
+    private void Include(string s)
+    {
+        query="^"+s;
+        RunQuery();
+    }
     private void RunQuery()
     {
         Search=true;
@@ -73,6 +96,10 @@ else
         Search=true;
         query=result.Suggestion;
         result = result.Query_Suggestion;
+    }
+    private void EliminateQuery()
+    {
+        query="";
     }
     private void Press(KeyboardEventArgs e)
     {

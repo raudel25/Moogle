@@ -213,14 +213,28 @@ public class Document_Result
                 {
                     int cant_words_snippet = 0;
                     StringBuilder sb = new StringBuilder();
-                    for (int w = j; w < linea.Length; w++)
+                    bool nextline = linea_ind < doc.Length - 1;
+                    int pos = j;
+                    //Determinamos si es necesario coger palabras anteriores a la posicion indicada
+                    if(nextline)
+                    {
+                        if(doc[linea_ind+1]=="" && linea.Length - j < 20) 
+                        {
+                            pos=(j < 5) ? 0 : j - 5;
+                        }
+                    }
+                    else if(linea.Length - j < 20)
+                    {
+                        pos=(j < 5) ? 0 : j-5;
+                    }
+                    for (int w = pos; w < linea.Length; w++)
                     {
                         sb.Append(linea[w] + " ");
                         cant_words_snippet++;
                         if (cant_words_snippet == Snippet_len) break;
                     }
                     //Si no hemos alcanzado la longitud de nuestro snippet vamos a la linea siguiente
-                    if (cant_words_snippet < Snippet_len && linea_ind < doc.Length - 1)
+                    if (cant_words_snippet < Snippet_len && nextline)
                     {
                         int ind = linea_ind + 1;
                         if (doc[linea_ind + 1] == "" && linea_ind < doc.Length - 2)
@@ -238,7 +252,7 @@ public class Document_Result
                     //Guardamos el snippet
                     addSnippet[i] = sb.ToString();
                     addposSnippet[i] = linea_ind;
-                    //Comprobamos el proximi indice
+                    //Comprobamos el proximo indice
                     i++;
                 }
                 if(i==Snippetwords.Count) break; 

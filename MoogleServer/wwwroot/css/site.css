@@ -9,16 +9,48 @@ h1:focus {
     outline: none;
 }
 
-
+.search{
+    margin-top: 24px;
+    margin-bottom: 24px;
+    border-top-left-radius: 50px; 
+    border-bottom-left-radius: 50px; 
+    width:500px;
+    height:40px;
+    text-indent: 3%; 
+    border-left: groove 2px;
+    border-top: groove 2px;
+    border-bottom: groove 2px;
+    border-right: groove 0px;
+    outline: none;
+}
 
 a, .btn-link {
     color: #0071c1;
 }
 
-.btn-primary {
-    color: #fff;
-    background-color: #1b6ec2;
-    border-color: #1861ac;
+.btn-search{
+    background-color: #fff;
+    border-top-right-radius: 50px;
+    border-bottom-right-radius: 50px; 
+    margin-top:24px;
+    margin-bottom:24px; 
+    border-left: 0px;
+    border-top: groove 2px;
+    border-bottom: groove 2px;
+    border-right: groove 2px;
+    height:40px;
+    width: 50px;
+}
+
+.btn-eliminate{
+    background-color: #fff;
+    margin-top: 24px;
+    margin-bottom: 24px;  
+    border-left: 0px;
+    border-top: groove 2px;
+    border-bottom: groove 2px;
+    border-right: 0px;
+    width: 18px;
 }
 
 .content {

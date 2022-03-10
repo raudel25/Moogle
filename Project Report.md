@@ -10,7 +10,7 @@
 
 ### Algoritmos de Búsqueda
 
-La búsqueda esta basada en el modelo vectorial de recuperación de la información *SRI*, utilizando el *TF-IDF* (frecuencia de término - frecuencia inversa de documento), el cual expresa la relevancia de una palabra asociada a un documento en una determinada colección, sumado a la *Similitud del Coseno*, método mediante el cual se asigna un *Score* a cada documento y se establece un ranking de resultados para el usuario.
+La búsqueda está basada en el modelo vectorial de recuperación de la información *SRI*, utilizando el *TF-IDF* (frecuencia de término - frecuencia inversa de documento), el cual determina la relevancia de una palabra asociada a un documento en una determinada colección, sumado a la *Similitud del Coseno*, método mediante el cual se asigna un *Score* a cada documento y se establece un ranking de resultados para el usuario.
 
 ### Operadores
 
@@ -25,7 +25,7 @@ El proyecto cuenta con varios operadores para mejorar la búsqueda del usuario:
 
 ### Sugerencia
 
-Para brindar una mayor exactitud a la búsqueda, el proyecto cuenta con un corrector de palabras, el cual se encarga de dar una sugerencia al usuario en caso de que la búsqueda no sea del todo correcta para los datos almacenados.
+Para brindar una mayor exactitud en la búsqueda, el proyecto cuenta con un corrector de palabras, el cual se encarga de dar una sugerencia al usuario en caso de que la búsqueda no coincida con los datos almacenados.
 
 ### Resultados de la Búsqueda
 
@@ -33,22 +33,22 @@ Una vez rankeados los documentos, se le muestra al usuario una lista de los mism
 
 ### Ejecutando el proyecto
 
-- Debes colocar los documentos en los que quieres desarrollar la búsqueda, en la carpeta
+- Debe colocar los documentos en los que quiere desarrollar la búsqueda, en la carpeta
 `Content`, en formato `.txt`.  
 
-- Este proyecto está desarrollado para la versión objetivo de .NET Core 6.0. Para ejecutarlo solo te debes parar en la carpeta del proyecto y ejecutar en la terminal de Linux:
+- Este proyecto está desarrollado para la versión objetivo de .NET Core 6.0. Para ejecutarlo debe ir a la ruta en la que está ubicada el proyecto y ejecutar en la terminal de Linux:
 
 ```bash
 make dev
 ```
 
-- Si estás en Windows, debes poder hacer lo mismo desde la terminal del WSL (Windows Subsystem for Linux), en caso contrario puedes ejecutar:
+- Si está en Windows, debe poder hacer lo mismo desde la terminal del WSL (Windows Subsystem for Linux), en caso contrario puede ejecutar:
 
 ```bash
 dotnet watch run --project MoogleServer
 ```
 
-## Implementación Moogle Engine
+## Implementación MoogleEngine
 
 Estructura de la biblioteca de clases `MoogleEngine`.
 
@@ -56,8 +56,8 @@ Estructura de la biblioteca de clases `MoogleEngine`.
 
 Al iniciar el servidor, se llama al método `Index_Corpus` de la clase `Moogle`, el cual se encarga de leer los documentos, y crear un objeto de la clase `Document` para cada documento de la carpeta `Content`:
 - La clase `Document` se encarga de procesar el texto contenido dentro del documento, separar por espacios y eliminar los signos de puntuación (mediante el método `Sign_Puntuation`).
-- Para eliminar los signos de puntuación, se recorre la palabra desde el principio hasta el final y se guarda la posición del primer caracter alfanumérico, se realiza el mismo procedimiento en sentido inverso y se devuelve la porción de string determinada por los dos indices obtenidos. 
-- En la clase `Corpus_Data` se almacena la información de cada una de las palabras en el diccionario `Vocabulary` que tiene como valor un objeto de la clase `DataStructure` donde se guarda: un arreglo con el peso ,un arreglo de listas de indices con las posiciones de la palabra en cada documento y la cantidad de documentos que contienen la palabra (estructurando los vectores documento).
+- Para eliminar los signos de puntuación, se recorre la palabra desde el principio hasta el final y se guarda la posición del primer *char* alfanumérico, se realiza el mismo procedimiento en sentido inverso y se devuelve la porción de string determinada por los dos índices obtenidos. 
+- En la clase `Corpus_Data` se almacena la información de cada una de las palabras en el diccionario `Vocabulary` que tiene como valor un objeto de la clase `DataStructure` donde se guarda: un arreglo con el peso ,un arreglo de listas de índices con las posiciones de la palabra en cada documento y la cantidad de documentos que contienen la palabra (estructurando los vectores documento).
 - Inicialmente se guarda en `Vocabulary` la frecuencia de la palabra y la posición en el documento, comparando dicha frecuencia con la frecuencia máxima del documento. 
 - Una vez terminado este proceso se calcula el *TF-IDF* de las palabras del corpus, mediante el método `Tf_IdfDoc` de la clase `Document` y se almacenan estos valores en `Vocabulary`.
 
@@ -69,21 +69,21 @@ Cuando el usuario introduce una nueva *Query* se crea un objeto de la clase `Que
 
 Dentro de la clase `QueryClass`, se toma el string que contiene a la *Query* y se procede a separar por espacios y a eliminar los signos de puntuación que no pertenezcan a la identificación de un operador:
 - Se identifican los operadores de búsqueda mediante el método `Operators`. 
-- Se agregó al proyecto un nuevo operador de búsqueda: *Búsqueda Literal*, cuya explicación aparece en la descripción del proyecto.
-- Para el operador de cercanía se consideró la distancia entre `A~B~C` como la mínima ventana del texto que contiene a `A`, `B` y `C` en cualquier orden.
+- Se agrega al proyecto un nuevo operador de búsqueda: *Búsqueda Literal*, cuya explicación aparece en la descripción del proyecto.
+- Para el operador de cercanía se considera la distancia entre `A~B~C` como la mínima ventana del texto que contiene a `A`, `B` y `C` en cualquier orden.
 - Una vez identificados los operadores se procede a comprobar la existencia de las palabras de la *Query* en el corpus, en caso contrario, se llama al método `Suggestion`. 
 
 ### Sugerencia
 
-- En el método `Suggestion` se llama al método `Suggestion_word`, donde se busca la palabra del corpus con la mínima cantidad de cambios con respecto a la palabra para la cual se quiere obtener la sugerencia, para ello se emplea la *Distancia de Levenstein*, la cual consiste en dar un costo a las operaciones que permiten convertir una palabra en otra: *Eliminación*, *Inserción* y *Sustitución* de un caracter. 
+- En el método `Suggestion` se llama al método `Suggestion_word`, donde se busca la palabra del corpus con la mínima cantidad de cambios con respecto a la palabra para la cual se quiere obtener la sugerencia, para ello se emplea la *Distancia de Levenstein*, la cual consiste en dar un costo a las operaciones que permiten convertir una palabra en otra: *Eliminación*, *Inserción* y *Sustitución* de una letra. 
 - La implementación de la *Distancia de Levenstein* está basada en un algoritmo de programación dinámica (donde en cada estado se decide entre la operación con menor costo), además tiene un grupo de modificaciones que otorgan un menor costo a los errores ortográficos más comunes.  
 - En caso de obtener dos palabras con la misma cantidad de cambios, nos quedamos con la que mayor peso tenga entre todos los documentos del Corpus.
 - Una vez identificada la palabra, en el método `Suggestion` se busca la porción del string `Suggestion_Query` (inicialmente tiene el mismo valor que el string de la *Query*), que contiene la palabra para la cual queremos dar la sugerencia y se sustituye por la nueva palabra.
 
 ### Raíces y Sinónimos
 
-Para dar mejores resultados en la búsqueda al usuario se identifican las palabras que posean las mismas raíces o el mismo significado que las de la *Query*:
-- En la clase `Snowball`, esta implementado un algoritmo que se en carga de realizar el stemming en español, el cual se apoya en tres reglas y un conjunto de pasos y sufijos  mediante los cuales se obtiene el lexema aproximado de la palabra.
+Para obtener mejores resultados en la búsqueda se identifican las palabras que posean las mismas raíces o el mismo significado que las de la *Query*:
+- En la clase `Snowball`, está implementado un algoritmo que se encarga de realizar el stemming en español, el cual se apoya en tres reglas y un conjunto de pasos y sufijos  mediante los cuales se obtiene el lexema aproximado de la palabra.
 - Para hallar los sinónimos se emplea un diccionario de sinónimos para el español, estructurado en la lista `Synonymous` de la clase `Corpus_Data`, la cual tiene una lista de arreglos de string, donde cada arreglo contiene un grupo de palabras con similar significado.
 
 ### TF-IDF Query
@@ -101,7 +101,7 @@ Por cada documento se crea un objeto `Document_Result` y se analizan los requisi
 
 Para dar el ranking de los documentos se emplea *Similitud del Coseno*, mencionada en la descripción del proyecto:
 - En el método `SimVectors` se comparan los datos del vector documento (correspondiente al documento analizado) almacenados en el diccionario `Vocabulary` de la clase `Corpus_Data`, con los valores del vector consulta almacenados en  el diccionario `Words_Query` de la clase `QueryClass`. 
-- En caso de que el documento no contenga ninguna de las palabras de `Words_Query`, realizamos el procedimiento anterior pero ahora empleamos los datos del diccionario `Words_Stemming_Syn`, si los resultados son positivos sumamos al *Score* del documento el mínimo valor de double (con esto garantizamos que los documentos que solo poseen palabras con la misma raíz y el mismo significado que las de la *Query* siempre sean devueltos por debajo de los que contienen al menos una palabra de la *Query*).
+- En caso de que el documento no contenga ninguna de las palabras de `Words_Query`, realizamos el procedimiento anterior pero ahora empleamos los datos del diccionario `Words_Stemming_Syn`, si los resultados son positivos se suma al *Score* del documento el mínimo valor de double (con esto garantizamos que los documentos que solo poseen palabras con la misma raíz y el mismo significado que las de la *Query* siempre sean devueltos por debajo de los que contienen al menos una palabra de la *Query*).
 - Luego se calcula el *Score* del documento.
 
 ### Influencia de los Operadores en la Búsqueda
@@ -117,13 +117,13 @@ Se determina si el documento cumple con los parámetros de los operadores median
 
 ### Resultados Obtenidos
 
-- Una vez concluida la búsqueda, se comprueba que la sugerencia hecha al usuario es válida y se construye el objeto `SearchResult` que devuelve el método `Query` de la clase `Moogle`, mediante una lista de objetos `SearchItem`, que adicionalmente, contiene un arreglo con las líneas del *Snippet*, las posiciones de dichas líneas en el documento y la lista de palabras de la *Query* que no fueron encontradas en el documento.
+- Una vez concluida la búsqueda, se comprueba que la sugerencia hecha al usuario es válida y se construye el objeto `SearchResult` que devuelve el método `Query` de la clase `Moogle`, mediante una lista de objetos `SearchItem`, que contiene un arreglo con las líneas del *Snippet*, las posiciones de dichas líneas en el documento y la lista de palabras de la *Query* que no fueron encontradas en el documento.
 
 ### Implementación para la mínima distancia entre un grupo de palabras
 
 Para determinar la mínima distancia entre una lista de palabras se utiliza el algoritmo *Sliding Window*, empleando las posiciones de las palabras en el documento, guardadas en el diccionario `Vocabulary` de la clase `Corpus_Data`, además de los métodos agrupados en la clase `Distance_Word`.
-- En el método `List_Pos_Words` se crea un arreglo de tuplas por cada palabra que contiene el indice de la palabra en la lista de palabras y la posición del documento, mediante el método `BuildTuple`, luego ordenamos dicho arreglo por el valor de las posiciones de las palabras mediante el método `Sorted` y determinamos la cantidad de ocurrencias de la palabra en la lista de palabras, mediante el método `Ocurrence_word`.
-- En el método `Search_Distance_Words` se utiliza el arreglo de tuplas obtenido en el paso anterior y se emplea una cola en la que se van introduciendo los elementos del array hasta que todas las palabras estén contenidas en la cola, una vez hecho esto se intenta sacar de la cola sin que se deje de cumplir que todas las palabras están contenidas, terminado este proceso calculamos la distancia entre las palabras que se encuentran en los extremos de la cola, comparamos el valor con el que teníamos calculado, nos quedamos con el mínimo y volvemos a repetir el procedimiento.
+- En el método `List_Pos_Words` se crea un arreglo de tuplas por cada palabra que contiene el índice de la palabra en la lista de palabras y la posición del documento, mediante el método `BuildTuple`, luego ordenamos dicho arreglo por el valor de las posiciones de las palabras mediante el método `Sorted` y determinamos la cantidad de ocurrencias de la palabra en la lista de palabras, mediante el método `Ocurrence_word`.
+- En el método `Search_Distance_Words` se utiliza el arreglo de tuplas obtenido en el paso anterior y se emplea una cola en la que se van introduciendo los elementos del array hasta que todas las palabras estén contenidas en la cola, una vez hecho esto se intenta sacar de la cola sin que se deje de cumplir que todas las palabras están contenidas, terminado este proceso se calcula la distancia entre las palabras que se encuentran en los extremos de la cola, se compara el valor con el que se tenía calculado, se guarda el mínimo y se vuelve a repetir el procedimiento.
 
 ```cs
 //Recorremos el array buscando la minima ventana q contenga a todas las palabras
@@ -173,10 +173,10 @@ for (int i = 0; i < Pos_words_Sorted.Length; i++)
 
 ### Implementación para la Búsqueda Literal
 
-Para determinar si en el documento existe una ventana de texto exactamente con las palabras de la lista, utilizamos los métodos de la clase `Distance_Word`.
-- Se emplea el método `List_Pos_Words`, descrito anteriormente, pero en este caso se tiene en cuenta la posible presencia de los comodines `?` en la lista de palabras, se recorre la lista de palabras y se lleva un contador con la cantidad de comodines, ahora en cada momento de formar la tupla se resta la cantidad de comodines al indice y a la posición de la palabra.
-- Se recorre el arreglo de tuplas, mediante el método `Distance_Literal`, llevando un contador que muestra el indice de la palabra que corresponde en cada momento. Mientras la posición sea la misma significa que la palabra es igual a la anterior, por lo que almacenamos los indices en una lista, si nos encontramos una posición diferente comprobamos que la nueva posición sea consecutiva con la anterior y que alguno de los indices almacenados en la lista coincida con el de la palabra que corresponde, en caso afirmativo aumentamos en uno el indice de la palabra a buscar y repetimos el procedimiento, en caso contrario reiniciamos el indice de la palabra a buscar.
-- Si en algún momento el indice de la palabra a buscar coincide con la última palabra guardamos la posición donde encontramos la porción de texto correspondiente.
+Para determinar si en el documento existe una ventana de texto exactamente con las palabras de la lista, se utilizan los métodos de la clase `Distance_Word`.
+- Se emplea el método `List_Pos_Words`, descrito anteriormente, pero en este caso se tiene en cuenta la posible presencia de los comodines `?` en la lista de palabras, se recorre la lista de palabras y se lleva un contador con la cantidad de comodines, ahora en cada momento de formar la tupla se resta la cantidad de comodines al índice y a la posición de la palabra.
+- Se recorre el arreglo de tuplas, mediante el método `Distance_Literal`, llevando un contador que muestra el índice de la palabra que corresponde en cada momento. Mientras la posición sea la misma significa que la palabra es igual a la anterior, por lo que se almacenan los índices en una lista, si se encuentra una posición diferente se comprueba que la nueva posición sea consecutiva con la anterior y que alguno de los índices almacenados en la lista coincida con el de la palabra que corresponde, en caso afirmativo se aumenta en uno el índice de la palabra a buscar y se repite el procedimiento, en caso contrario se reinicia el índice de la palabra a buscar.
+- Si en algún momento el índice de la palabra a buscar coincide con la última palabra se guarda la posición donde se encontró la porción de texto correspondiente.
 
 ```cs
 pubic static int Distance_Literal(List<string> words,Document document)
@@ -217,19 +217,19 @@ pubic static int Distance_Literal(List<string> words,Document document)
 }
 ```
 
-## Implementación Moogle Server 
+## Implementación MoogleServer 
 
-Se añadió al proyecto una nueva página `Doc.razor`, donde se le brinda al usuario la opción de poder visualizar el documento directamente desde el navegador.
+Se añade al proyecto una nueva página `Doc.razor`, donde se le brinda al usuario la opción de poder visualizar el documento directamente desde el navegador.
 
 ### AutoCompletar
 
-- Para el autocompletamiento se añadió el evento `bind:event="oninput"` el cual permite actualizar el valor del string `query` cada vez que el usuario teclea o borra un nuevo carácter
-- Se empleó el evento `onkeyup` que llama al método `Press`, el cual identifica la última porción de palabra tecleada por el usuario y llama al método `AutoComplete` de la clase `Server` el cual devuelve como máximo las 5 palabras del corpus más cercanas a completar el texto escrito por el usuario.
+- Para el autocompletamiento se añade el evento `bind:event="oninput"` el cual permite actualizar el valor del string `query` cada vez que el usuario teclea o borra un nuevo carácter
+- Se emplea el evento `onkeyup` que llama al método `Press`, el cual identifica la última porción de palabra tecleada por el usuario y llama al método `AutoComplete` de la clase `Server` el cual devuelve como máximo las 5 palabras del corpus más cercanas a completar el texto escrito por el usuario.
 - Una vez obtenidas las palabras para autocompletar se utiliza un `datalist` para mostrárselas al usuario.
 
 ### Suggestion
 
-- Se utilizó el evento `onclick` que llama al método `Suggestion` el cual permite realizar una nueva consulta con la *Query* `suggestion`.
+- Se utiliza el evento `onclick` que llama al método `Suggestion` el cual permite realizar una nueva consulta con la *Query* `suggestion`.
 
 ### Visualizar el Documento
 

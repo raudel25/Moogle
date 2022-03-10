@@ -7,7 +7,7 @@
 <br>
 
 <ul>
-    <h3>@id</h3>
+    <h3>@id📝</h3>
 </ul>
 
 <br>
@@ -22,7 +22,7 @@
             }
             else
             {
-                @(item+" ")
+               @(item+" ")
             }
             @if(item=="")
             {
@@ -34,7 +34,7 @@
 
 <ul>
     <a target='__blank' href=@(id+"/"+(page-100)+"/"+pos)><button type="default" class="btn btn-primary"
-        style="margin-right:30px; border-radius:50px;">Anterior</button></a>
+        style="margin-right:30px; border-radius:50px;">👈 Anterior</button></a>
 
     <input type="number" class="p-1 my-4" @bind="newpage" @bind:event="oninput" 
         style="width: 100px; text-align:center; border-radius:50px" margin-left="100px">
@@ -43,7 +43,7 @@
         style="border-radius:50px;">Ir</button></a>
 
     <a target='__blank' href=@(id+"/"+(page+100)+"/"+pos)><button type="default" class="btn btn-primary"
-        style="margin-left:30px; border-radius:50px;">Próximo</button></a>
+        style="margin-left:30px; border-radius:50px;">Próximo 👉</button></a>
 </ul>
 
 <ul>
