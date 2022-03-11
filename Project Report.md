@@ -77,7 +77,7 @@ Dentro de la clase `QueryClass`, se toma el string que contiene a la *Query* y s
 
 - En el método `Suggestion` se llama al método `Suggestion_word`, donde se busca la palabra del corpus con la mínima cantidad de cambios con respecto a la palabra para la cual se quiere obtener la sugerencia, para ello se emplea la *Distancia de Levenstein*, la cual consiste en dar un costo a las operaciones que permiten convertir una palabra en otra: *Eliminación*, *Inserción* y *Sustitución* de una letra. 
 - La implementación de la *Distancia de Levenstein* está basada en un algoritmo de programación dinámica (donde en cada estado se decide entre la operación con menor costo), además tiene un grupo de modificaciones que otorgan un menor costo a los errores ortográficos más comunes.  
-- En caso de obtener dos palabras con la misma cantidad de cambios, nos quedamos con la que mayor peso tenga entre todos los documentos del Corpus.
+- En caso de obtener dos palabras con la misma cantidad de cambios, se guarda la que mayor peso tenga entre todos los documentos del Corpus.
 - Una vez identificada la palabra, en el método `Suggestion` se busca la porción del string `Suggestion_Query` (inicialmente tiene el mismo valor que el string de la *Query*), que contiene la palabra para la cual queremos dar la sugerencia y se sustituye por la nueva palabra.
 
 ### Raíces y Sinónimos
@@ -101,7 +101,7 @@ Por cada documento se crea un objeto `Document_Result` y se analizan los requisi
 
 Para dar el ranking de los documentos se emplea *Similitud del Coseno*, mencionada en la descripción del proyecto:
 - En el método `SimVectors` se comparan los datos del vector documento (correspondiente al documento analizado) almacenados en el diccionario `Vocabulary` de la clase `Corpus_Data`, con los valores del vector consulta almacenados en  el diccionario `Words_Query` de la clase `QueryClass`. 
-- En caso de que el documento no contenga ninguna de las palabras de `Words_Query`, realizamos el procedimiento anterior pero ahora empleamos los datos del diccionario `Words_Stemming_Syn`, si los resultados son positivos se suma al *Score* del documento el mínimo valor de double (con esto garantizamos que los documentos que solo poseen palabras con la misma raíz y el mismo significado que las de la *Query* siempre sean devueltos por debajo de los que contienen al menos una palabra de la *Query*).
+- En caso de que el documento no contenga ninguna de las palabras de `Words_Query`, se realiza el procedimiento anterior pero ahora se emplea los datos del diccionario `Words_Stemming_Syn`, si los resultados son positivos se suma al *Score* del documento el mínimo valor de double (con esto se garantiza que los documentos que solo poseen palabras con la misma raíz y el mismo significado que las de la *Query* siempre sean devueltos por debajo de los que contienen al menos una palabra de la *Query*).
 - Luego se calcula el *Score* del documento.
 
 ### Influencia de los Operadores en la Búsqueda
@@ -122,7 +122,7 @@ Se determina si el documento cumple con los parámetros de los operadores median
 ### Implementación para la mínima distancia entre un grupo de palabras
 
 Para determinar la mínima distancia entre una lista de palabras se utiliza el algoritmo *Sliding Window*, empleando las posiciones de las palabras en el documento, guardadas en el diccionario `Vocabulary` de la clase `Corpus_Data`, además de los métodos agrupados en la clase `Distance_Word`.
-- En el método `List_Pos_Words` se crea un arreglo de tuplas por cada palabra que contiene el índice de la palabra en la lista de palabras y la posición del documento, mediante el método `BuildTuple`, luego ordenamos dicho arreglo por el valor de las posiciones de las palabras mediante el método `Sorted` y determinamos la cantidad de ocurrencias de la palabra en la lista de palabras, mediante el método `Ocurrence_word`.
+- En el método `List_Pos_Words` se crea un arreglo de tuplas por cada palabra que contiene el índice de la palabra en la lista de palabras y la posición del documento, mediante el método `BuildTuple`, luego se ordena dicho arreglo por el valor de las posiciones de las palabras mediante el método `Sorted` y se determina la cantidad de ocurrencias de la palabra en la lista de palabras, mediante el método `Ocurrence_word`.
 - En el método `Search_Distance_Words` se utiliza el arreglo de tuplas obtenido en el paso anterior y se emplea una cola en la que se van introduciendo los elementos del array hasta que todas las palabras estén contenidas en la cola, una vez hecho esto se intenta sacar de la cola sin que se deje de cumplir que todas las palabras están contenidas, terminado este proceso se calcula la distancia entre las palabras que se encuentran en los extremos de la cola, se compara el valor con el que se tenía calculado, se guarda el mínimo y se vuelve a repetir el procedimiento.
 
 ```cs
