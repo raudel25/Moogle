@@ -2,20 +2,20 @@ namespace MoogleEngine;
 
 public class SearchItem
 {
-    public SearchItem(string title, string[] snippet, int[] Pos_Snippet, double score, List<string> words_no_doc)
+    public SearchItem(string title, string[] snippet, int[] PosSnippet, double score, List<string> wordsNoDoc)
     {
         this.Title = title;
         this.Snippet = snippet;
         this.Score = score;
-        this.Pos_Snippet = Pos_Snippet;
-        this.Word_no_doc = words_no_doc;
+        this.PosSnippet = PosSnippet;
+        this.WordNoDoc = wordsNoDoc;
     }
     
     public string Title { get; private set; }
 
     public string[] Snippet { get; private set; }
-    public int[] Pos_Snippet { get; private set; }
-    public List<string> Word_no_doc {get; private set;}
+    public int[] PosSnippet { get; private set; }
+    public List<string> WordNoDoc {get; private set;}
 
     public double Score { get; set; }
 }

@@ -40,12 +40,12 @@ public class Document
             {
                 string word = s[j];
                 //Quitamos los signos de puntuacion
-                word = Sign_Puntuation(word);
+                word = SignPuntuation(word);
                 //Si solo es un signo de puntuacion seguimos
                 if (word == "")  continue;
                 word = word.ToLower();
                 //Insertamos la palabra en el sistema
-                Corpus_Data.InsertWord(word, this, cant);
+                CorpusData.InsertWord(word, this, cant);
                 cant++;
             }
         }
@@ -54,7 +54,7 @@ public class Document
     /// <param name="s">Texto del documento</param>
     /// <param name="query">Query</param>
     /// <returns>Una palabra tras eliminar los extremos no alfanumericos</returns>
-    public static string Sign_Puntuation(string s, bool query = false)   
+    public static string SignPuntuation(string s, bool query = false)   
     {
         if(s=="") return s;
         int start = 0; int stop = 0;
@@ -98,23 +98,23 @@ public class Document
     }
     #endregion
     
-    #region TF_IDF
-    /// <summary>Metodo para calcular el TF_idf de los documentos</summary>
-    public static void Tf_IDFDoc()
+    #region TFIDF
+    /// <summary>Metodo para calcular el TFIdf de los documentos</summary>
+    public static void TfIDFDoc()
     {
-        foreach (var word in Corpus_Data.Vocabulary)
+        foreach (var word in CorpusData.Vocabulary)
         {
-            word.Value.Word_Cant_Doc = word_cantdoc(word.Value.Weight_Doc);
+            word.Value.WordCantDoc = WordCantdoc(word.Value.WeightDoc);
             for (int j = 0; j < Document.Cantdoc; j++)
             {
-                word.Value.Weight_Doc[j] = (word.Value.Weight_Doc[j] / Document.Documents![j].Max) * Math.Log((double)Document.Cantdoc / (double)word.Value.Word_Cant_Doc);
-                Document.Documents[j].Norma += word.Value.Weight_Doc[j] * word.Value.Weight_Doc[j];
+                word.Value.WeightDoc[j] = (word.Value.WeightDoc[j] / Document.Documents![j].Max) * Math.Log((double)Document.Cantdoc / (double)word.Value.WordCantDoc);
+                Document.Documents[j].Norma += word.Value.WeightDoc[j] * word.Value.WeightDoc[j];
             }
         }
     }
     /// <summary>Metodo para determinar la cantidad de documentos que contienen a una palabra</summary>
     /// <param name="words">Arreglo con la frecuencia de la palabra en los documentos</param>
-    private static int word_cantdoc(double[] words)
+    private static int WordCantdoc(double[] words)
     {
         int cant = 0;
         for (int i = 0; i < Document.Cantdoc; i++)

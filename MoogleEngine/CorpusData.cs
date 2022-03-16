@@ -1,6 +1,6 @@
 namespace MoogleEngine;
 
-public static class Corpus_Data
+public static class CorpusData
 {
     //Guardar los sinonimos cargados de nuestro json
     public static List<string[]>? Synonymous {get; set;}
@@ -17,28 +17,28 @@ public static class Corpus_Data
             DataStructure data = new DataStructure(Document.Cantdoc);
             Vocabulary.Add(word, data);
         }
-        if (Vocabulary[word].Weight_Doc[document.Index] == 0)
+        if (Vocabulary[word].WeightDoc[document.Index] == 0)
         {
-            Vocabulary[word].Pos_Doc[document.Index] = new List<int>();
+            Vocabulary[word].PosDoc[document.Index] = new List<int>();
         }
-        Vocabulary[word].Weight_Doc[document.Index]++;
-        Vocabulary[word].Pos_Doc[document.Index].Add(pos);
+        Vocabulary[word].WeightDoc[document.Index]++;
+        Vocabulary[word].PosDoc[document.Index].Add(pos);
         //Llevamos la cuenta de la maxima frecuencia en el documento
-        if (Vocabulary[word].Weight_Doc[document.Index] > document.Max) document.Max = (int)Vocabulary[word].Weight_Doc[document.Index];
+        if (Vocabulary[word].WeightDoc[document.Index] > document.Max) document.Max = (int)Vocabulary[word].WeightDoc[document.Index];
     }
 }
 public class DataStructure
 {
     //Guardamos el peso de la palabra en cada documento
-    public double[] Weight_Doc { get; set; }
+    public double[] WeightDoc { get; set; }
     //Guardamos la candtidad de documentos en los que aparece la palabra
-    public double Word_Cant_Doc { get; set; }
+    public double WordCantDoc { get; set; }
     //Guardamos las posiciones de la palabra en cada documento
-    public List<int>[] Pos_Doc { get; set; }
+    public List<int>[] PosDoc { get; set; }
     public DataStructure(int n)
     {
-        this.Weight_Doc=new double[n];
-        this.Pos_Doc=new List<int>[n];
+        this.WeightDoc=new double[n];
+        this.PosDoc=new List<int>[n];
     }
 }
 public class Synonymous

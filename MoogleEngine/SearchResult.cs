@@ -13,10 +13,10 @@ public class SearchResult
         items.Sort((o1,o2)=>o2.Score.CompareTo(o1.Score));
         this.items = items;
         this.Suggestion = "";
-        this.Query_Suggestion=null!;
+        this.QuerySuggestion=null!;
     }
 
-    public SearchResult(List<SearchItem> items, List<SearchItem> Sugestion_Items ,string suggestion)
+    public SearchResult(List<SearchItem> items, List<SearchItem> SugestionItems ,string suggestion)
     {
         if (items == null!)
         {
@@ -25,14 +25,14 @@ public class SearchResult
         items.Sort((o1,o2)=>o2.Score.CompareTo(o1.Score));
         this.items = items;
         //Comrobamos si la sugerencia es coreecta
-        if(Sugestion_Items.Count != 0)
+        if(SugestionItems.Count != 0)
         {
-            this.Query_Suggestion=new SearchResult(Sugestion_Items);
+            this.QuerySuggestion=new SearchResult(SugestionItems);
         }
         else
         {
             suggestion="";
-            this.Query_Suggestion=null!;
+            this.QuerySuggestion=null!;
         } 
         this.Suggestion = suggestion;
     }
@@ -49,5 +49,5 @@ public class SearchResult
     }
 
     public int Count { get { return this.items.Count; } }
-    public SearchResult Query_Suggestion {get; set;}
+    public SearchResult QuerySuggestion {get; set;}
 }

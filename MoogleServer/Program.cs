@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using MoogleEngine;
 
-Moogle.Index_Corpus();
+Moogle.IndexCorpus();
 
 var builder = WebApplication.CreateBuilder(args);
 

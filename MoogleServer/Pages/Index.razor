@@ -38,7 +38,7 @@ else
     @if(result.Count==0 && Search)
     {
         <ul>
-            <img src="/No_Results.jpg" width="350px" height="350px">
+            <img src="/NoResults.jpg" width="350px" height="350px">
             <h5>No hay resultados para su búsqueda😢</h5>
         </ul>
     }
@@ -58,22 +58,22 @@ else
             <p class="title"><a onmouseover="this.style.color='blue'" onmouseout="this.style.color='black'" style="color: black; font-size:large; text-decoration: none;"  target='__blank' href=@(item.Title+"/"+0+"/"+(-1))>@item.Title</a></p>
                 @for (int i = 0; i < item.Snippet.Length; i++)
                 {
-                    <p>... <a onmouseover="this.style.color='blue'" onmouseout="this.style.color='black'" style="color: black; text-decoration: none; font-size:medium;"  target='__blank' href=@(item.Title+"/"+(item.Pos_Snippet[i]-item.Pos_Snippet[i]%100)+"/"+item.Pos_Snippet[i])>@item.Snippet[i]</a> ...</p>
+                    <p>... <a onmouseover="this.style.color='blue'" onmouseout="this.style.color='black'" style="color: black; text-decoration: none; font-size:medium;"  target='__blank' href=@(item.Title+"/"+(item.PosSnippet[i]-item.PosSnippet[i]%100)+"/"+item.PosSnippet[i])>@item.Snippet[i]</a> ...</p>
                 }
                 <div style="font-size:small;">
-                @if(item.Word_no_doc.Count!=0)
+                @if(item.WordNoDoc.Count!=0)
                 {
                     <span>Falta(n): </span>
                 }
-                @foreach (var item1 in item.Word_no_doc)
+                @foreach (var item1 in item.WordNoDoc)
                 {
                     <span style="text-decoration: line-through;">@(item1+" ")</span>       
                 }
-                @if(item.Word_no_doc.Count!=0)
+                @if(item.WordNoDoc.Count!=0)
                 {
                     <span> | Incluir: </span>
                 }
-                @foreach (var item1 in item.Word_no_doc)
+                @foreach (var item1 in item.WordNoDoc)
                 {
                     <span><a href="#" @onclick="()=>Include(item1)" onmouseover="this.style.color='blue'" onmouseout="this.style.color='black'" style="color: black; text-decoration: none;">@(item1+" ")</a></span>
                 }
@@ -102,7 +102,7 @@ else
     {
         Search=true;
         query=result.Suggestion;
-        result = result.Query_Suggestion;
+        result = result.QuerySuggestion;
     }
     private void EliminateQuery()
     {
@@ -110,27 +110,27 @@ else
     }
     private void Press(KeyboardEventArgs e)
     {
-        System.Text.StringBuilder query_aux = new System.Text.StringBuilder(query);
+        System.Text.StringBuilder queryAux = new System.Text.StringBuilder(query);
         if (e.Code == "Enter")
         {
             RunQuery();
         }
         System.Text.StringBuilder sb = new System.Text.StringBuilder();
-        int start = 0; int stop = 0; bool no_letter = false;
+        int start = 0; int stop = 0; bool noLetter = false;
         //Buscamos la ultima porcion de la query alfanumerica
-        for (int i = 0; i < query_aux.Length; i++)
+        for (int i = 0; i < queryAux.Length; i++)
         {
-            if (!char.IsLetterOrDigit(query_aux[i])) no_letter = true;
+            if (!char.IsLetterOrDigit(queryAux[i])) noLetter = true;
             else
             {
-                if (no_letter)
+                if (noLetter)
                 {
-                    no_letter = false;
+                    noLetter = false;
                     sb = new System.Text.StringBuilder();
                     start = i;
                     stop = 0;
                 }
-                sb.Append(query_aux[i]);
+                sb.Append(queryAux[i]);
                 stop++;
             }
         }
@@ -148,15 +148,15 @@ else
             //Actualizar las mayusculas y minusculas y completar con la recomendacion
             for (int i = 0; i < autoComp.Count; i++)
             {
-                System.Text.StringBuilder Add_autoComp = new System.Text.StringBuilder(query_aux.ToString());
+                System.Text.StringBuilder AddAutoComp = new System.Text.StringBuilder(queryAux.ToString());
                 sb = new System.Text.StringBuilder(autoComp[i]);
                 for (int j = 0; j < change.Count; j++)
                 {
                     sb[change[j]] = Char.ToUpper(sb[change[j]]);
                 }
-                Add_autoComp.Remove(start, stop);
-                Add_autoComp.Insert(start, sb.ToString());
-                autoComp[i] = Add_autoComp.ToString();
+                AddAutoComp.Remove(start, stop);
+                AddAutoComp.Insert(start, sb.ToString());
+                autoComp[i] = AddAutoComp.ToString();
             }
         }
     }

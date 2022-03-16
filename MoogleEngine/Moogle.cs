@@ -6,16 +6,16 @@ public static class Moogle
 {
     public static SearchResult Query(string query)
     {
-        QueryClass query_object = new QueryClass(query);
+        QueryClass queryObject = new QueryClass(query);
         //Comprobamos la sugerencia
-        if(query_object.Suggestion_Query=="") 
+        if(queryObject.SuggestionQuery=="") 
         {
-            return new SearchResult(BuildItem(query_object));
+            return new SearchResult(BuildItem(queryObject));
         }
         else
         {        
-            QueryClass suggestion_object=new QueryClass(query_object.Suggestion_Query);
-            return new SearchResult(BuildItem(query_object),BuildItem(suggestion_object),query_object.Suggestion_Query);
+            QueryClass suggestionObject=new QueryClass(queryObject.SuggestionQuery);
+            return new SearchResult(BuildItem(queryObject),BuildItem(suggestionObject),queryObject.SuggestionQuery);
         }
     }
     /// <summary>Construyendo el arreglo de SearchItem</summary>
@@ -26,14 +26,14 @@ public static class Moogle
         List<SearchItem> items = new List<SearchItem>();
         for (int i = 0; i < Document.Documents!.Count; i++)
         {
-            Document_Result d=new Document_Result(Document.Documents[i],query);
+            DocumentResult d=new DocumentResult(Document.Documents[i],query);
             if(d.Item!=null) items.Add(d.Item);
         }
         return items;
     }
 
     /// <summary>Metodo para indexar nuestro corpus</summary>
-    public static void Index_Corpus()
+    public static void IndexCorpus()
     {
         var list = Directory.EnumerateFiles("..//Content", "*.txt");
         Document.Documents = new List<Document>();
@@ -51,7 +51,7 @@ public static class Moogle
         //Deserializamos nuestra base de datos de sinonimos
         string jsonstring = File.ReadAllText("..//synonymous.json");
         Synonymous sin = JsonSerializer.Deserialize<Synonymous>(jsonstring)!;
-        Corpus_Data.Synonymous = sin!.synonymous;
-        Document.Tf_IDFDoc();
+        CorpusData.Synonymous = sin!.synonymous;
+        Document.TfIDFDoc();
     } 
 }
