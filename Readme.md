@@ -4,125 +4,234 @@
 
 > Proyecto de Programación I. Facultad de Matemática y Computación. Universidad de La Habana. Curso 2021.
 
-Moogle! es una aplicación *totalmente original* cuyo propósito es buscar inteligentemente un texto en un conjunto de documentos.
+>Raudel Alejandro Gómez Molina C111
 
-Es una aplicación web, desarrollada con tecnología .NET Core 6.0, específicamente usando Blazor como *framework* web para la interfaz gráfica, y en el lenguaje C#.
-La aplicación está dividida en dos componentes fundamentales:
+## Descripción del Proyecto
 
-- `MoogleServer` es un servidor web que renderiza la interfaz gráfica y sirve los resultados.
-- `MoogleEngine` es una biblioteca de clases donde está... ehem... casi implementada la lógica del algoritmo de búsqueda.
+### Algoritmos de Búsqueda
 
-Hasta el momento hemos logrado implementar gran parte de la interfaz gráfica (que es lo fácil), pero nos está causando graves problemas la lógica. Aquí es donde entras tú.
+La búsqueda está basada en el modelo vectorial de recuperación de la información *SRI*, utilizando el *TF-IDF* (frecuencia de término - frecuencia inversa de documento), el cual determina la relevancia de una palabra asociada a un documento en una determinada colección, sumado a la *Similitud del Coseno*, método mediante el cual se asigna un *Score* a cada documento y se establece un ranking de resultados para el usuario.
 
-## Tu misión
+### Operadores
 
-Tu misión (si decides aceptarla) es ayudarnos a implementar el motor de búsqueda de Moogle! (sí, el nombre es así con ! al final). Para ello, deberás modificar el método `Moogle.Query` que está en la clase `Moogle` del proyecto `MoogleEngine`.
+El proyecto cuenta con varios operadores para mejorar la búsqueda del usuario:
+- *Exclusión*, identificado con con un `!` delante de una palabra, (e.j., `!computación`)
+ indica que `computación` **no debe aparecer en ningún documento devuelto**.
+- *Inclusión*, identificado con con un `^` delante de una palabra, (e.j., `^computación`)
+ indica que `computación` **debe aparecer en todos los documentos devueltos**.
+- *Mayor Relevancia*, identificado por varios `*` delante de una palabra, (e.j., `*computación`) indica que `computación` es más relevante que las demás palabras de la *Query* tantas veces como `*` tenga delante de ella.
+- *Cercanía* identificado con un `~` entre las palabras (e.j., `M~N~P`) indica que los documentos que contengan una ventana del texto con `M`, `N` y `P` tendrán mayor *score*, en dependencia del tamaño de esta ventana.
+- *Búsqueda Literal*, identificado por un par de comillas `""` (e.j., `"Licenciatura en Ciencias de la Computación"`) indica que que el texto dentro de las comillas **debe aparecer literalmente en cada uno de los documentos devueltos**, si dentro del texto que está en las comillas aparece un `?` (e.j., `"Licenciatura en ? de la Computación"`) indica que **cualquier palabra puede aparecer en esa posición**.
 
-Este método devuelve un objeto de tipo `SearchResult`. Este objeto contiene los resultados de la búsqueda realizada por el usuario, que viene en un parámetro de tipo `string` llamado `query`.
+### Sugerencia
 
-Esto es lo que hay ahora en este método:
+Para brindar una mayor exactitud en la búsqueda, el proyecto cuenta con un corrector de palabras, el cual se encarga de dar una sugerencia al usuario en caso de que la búsqueda no coincida con los datos almacenados.
 
-```cs
-public static class Moogle
-{
-    public static SearchResult Query(string query) {
-        // Modifique este método para responder a la búsqueda
+### Resultados de la Búsqueda
 
-        SearchItem[] items = new SearchItem[3] {
-            new SearchItem("Hello World", "Lorem ipsum dolor sit amet", 0.9f),
-            new SearchItem("Hello World", "Lorem ipsum dolor sit amet", 0.5f),
-            new SearchItem("Hello World", "Lorem ipsum dolor sit amet", 0.1f),
-        };
+Una vez rankeados los documentos, se le muestra al usuario una lista de los mismos, con el título y el *Snippet* donde se encontraron las palabras buscadas por este. Adicionalmente, se cuenta con la posibilidad de poder visualizar un fragmento más amplio del documento donde se hallaron los resultados, así como la opción de poder leer cualquier parte del documento.
 
-        return new SearchResult(items, query);
-    }
-}
-```
+### Ejecutando el proyecto
 
-Como puedes ver, dado que no sabemos implementarlo, hemos cableado la solución para que al menos devuelva algo.
+- Debe colocar los documentos en los que quiere desarrollar la búsqueda, en la carpeta
+`Content`, en formato `.txt`.  
 
-El tipo `SearchResult` recibe en su constructor dos argumentos: `items` y `suggestion`. El parámetro `items` es un array de objetos de tipo `SearchItem`. Cada uno de estos objetos representa un posible documento que coincide al menos parcialmente con la consulta en `query`.
-
-Cada `SearchItem` recibe 3 argumentos en su constructor: `title`, `snippet` y `score`. El parámetro `title` debe ser el título del documento (el nombre del archivo de texto correspondiente). El parámetro `snippet` debe contener una porción del documento donde se encontró el contenido del `query`. El parámetro `score` tendrá un valor de tipo `float` que será más alto mientras más relevante sea este item.
-
-> ⚠️ Por supuesto, debes devolver los `items` ordenados de mayor a menor por este valor de `score`!
-
-El parámetro `suggestion` de la clase `SearchResult` es para darle una sugerencia al usuario cuando su búsqueda da muy pocos resultados (tú debes decidir qué serían pocos resultados en este contexto). Esta sugerencia debe ser algo similar a la consulta del usuario pero que sí exista, de forma que si el usuario se equivoca, por ejemplo, escribiendo `"reculsibidá"`, y no aparece (evidentemente) ningún documento con ese contenido, le podamos sugerir la palabra `"recursividad"`.
-
-## Sobre la búsqueda
-
-Queremos que la búsqueda sea lo más inteligente posible, por ese motivo no podemos limitarnos a los documentos donde aparece exactamente la frase introducida por el usuario. Aquí van algunos requisitos que debe cumplir esta búsqueda, pero eres libre de adicionar cualquier otra funcionalidad que ayude a mejorar y hacer más inteligente la búsqueda.
-
-- En primer lugar, el usuario puede buscar no solo una palabra sino en general una frase cualquiera.
-- Si no aparecen todas las palabras de la frase en un documento, pero al menos aparecen algunas, este documento también queremos que sea devuelto, pero con un
-`score` menor mientras menos palabras aparezcan.
-- El orden en que aparezcan en el documento los términos del `query` en general no debe importar, ni siquiera que aparezcan en lugares totalmente diferentes del documento.
-- Si en diferentes documentos aparecen la misma cantidad de palabras de la consulta, (por ejemplo, 2 de las 3 palabras de la consulta `"algoritmos de ordenación"`), pero uno de ellos contiene una palabra más rara (por ejemplo, `"ordenación"` es más rara que `"algoritmos"` porque aparece en menos documentos), el documento con palabras más raras debe tener un `score` más alto, porque es una respuesta más específica.
-- De la misma forma, si un documento tiene más términos de la consulta que otro, en general debería tener un `score` más alto (a menos que sean términos menos relevantes).
-- Algunas palabras excesivamente comunes como las preposiciones, conjunciones, etc., deberían ser ignoradas por completo ya que aparecerán en la inmensa mayoría de los documentos (esto queremos que se haga de forma automática, o sea, que no haya una lista cableada de palabras a ignorar, sino que se computen de los documentos).
-
-### Operadores de búsqueda
-
-Con estas ideas ya podemos hacer algo, pero para mejorar la búsqueda aún más queremos adicionar operadores a la consulta que permitan darle más control al usuario. Por ejemplo:
-
-- Un símbolo `!` delante de una palabra (e.j., `"algoritmos de búsqueda !ordenación"`) indica que esa palabra **no debe aparecer** en ningún documento que sea devuelto.
-- Un símbolo `^` delante de una palabra (e.j., `"algoritmos de ^ordenación"`) indica que esa palabra **tiene que aparecer** en cualquier documento que sea devuelto.
-- Un símbolo `~` entre dos o más términos indica que esos términos deben **aparecer cerca**, o sea, que mientras más cercanos estén en el documento mayor será la relevancia. Por ejemplo, para la búsqueda `"algoritmos ~ ordenación"`, mientras más cerca están las palabras `"algoritmo"` y `"ordenación"`, más alto debe ser el `score` de ese documento.
-- Cualquier cantidad de símbolos `*` delante de un término indican que ese término es más importante, por lo que su influencia en el `score` debe ser mayor que la tendría normalmente (este efecto será acumulativo por cada `*`, por ejemplo `"algoritmos de **ordenación"` indica que la palabra `"ordenación"` tiene dos veces más prioridad que `"algoritmos"`).
-
-### Ideas extras
-
-Nuestros usuarios son muy exigentes, pero no podemos darles todo. Algunas ideas que no creemos que sean estrictamente necesarias pero que harían nuestra aplicación mucho mejor son:
-
-- Si las palabras exactas no aparecen, pero aparecen palabras derivadas de la misma raíz, también queremos devolver esos documentos (por ejemplo, si no está `"ordenación"` pero estar `"ordenados"`, ese documento puede devolverse pero con un `score` menor).
-- Si aparecen palabras relacionadas aunque no tengan la misma raíz (por ejemplo si la búsqueda es `"computadora"` y el documento tiene `"ordenador"`), también queremos devolver esos documentos pero con menor `score` que si apareciera la palabra exacta o una de la misma raíz.
-
-### Evaluación del `score`
-
-De manera general el valor de `score` debe corresponder a cuán relevante es el documento devuelto para la búsqueda realizada. Como te hemos explicado antes, hay muchos factores que aumentan o disminuyen esta relevancia.
-
-Como todos estos factores están en oposición unos con otros, debes encontrar una forma de balancearlos en alguna fórmula que permita evaluar todo documento con respecto a toda consulta posible. Si un documento no tiene ningún término de la consulta, y no es para nada relevante, entonces su `score` sería `0` como mínimo, pero no debe haber ningún error o excepción en estos casos. Tú debes decidir cómo dar peso a cada elemento que puede influir en el `score` para que los documentos devueltos tengan la mayor relevancia posible.
-
-### Algoritmos de búsqueda
-
-Te hemos dado este proyecto justamente a tí porque sabemos que ustedes en MatCom tienen conocimientos que el resto de nosotros ni imaginamos. En particular, sabemos que hay algo llamado "modelo vectorial" que aparentemente tiene que ver con un arte arcano llamado "álgebra" que permite hacer estas búsquedas muchísimo más rápido que con un simple ciclo `for` por cada documento. De más está decir que esperamos que hagas gala de estos poderes extraordinarios que la matemática te concedió, porque para hacer esto con un doble `for` hubiéramos contratado a cualquier otro.
-
-Si te sirve de algo, hace unos meses contratamos a un gurú de los algoritmos de búsqueda para ver si nos podía enseñar a implementar este proyecto por nosotros mismos, y nos dio una conferencia de 4 horas de la que no entendimos casi nada (debía ser uno de ustedes, porque parecía llevar meses sin afeitar y hablaba solo consigo mismo, susurrando cosas como "turing completo" y "subespacio propio"). En fin, aunque de poco sirvió, al menos uno de nosotros recordó, luego de la conferencia, que había algo llamado "TF-IDF" que aparentemente era la clave para resolver este problema de búsqueda. Seguro que tu sabes de qué se trata.
-
-## Sobre la interfaz gráfica
-
-Como verás cuando ejecutes la aplicación (que se explica más abajo), la interfaz gráfica es bastante pobre. En principio, no tienes obligación de trabajar en esta parte del proyecto ( sabemos que ustedes los científicos de la computación están por encima de estas mundeces).
-
-Pero si nos quieres ayudar, eres libre de modificar la interfaz gráfica todo lo que desees, eso sí, siempre que se mantenga la idea original de la aplicación. Si te interesa aprender Blazor, HTML, o CSS, eres libre de jugar con el código de la interfaz gráfica, que está en el proyecto `MoogleServer`.
-
-## Sobre el contenido a buscar
-
-La idea original del proyecto es buscar en un conjunto de archivos de texto (con extensión `.txt`) que estén en la carpeta `Content`. Desgraciadamente, nuestro último programador que sabía cargar y leer archivos fue contratado por nuestra compañía enemiga *MoneySoft*. Por lo tanto, tendrás que lidiar con esta parte tú mismo.
-
-## Ejecutando el proyecto
-
-Lo primero que tendrás que hacer para poder trabajar en este proyecto es instalar .NET Core 6.0 (lo que a esta altura imaginamos que no sea un problema, ¿verdad?). Luego, solo te debes parar en la carpeta del proyecto y ejecutar en la terminal de Linux:
+- Este proyecto está desarrollado para la versión objetivo de .NET Core 6.0. Para ejecutarlo debe ir a la ruta en la que está ubicada el proyecto y ejecutar en la terminal de Linux:
 
 ```bash
 make dev
 ```
 
-Si estás en Windows, debes poder hacer lo mismo desde la terminal del WSL (Windows Subsystem for Linux). Si no tienes WSL ni posibilidad de instalarlo, deberías considerar seriamente instalar Linux, pero si de todas formas te empeñas en desarrollar el proyecto en Windows, el comando *ultimate* para ejecutar la aplicación es (desde la carpeta raíz del proyecto):
+- Si está en Windows, debe poder hacer lo mismo desde la terminal del WSL (Windows Subsystem for Linux), en caso contrario puede ejecutar:
 
 ```bash
 dotnet watch run --project MoogleServer
 ```
 
-## Sobre la ingeniería de software
+## Implementación MoogleEngine
 
-Por supuesto, queremos que este proyecto sea lo más extensible y mantenible posible, incluso por personas con inteligencia nivel normal, no solo superdotados; así que agradeceríamos que tengas cuidado con la organización, los nombres de los métodos y clases, los miembros que deben ser públicos y privados, y sobre todo, poner muchos comentarios que expliquen por qué haces cada cosa. Sino, luego vendrá algún pobre infeliz (que no será de MatCom) y no sabrá por donde entrarle al proyecto.
+Estructura de la biblioteca de clases `MoogleEngine`.
 
-## Palabras finales
+### Procesamiento de las palabras del Corpus
 
-Hasta aquí las ideas que tenemos **por ahora**.
+Al iniciar el servidor, se llama al método `IndexCorpus` de la clase `Moogle`, el cual se encarga de leer los documentos, y crear un objeto de la clase `Document` para cada documento de la carpeta `Content`:
+- La clase `Document` se encarga de procesar el texto contenido dentro del documento, separar por espacios y eliminar los signos de puntuación (mediante el método `SignPuntuation`).
+- Para eliminar los signos de puntuación, se recorre la palabra desde el principio hasta el final y se guarda la posición del primer *char* alfanumérico, se realiza el mismo procedimiento en sentido inverso y se devuelve la porción de string determinada por los dos índices obtenidos. 
+- En la clase `CorpusData` se almacena la información de cada una de las palabras en el diccionario `Vocabulary` que tiene como valor un objeto de la clase `DataStructure` donde se guarda: un arreglo con el peso ,un arreglo de listas de índices con las posiciones de la palabra en cada documento y la cantidad de documentos que contienen la palabra (estructurando los vectores documento).
+- Inicialmente se guarda en `Vocabulary` la frecuencia de la palabra y la posición en el documento, comparando dicha frecuencia con la frecuencia máxima del documento. 
+- Una vez terminado este proceso se calcula el *TF-IDF* de las palabras del corpus, mediante el método `TfIdfDoc` de la clase `Document` y se almacenan estos valores en `Vocabulary`.
 
-Como bien sabes, los proyectos de software nunca están completos, y los clientes nunca están satisfechos, así que es probable que en las próximas semanas adicionemos algunas ideas nuevas. Estamos confiados en que tu código será lo suficientemente extensible como para acomodar estas ideas a medida que surjan.
+### Procesamiento de la Query 
 
-Ah, por otro lado, nuestros diseñadores siguen trabajando en mejorar la interfaz gráfica (están ahora mismo bajo régimen de pan y agua hasta que esto sea vea medianamente bonito). Por lo tanto, es muy probable que te enviemos actualizaciones de `MoogleServer` durante el tiempo que dura el proyecto.
+Cuando el usuario introduce una nueva *Query* se crea un objeto de la clase `QueryClass` y en dicha clase se extraen las palabras de la *Query*.
 
-Hasta entonces! 🖖
+### Operadores
+
+Dentro de la clase `QueryClass`, se toma el string que contiene a la *Query* y se procede a separar por espacios y a eliminar los signos de puntuación que no pertenezcan a la identificación de un operador:
+- Se identifican los operadores de búsqueda mediante el método `Operators`. 
+- Se agrega al proyecto un nuevo operador de búsqueda: *Búsqueda Literal*, cuya explicación aparece en la descripción del proyecto.
+- Para el operador de cercanía se considera la distancia entre `A~B~C` como la mínima ventana del texto que contiene a `A`, `B` y `C` en cualquier orden.
+- Una vez identificados los operadores se procede a comprobar la existencia de las palabras de la *Query* en el corpus, en caso contrario, se llama al método `Suggestion`. 
+
+### Sugerencia
+
+- En el método `Suggestion` se llama al método `SuggestionWord`, donde se busca la palabra del corpus con la mínima cantidad de cambios con respecto a la palabra para la cual se quiere obtener la sugerencia, para ello se emplea la *Distancia de Levenstein*, la cual consiste en dar un costo a las operaciones que permiten convertir una palabra en otra: *Eliminación*, *Inserción* y *Sustitución* de una letra. 
+- La implementación de la *Distancia de Levenstein* está basada en un algoritmo de programación dinámica (donde en cada estado se decide entre la operación con menor costo), además tiene un grupo de modificaciones que otorgan un menor costo a los errores ortográficos más comunes.  
+- En caso de obtener dos palabras con la misma cantidad de cambios, se guarda la que mayor peso tenga entre todos los documentos del Corpus.
+- Una vez identificada la palabra, en el método `Suggestion` se busca la porción del string `SuggestionQuery` (inicialmente tiene el mismo valor que el string de la *Query*), que contiene la palabra para la cual queremos dar la sugerencia y se sustituye por la nueva palabra.
+
+### Raíces y Sinónimos
+
+Para obtener mejores resultados en la búsqueda se identifican las palabras que posean las mismas raíces o el mismo significado que las de la *Query*:
+- En la clase `Snowball`, está implementado un algoritmo que se encarga de realizar el stemming en español, el cual se apoya en tres reglas y un conjunto de pasos y sufijos  mediante los cuales se obtiene el lexema aproximado de la palabra.
+- Para hallar los sinónimos se emplea un diccionario de sinónimos para el español, estructurado en la lista `Synonymous` de la clase `CorpusData`, la cual tiene una lista de arreglos de string, donde cada arreglo contiene un grupo de palabras con similar significado.
+
+### TF-IDF Query
+
+En la clase `QueryClass` tenemos los diccionarios `WordsQuery` y `WordsStemmingSyn`, los cuales guardan las palabras de la *Query* y las palabras que resultan de la búsqueda de las palabras con la misma raíz y el mismo significado que las de la *Query*, ambos grupos de palabras con su frecuencia respectivamente.
+- Se procede a calcular el *TF-IDF* de las palabras de `WordsQuery` y `WordsStemmingSyn` (en el caso de los sinónimos se divide su frecuencia entre dos, para que posean menos peso las palabras que tienen la misma raíz) y almacenar el resultado en el propio diccionario respectivamente.
+Nota: Aquí se hace una diferenciación entre dos *Querys*, una con las palabras originales y otra para las palabras con la misma raíz y el mismo significado. 
+- En el caso del operador *Mayor Relevancia*, a la hora de calcular el *TF-IDF*, de las palabras que poseen dicho operador, se multiplica la frecuencia de la palabra por el número e, elevado a la cantidad de asteriscos más uno que posea la palabra.
+
+### Resultados de la Búsqueda
+
+Por cada documento se crea un objeto `DocumentResult` y se analizan los requisitos de este con respecto a la búsqueda.
+
+### Ranking de los Documentos
+
+Para dar el ranking de los documentos se emplea *Similitud del Coseno*, mencionada en la descripción del proyecto:
+- En el método `SimVectors` se comparan los datos del vector documento (correspondiente al documento analizado) almacenados en el diccionario `Vocabulary` de la clase `CorpusData`, con los valores del vector consulta almacenados en  el diccionario `WordsQuery` de la clase `QueryClass`. 
+- En caso de que el documento no contenga ninguna de las palabras de `WordsQuery`, se realiza el procedimiento anterior pero ahora se emplea los datos del diccionario `WordsStemmingSyn`, si los resultados son positivos se suma al *Score* del documento el mínimo valor de double (con esto se garantiza que los documentos que solo poseen palabras con la misma raíz y el mismo significado que las de la *Query* siempre sean devueltos por debajo de los que contienen al menos una palabra de la *Query*).
+- Luego se calcula el *Score* del documento.
+
+### Influencia de los Operadores en la Búsqueda
+
+Se determina si el documento cumple con los parámetros de los operadores mediante el método `ResultSearch`.
+- Para tener en cuenta las condiciones de los operadores `Close` y `SearchLiteral`, se emplea la clase `DistanceWord` donde está el método `DistanceClose` que devuelve la mínima distancia entre una lista de palabras en un determinado documento y el método `DistanceLiteral` que se encarga de buscar en un documento y determinar la posición de las palabras que están especificadas en el operador `SearchLiteral`.
+- En el caso del operador `Close` se le suma al *Score* del documento *100/n* donde *n* es la mínima distancia entre el grupo de palabras que conforman el operador.
+
+### Snippet
+
+- Se construye el *Snippet* del documento mediante el método `Snippet`, si hay resultados del operador `SearchLiteral` se muestra una línea por cada grupo de palabras de dicho operador. Por otro lado se define un tamaño máximo de 20 palabras para cada línea, luego se llama al método `DistanceSnippet` de la clase `DistanceWord`, el cual determina el máximo número de palabras resultantes de la búsqueda que ocupan una ventana del texto de tamaño 20 y las posiciones en que estas se encuentran, si todas estas palabras no fueron contenidas en dicha ventana se realiza el mismo procedimiento con las restantes, hasta obtener como máximo 5 *Snippets* por documento.
+- Con las posiciones obtenidas en el método `Snippet`, se lee el documento y se guarda el texto contenido en dichas posiciones mediante el método `BuildSinipped`.
+
+### Resultados Obtenidos
+
+- Una vez concluida la búsqueda, se comprueba que la sugerencia hecha al usuario es válida y se construye el objeto `SearchResult` que devuelve el método `Query` de la clase `Moogle`, mediante una lista de objetos `SearchItem`, que contiene un arreglo con las líneas del *Snippet*, las posiciones de dichas líneas en el documento y la lista de palabras de la *Query* que no fueron encontradas en el documento.
+
+### Implementación para la mínima distancia entre un grupo de palabras
+
+Para determinar la mínima distancia entre una lista de palabras se utiliza el algoritmo *Sliding Window*, empleando las posiciones de las palabras en el documento, guardadas en el diccionario `Vocabulary` de la clase `CorpusData`, además de los métodos agrupados en la clase `DistanceWord`.
+- En el método `ListPosWords` se crea un arreglo de tuplas por cada palabra que contiene el índice de la palabra en la lista de palabras y la posición del documento, mediante el método `BuildTuple`, luego se ordena dicho arreglo por el valor de las posiciones de las palabras mediante el método `Sorted` y se determina la cantidad de ocurrencias de la palabra en la lista de palabras, mediante el método `OcurrenceWord`.
+- En el método `SearchDistanceWords` se utiliza el arreglo de tuplas obtenido en el paso anterior y se emplea una cola en la que se van introduciendo los elementos del array hasta que todas las palabras estén contenidas en la cola, una vez hecho esto se intenta sacar de la cola sin que se deje de cumplir que todas las palabras están contenidas, terminado este proceso se calcula la distancia entre las palabras que se encuentran en los extremos de la cola, se compara el valor con el que se tenía calculado, se guarda el mínimo y se vuelve a repetir el procedimiento.
+
+```cs
+//Recorremos el array buscando la minima ventana q contenga a todas las palabras
+for (int i = 0; i < PosWordsSorted.Length; i++)
+{
+    searchMinDist.Enqueue(PosWordsSorted[i]);
+    posList[PosWordsSorted[i].Item1]++;
+    if(posList[PosWordsSorted[i].Item1]==ocurrence[PosWordsSorted[i].Item1]) contains++;
+    if (contains == minWords)
+    {
+    //Si la cantidad de palabras correcta esta en la cola tratamos de ver cuantas podemos sacar
+        (int, int) eliminate;
+        while(true)
+        {
+            //Buscamos la posible palabra a eliminar de la cola
+            eliminate = searchMinDist.Peek();
+            if(posList[eliminate.Item1]==ocurrence[eliminate.Item1]) break;
+            else
+            {
+                searchMinDist.Dequeue();
+                posList[eliminate.Item1]--;
+            }
+        }
+        //Comprobamos si la distancia obtenida es menor que la q teniamos
+        if (PosWordsSorted[i].Item2 - searchMinDist.Peek().Item2 + 1 < minDist)
+        {
+            WordsNotRange(words,posList,ocurrence,wordsNotRange);
+            pos = searchMinDist.Peek().Item2;
+            minDist = PosWordsSorted[i].Item2 - searchMinDist.Peek().Item2 + 1;
+        }
+        else if (PosWordsSorted[i].Item2 - searchMinDist.Peek().Item2 + 1 == minDist)
+        {
+            Random random = new Random();
+            if (random.Next(2) == 0)
+            {
+                WordsNotRange(words,posList,ocurrence,wordsNotRange);
+                pos = searchMinDist.Peek().Item2;
+            }
+        }
+        //Sacamos de la cola
+        contains--;
+        posList[eliminate.Item1]--;
+        searchMinDist.Dequeue();
+    }
+}
+```
+
+### Implementación para la Búsqueda Literal
+
+Para determinar si en el documento existe una ventana de texto exactamente con las palabras de la lista, se utilizan los métodos de la clase `DistanceWord`.
+- Se emplea el método `ListPosWords`, descrito anteriormente, pero en este caso se tiene en cuenta la posible presencia de los comodines `?` en la lista de palabras, se recorre la lista de palabras y se lleva un contador con la cantidad de comodines, ahora en cada momento de formar la tupla se resta la cantidad de comodines al índice y a la posición de la palabra.
+- Se recorre el arreglo de tuplas, mediante el método `DistanceLiteral`, llevando un contador que muestra el índice de la palabra que corresponde en cada momento. Mientras la posición sea la misma significa que la palabra es igual a la anterior, por lo que se almacenan los índices en una lista, si se encuentra una posición diferente se comprueba que la nueva posición sea consecutiva con la anterior y que alguno de los índices almacenados en la lista coincida con el de la palabra que corresponde, en caso afirmativo se aumenta en uno el índice de la palabra a buscar y se repite el procedimiento, en caso contrario se reinicia el índice de la palabra a buscar.
+- Si en algún momento el índice de la palabra a buscar coincide con la última palabra se guarda la posición donde se encontró la porción de texto correspondiente.
+
+```cs
+pubic static int DistanceLiteral(List<string> words,Document document)
+{
+    ((int,int)[],int) aux = ListPosWords(words,document);
+    (int,int)[] PosWordsSorted = aux.Item1;
+    int posRnd=aux.Item2;
+    int ind=0;
+    int pos=PosWordsSorted[0].Item2;
+    int posLiteral=-1;
+    List<int> indWord=new List<int>();
+    bool literal=false;
+    //Recorremos la posiciones de la palabras
+    for(int i=0;i<PosWordsSorted.Length;i++)
+    {
+        //Si encontramos dos indices iguales estamos en presencia de la misma palabra
+        if(pos==PosWordsSorted[i].Item2) indWord.Add(PosWordsSorted[i].Item1);
+        else
+        {
+            //Si encontramos una posicion diferente revisamos si es correcto el indice de las palabras que son iguales
+            if(LiteralIndex(words,indWord,ref posRnd,ref ind,ref pos,ref posLiteral,ref literal) )
+            {
+                //Si la posicion actual es el sucesor de la anterior avanzamos un indice
+                if(PosWordsSorted[i].Item2==pos+1) ind++;
+                else ind=0;
+            }
+            else ind=0; 
+            //Como hemos encontrado una palabra diferente creamos una nueva lista de indices
+            indWord=new List<int>();
+            indWord.Add(PosWordsSorted[i].Item1);
+            pos=PosWordsSorted[i].Item2;
+        }
+    }
+    LiteralIndex(words,indWord,ref posRnd,ref ind,ref pos,ref posLiteral,ref literal);
+    //Si hemos encontrado una posicion correcta la devolvemos de lo contrario devlovemos -1
+    if(literal) return posLiteral;
+    return -1;
+}
+```
+
+## Implementación MoogleServer 
+
+Se añade al proyecto una nueva página `Doc.razor`, donde se le brinda al usuario la opción de poder visualizar el documento directamente desde el navegador.
+
+### AutoCompletar
+
+- Para el autocompletamiento se añade el evento `bind:event="oninput"` el cual permite actualizar el valor del string `query` cada vez que el usuario teclea o borra un nuevo carácter
+- Se emplea el evento `onkeyup` que llama al método `Press`, el cual identifica la última porción de palabra tecleada por el usuario y llama al método `AutoComplete` de la clase `Server` el cual devuelve como máximo las 5 palabras del corpus más cercanas a completar el texto escrito por el usuario.
+- Una vez obtenidas las palabras para autocompletar se utiliza un `datalist` para mostrárselas al usuario.
+
+### Suggestion
+
+- Se utiliza el evento `onclick` que llama al método `Suggestion` el cual permite realizar una nueva consulta con la *Query* `suggestion`.
+
+### Visualizar el Documento
+
+- Cada etiqueta `Tittle` y `Snippet` contiene un enlace a la página `Doc.razor`, la cual recibe como parámetros el título del documento, la posición de la línea y la página donde se encuentra el *Snippet*.
+- La página `Doc.razor` llama al método `Read` de la clase `Server` el cual devuelve las 100 líneas de la página del documento que se quiere mostrar. Además está implementada la posibilidad de visualizar la página anterior, la siguiente y cualquier página del documento a la que quiera acceder el usuario.

@@ -21,7 +21,7 @@ public class DocumentResult
         if(!ResultSearch(wordsDoc, wordsNoDoc, wordsDocLiteral, PosSearchLiteral, score, document, query)) return;
         //Buscamos los Snippets
         (string[],int[]) aux=Snippet(wordsDoc, PosSearchLiteral, document, query);
-        Item = new SearchItem(document.Title,aux.Item1,aux.Item2,score,wordsNoDoc);
+        this.Item = new SearchItem(document.Title,aux.Item1,aux.Item2,score,wordsNoDoc);
     }
     #region SearchResult
     /// <summary>Metodo para calcular la similitud del coseno</summary>
