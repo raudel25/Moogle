@@ -3,7 +3,7 @@ namespace MoogleEngine;
 public static class CorpusData
 {
     //Guardar los sinonimos cargados de nuestro json
-    public static List<string[]>? Synonymous {get; set;}
+    public static List<string[]>? Synonymous { get; set; }
     //Guardamos las palabras de nuestro corpus
     public static Dictionary<string, DataStructure> Vocabulary = new Dictionary<string, DataStructure>();
     /// <summary>Metodo para el indexar los terminos en el corpus</summary>
@@ -37,8 +37,8 @@ public class DataStructure
     public List<int>[] PosDoc { get; set; }
     public DataStructure(int n)
     {
-        this.WeightDoc=new double[n];
-        this.PosDoc=new List<int>[n];
+        this.WeightDoc = new double[n];
+        this.PosDoc = new List<int>[n];
     }
 }
 public class Synonymous

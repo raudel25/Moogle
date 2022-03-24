@@ -24,15 +24,15 @@ public static class Data
         ,"idad", "idades"
         ,"iva", "ivo", "ivas", "ivos"
     };
-    public static List<string> Step2A = new List<string>() 
+    public static List<string> Step2A = new List<string>()
     {
         "yeron", "yendo", "yamos", "yais", "yan", "yen", "yas", "yes", "ya", "ye", "yo", "yó"
     };
-    public static List<string> Step2B1 = new List<string>() 
+    public static List<string> Step2B1 = new List<string>()
     {
         "en", "es", "éis", "emos"
     };
-    public static List<string> Step2B2 = new List<string>() 
+    public static List<string> Step2B2 = new List<string>()
     {
         "arían", "arías", "arán", "arás", "aríais", "aría", "aréis", "aríamos", "aremos", "ará",
         "aré", "erían", "erías", "erán", "erás", "eríais", "ería", "eréis", "eríamos", "eremos",
@@ -44,11 +44,11 @@ public static class Data
         "ierais", "aseis", "ieseis", "asteis", "isteis", "ados", "idos", "amos", "ábamos", "íamos",
         "imos", "áramos", "iéramos", "iésemos", "ásemos"
     };
-    public static List<string> Step3A = new List<string>() 
+    public static List<string> Step3A = new List<string>()
     {
         "os", "a", "o", "á", "í", "ó"
     };
-    public static List<string> Step3B = new List<string>() 
+    public static List<string> Step3B = new List<string>()
     {
         "e", "é"
     };

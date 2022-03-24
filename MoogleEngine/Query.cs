@@ -5,23 +5,23 @@ namespace MoogleEngine;
 public class QueryClass
 {
     //Guardar la sugerencia para el usuario
-    public string SuggestionQuery {get; private set;}
+    public string SuggestionQuery { get; private set; }
     //Guardar los pesos de las palabras de la query
-    public Dictionary<string, double> WordsQuery {get; private set;}
+    public Dictionary<string, double> WordsQuery { get; private set; }
     //Guardar los sinonimos y las palabras con la misma raiz q las de nuestra query
-    public Dictionary<string, double[]> WordsStemmingSyn {get; private set;}
-    public double Norma {get; private set;}
-    public double NormaStemmingSyn {get; private set;}
+    public Dictionary<string, double[]> WordsStemmingSyn { get; private set; }
+    public double Norma { get; private set; }
+    public double NormaStemmingSyn { get; private set; }
     //Guardar las palabras del operador Excluir
-    public List<string> Exclude {get; private set;}
+    public List<string> Exclude { get; private set; }
     //Guardar las palabras del operador Incluir
-    public List<string> Include {get; private set;}
+    public List<string> Include { get; private set; }
     //Guardar las palabras del operador Cercania por cada grupo de palabras cercanas
-    public List<List<string>> CloseWords {get; private set;}
+    public List<List<string>> CloseWords { get; private set; }
     //Guardar las palabras del operador Relevancia y su respectiva relevancia
-    public Dictionary<string, int> HighestRelevance {get; private set;}
+    public Dictionary<string, int> HighestRelevance { get; private set; }
     //Guardar las palabras de la busqueda literal
-    public List<List<string>> SearchLiteralWords {get; private set;}
+    public List<List<string>> SearchLiteralWords { get; private set; }
     //Bool para la presencia de busqueda literal
     private bool _SearchLiteral;
     //Guardar la maxima frecuencia de la query
@@ -41,10 +41,10 @@ public class QueryClass
         this.SearchLiteralWords = new List<List<string>>();
         this.HighestRelevance = new Dictionary<string, int>();
         Operators(query);
-        if(_noResults) return;
+        if (_noResults) return;
         TfIdfC();
         //Comprobamos la sugerencia
-        if(this.SuggestionQuery==query) this.SuggestionQuery="";
+        if (this.SuggestionQuery == query) this.SuggestionQuery = "";
     }
     #region FrecuencyQuery
     /// <summary>Metodo para calcular la frecuencia de la query</summary>
@@ -53,7 +53,7 @@ public class QueryClass
     {
         if (!WordsQuery.ContainsKey(word)) WordsQuery.Add(word, 0);
         WordsQuery[word]++;
-        if (WordsQuery[word] > _Max)_Max = (int)WordsQuery[word];
+        if (WordsQuery[word] > _Max) _Max = (int)WordsQuery[word];
     }
     /// <summary>Metodo para calcular la frecuencia de la query con las raices y los sinonimos</summary>
     /// <param name="word">String que contien la palabra</param>
@@ -73,20 +73,20 @@ public class QueryClass
     public void Operators(string query)
     {
         //Tokenizamos nuestro query
-        string[] s=query.Split();
-        for(int i=0;i<s.Length;i++)
+        string[] s = query.Split();
+        for (int i = 0; i < s.Length; i++)
         {
             string word = s[i];
-            word = Document.SignPuntuation(word,true);
-            if(word == "") continue;
+            word = Document.SignPuntuation(word, true);
+            if (word == "") continue;
             word = word.ToLower();
             if (SearchLiteralOperator(word)) continue;
             if (CloseOperator(word)) continue;
             if (ExcludeOperator(word)) continue;
             if (IncludeOperator(word)) continue;
             if (HighestRelevanceOperator(word)) continue;
-            word=Document.SignPuntuation(word);
-            if(word=="") continue;
+            word = Document.SignPuntuation(word);
+            if (word == "") continue;
             //Comprobamos si la palabra a buscar existe en nuestro sistema
             if (CorpusData.Vocabulary.ContainsKey(word))
             {
@@ -116,22 +116,22 @@ public class QueryClass
         }
         if (_SearchLiteral)
         {
-            if(word=="\"") return true;
+            if (word == "\"") return true;
             //Comprobamos si las palabras pertenecientes a la busqueda han terminado
             if (word[word.Length - 1] == '"') _SearchLiteral = false;
             //Comprobamos si estamos en presencia de un comodin
-            if(word=="\"?"||word=="?\"") word="?";
-            if(word !="?") word = Document.SignPuntuation(word);
+            if (word == "\"?" || word == "?\"") word = "?";
+            if (word != "?") word = Document.SignPuntuation(word);
             if (word == "") return true;
-            if (CorpusData.Vocabulary.ContainsKey(word)||word=="?")
+            if (CorpusData.Vocabulary.ContainsKey(word) || word == "?")
             {
                 SearchLiteralWords[SearchLiteralWords.Count - 1].Add(word);
-                if(word !="?") FrecuencyQuery(word);
+                if (word != "?") FrecuencyQuery(word);
             }
             else
             {
                 //Si no esta la palabra en nuestro corpus no hay resultados
-                _noResults=true;
+                _noResults = true;
                 Suggestion(word);
             }
             return true;
@@ -151,13 +151,13 @@ public class QueryClass
             for (int m = 0; m < closeWords.Length; m++)
             {
                 closeWords[m] = Document.SignPuntuation(closeWords[m]);
-                if(closeWords[m]=="") continue;
+                if (closeWords[m] == "") continue;
                 if (CorpusData.Vocabulary.ContainsKey(closeWords[m]))
                 {
                     FrecuencyQuery(closeWords[m]);
                 }
                 else
-                {   
+                {
                     Suggestion(closeWords[m]);
                 }
                 close.Add(closeWords[m]);
@@ -210,7 +210,7 @@ public class QueryClass
             {
                 Suggestion(word);
                 //Si no esta la palabra en nuestro corpus no hay resultados
-                _noResults=true;
+                _noResults = true;
             }
             return true;
         }
@@ -234,7 +234,7 @@ public class QueryClass
             if (word == "") return true;
             if (CorpusData.Vocabulary.ContainsKey(word))
             {
-                HighestRelevance.Add(word, a + 1 );
+                HighestRelevance.Add(word, a + 1);
                 FrecuencyQuery(word);
             }
             else
@@ -317,11 +317,11 @@ public class QueryClass
         string suggestion = "";
         double suggestionTfIdf = 0;
         int changes = int.MaxValue;
-        double len=word.Length;
+        double len = word.Length;
         foreach (var wordDic in CorpusData.Vocabulary)
         {
-            if(Math.Abs(wordDic.Key.Length-len)>changes) continue;
-            int dist = LevenshteinDistance(word, wordDic.Key,changes);
+            if (Math.Abs(wordDic.Key.Length - len) > changes) continue;
+            int dist = LevenshteinDistance(word, wordDic.Key, changes);
             //Nos quedamos con la palabra que posea menos cambios
             if (dist < changes)
             {
@@ -356,7 +356,7 @@ public class QueryClass
     /// <param name="b">Palabra original</param>
     /// <param name="actchange">Cantidad actual de cambios</param>
     /// <returns>Cantidad de cambios entre una palabra y otra</returns>
-    private static int LevenshteinDistance(string a, string b,int actchange)
+    private static int LevenshteinDistance(string a, string b, int actchange)
     {
         int cost = 0;
         int m = a.Length;
@@ -367,43 +367,43 @@ public class QueryClass
         // Llenamos la primera columna y la primera fila.
         for (int i = 0; i <= m; i++)
         {
-            change[i, 0] = 4*i;
-            if(i>0)
+            change[i, 0] = 4 * i;
+            if (i > 0)
             {
-                if(a[i-1]=='h') change[i,0]-=2;
+                if (a[i - 1] == 'h') change[i, 0] -= 2;
             }
         }
         for (int j = 0; j <= n; j++)
         {
-            change[0, j] = 4*j;
-            if(j>0)
+            change[0, j] = 4 * j;
+            if (j > 0)
             {
-                if(b[j-1]=='h') change[0,j]-=2;
+                if (b[j - 1] == 'h') change[0, j] -= 2;
             }
         }
-        for (int i = 1; i <= Math.Min(m,n); i++)
+        for (int i = 1; i <= Math.Min(m, n); i++)
         {
-            int min=int.MaxValue;
+            int min = int.MaxValue;
             for (int j = i; j <= n; j++)
             {
                 //Damos menos peso a los errores ortograficos
-                cost = (a[i - 1] == b[j - 1]) ? 0 : OrtograficRule(a[i-1],b[j-1]);
-                change[i, j] = Math.Min(Math.Min(change[i - 1, j] + ((a[i - 1]=='h') ? 2 : 4),  //Eliminacion
-                            change[i, j - 1] + ((b[j - 1]=='h') ? 2 : 4)),                             //Insercion 
+                cost = (a[i - 1] == b[j - 1]) ? 0 : OrtograficRule(a[i - 1], b[j - 1]);
+                change[i, j] = Math.Min(Math.Min(change[i - 1, j] + ((a[i - 1] == 'h') ? 2 : 4),  //Eliminacion
+                            change[i, j - 1] + ((b[j - 1] == 'h') ? 2 : 4)),                             //Insercion 
                             change[i - 1, j - 1] + cost);                     //Sustitucion
-                min=Math.Min(min,change[i,j]);         
+                min = Math.Min(min, change[i, j]);
             }
-            for (int j = i+1; j <= m; j++)
+            for (int j = i + 1; j <= m; j++)
             {
                 //Damos menos peso a los errores ortograficos
-                cost = (a[j - 1] == b[i - 1]) ? 0 : OrtograficRule(a[j-1],b[i-1]);
-                change[j, i] = Math.Min(Math.Min(change[j - 1, i] + ((a[j - 1]=='h') ? 2 : 4),  //Eliminacion
-                            change[j, i - 1] + ((b[i - 1]=='h') ? 2 : 4)),                             //Insercion 
+                cost = (a[j - 1] == b[i - 1]) ? 0 : OrtograficRule(a[j - 1], b[i - 1]);
+                change[j, i] = Math.Min(Math.Min(change[j - 1, i] + ((a[j - 1] == 'h') ? 2 : 4),  //Eliminacion
+                            change[j, i - 1] + ((b[i - 1] == 'h') ? 2 : 4)),                             //Insercion 
                             change[j - 1, i - 1] + cost);                     //Sustitucion  
-                min=Math.Min(min,change[j,i]);          
+                min = Math.Min(min, change[j, i]);
             }
             //Comprobamos si la cantidad de cambios que llevamos es mayor que la que ya teniamos como minima
-            if(min>actchange) return int.MaxValue;
+            if (min > actchange) return int.MaxValue;
         }
         return change[m, n];
     }
@@ -411,34 +411,34 @@ public class QueryClass
     /// <param name="a">Caracter a cambiar</param>
     /// <param name="b">Caraacter original</param>
     /// <returns>Peso reducido segun la regla</returns>
-    private static int OrtograficRule(char a,char b)
+    private static int OrtograficRule(char a, char b)
     {
         int min; int max;
-        if((int)a>(int)b)
+        if ((int)a > (int)b)
         {
-            min=(int)b; max=(int)a;
+            min = (int)b; max = (int)a;
         }
         else
         {
-            min=(int)a; max=(int)b;
+            min = (int)a; max = (int)b;
         }
         //Vocales con tilde
-        if(min==97 && 224<=max && max<=229) return 1;
-        if(min==101 && 232<=max && max<=235) return 1;
-        if(min==105 && 236<=max && max<=239) return 1;
-        if(min==111 && 242<=max && max<=246) return 1;
-        if(min==117 && 249<=max && max<=252) return 1;
+        if (min == 97 && 224 <= max && max <= 229) return 1;
+        if (min == 101 && 232 <= max && max <= 235) return 1;
+        if (min == 105 && 236 <= max && max <= 239) return 1;
+        if (min == 111 && 242 <= max && max <= 246) return 1;
+        if (min == 117 && 249 <= max && max <= 252) return 1;
         //c-s c-z j-g v-b
-        if(min==99 && max==115) return 2;
-        if(min==115 && max==122) return 2;
-        if(min==103 && max==106) return 2;
-        if(min==98 && max==118) return 2;
+        if (min == 99 && max == 115) return 2;
+        if (min == 115 && max == 122) return 2;
+        if (min == 103 && max == 106) return 2;
+        if (min == 98 && max == 118) return 2;
         //m-n ñ-n x-c x-s l-r
-        if(min==109 && max==110) return 3;
-        if(min==110 && max==241) return 3;
-        if(min==99 && max==120) return 3;
-        if(min==115 && max==120) return 3;
-        if(min==108 && max==114) return 3;
+        if (min == 109 && max == 110) return 3;
+        if (min == 110 && max == 241) return 3;
+        if (min == 99 && max == 120) return 3;
+        if (min == 115 && max == 120) return 3;
+        if (min == 108 && max == 114) return 3;
         return 4;
     }
     #endregion

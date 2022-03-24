@@ -3,25 +3,25 @@ namespace MoogleEngine;
 public class Document
 {
     //Guardar una lista con todos los documentos del corpus
-    public static List<Document>? Documents {get; set;}
+    public static List<Document>? Documents { get; set; }
     //Guardar la cantidad de documentos
-    public static int Cantdoc {get; set;}
+    public static int Cantdoc { get; set; }
     //Guardar la frecuencia de la palabra que mas se repite por documento
-    public int Max {get; set;}
+    public int Max { get; set; }
     //Guardar el indice del documento
-    public int Index {get; private set;}
+    public int Index { get; private set; }
     //Guardar el titulo del documento
-    public string Title {get; private set;}
+    public string Title { get; private set; }
     //Guardar la ruta del documento
-    public string Path {get; private set;}
-    public double Norma {get; set;}
+    public string Path { get; private set; }
+    public double Norma { get; set; }
     public Document(string[] doc, string title, int q)
     {
-        this.Max=1;
+        this.Max = 1;
         this.Path = title;
         this.Title = title.Substring(12, title.Length - 5 - 12 + 1);
         this.Index = q;
-        this.Norma=0;
+        this.Norma = 0;
         Token(doc, q);
     }
     #region Token
@@ -42,7 +42,7 @@ public class Document
                 //Quitamos los signos de puntuacion
                 word = SignPuntuation(word);
                 //Si solo es un signo de puntuacion seguimos
-                if (word == "")  continue;
+                if (word == "") continue;
                 word = word.ToLower();
                 //Insertamos la palabra en el sistema
                 CorpusData.InsertWord(word, this, cant);
@@ -54,9 +54,9 @@ public class Document
     /// <param name="s">Texto del documento</param>
     /// <param name="query">Query</param>
     /// <returns>Una palabra tras eliminar los extremos no alfanumericos</returns>
-    public static string SignPuntuation(string s, bool query = false)   
+    public static string SignPuntuation(string s, bool query = false)
     {
-        if(s=="") return s;
+        if (s == "") return s;
         int start = 0; int stop = 0;
         //Recorremos la palabra de izqueierda a derecha y paramos cuando hallemos una letra
         for (int i = 0; i < s.Length; i++)
@@ -84,7 +84,7 @@ public class Document
             bool operators = false;
             if (query)
             {
-                if (s[s.Length - 1 - i] == '"'||s[s.Length - 1 - i] == '?') operators = true;
+                if (s[s.Length - 1 - i] == '"' || s[s.Length - 1 - i] == '?') operators = true;
             }
             //Si nos encontramos una letra paramos y guardamos la posicion
             if (!operators && !char.IsLetterOrDigit(s[s.Length - 1 - i])) next = true;
@@ -97,7 +97,7 @@ public class Document
         return s.Substring(start, stop - start + 1);
     }
     #endregion
-    
+
     #region TFIDF
     /// <summary>Metodo para calcular el TFIdf de los documentos</summary>
     public static void TfIDFDoc()

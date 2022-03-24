@@ -8,14 +8,14 @@ public static class Moogle
     {
         QueryClass queryObject = new QueryClass(query);
         //Comprobamos la sugerencia
-        if(queryObject.SuggestionQuery=="") 
+        if (queryObject.SuggestionQuery == "")
         {
             return new SearchResult(BuildItem(queryObject));
         }
         else
-        {        
-            QueryClass suggestionObject=new QueryClass(queryObject.SuggestionQuery);
-            return new SearchResult(BuildItem(queryObject),BuildItem(suggestionObject),queryObject.SuggestionQuery);
+        {
+            QueryClass suggestionObject = new QueryClass(queryObject.SuggestionQuery);
+            return new SearchResult(BuildItem(queryObject), BuildItem(suggestionObject), queryObject.SuggestionQuery);
         }
     }
     /// <summary>Construyendo el arreglo de SearchItem</summary>
@@ -26,8 +26,8 @@ public static class Moogle
         List<SearchItem> items = new List<SearchItem>();
         for (int i = 0; i < Document.Documents!.Count; i++)
         {
-            DocumentResult d=new DocumentResult(Document.Documents[i],query);
-            if(d.Item!=null) items.Add(d.Item);
+            DocumentResult d = new DocumentResult(Document.Documents[i], query);
+            if (d.Item != null) items.Add(d.Item);
         }
         return items;
     }
@@ -53,5 +53,5 @@ public static class Moogle
         Synonymous sin = JsonSerializer.Deserialize<Synonymous>(jsonstring)!;
         CorpusData.Synonymous = sin!.synonymous;
         Document.TfIDFDoc();
-    } 
+    }
 }

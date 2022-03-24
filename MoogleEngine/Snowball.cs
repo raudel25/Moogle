@@ -82,7 +82,7 @@ public static class Snowball
                 rv = 3;
             }
         }
-        return new (r1, r2, rv);
+        return new(r1, r2, rv);
     }
     /// <summary>Pronombre adjunto, gerundios e infinitivos</summary>
     /// <returns>Raiz de la palabra luego de realizar el paso</returns>
@@ -130,7 +130,7 @@ public static class Snowball
                 }
             }
         }
-        if(index < rv) return word;
+        if (index < rv) return word;
         return word.Substring(0, index);
     }
     /// <summary>Eliminación de sufijos estándar</summary>
@@ -149,7 +149,7 @@ public static class Snowball
                 }
             }
         }
-        if(index < r2) return word;
+        if (index < r2) return word;
         return word.Substring(0, index);
     }
     /// <summary>Sufijos verbales que empiezan por y</summary>
@@ -168,7 +168,7 @@ public static class Snowball
                 }
             }
         }
-        if(index < rv) return word;
+        if (index < rv) return word;
         return word.Substring(0, index);
     }
     /// <summary>Otros sufijos verbales</summary>
@@ -196,7 +196,7 @@ public static class Snowball
         }
         else
         {
-            if(index < rv) return word;
+            if (index < rv) return word;
         }
         return word.Substring(0, index);
     }
@@ -216,7 +216,7 @@ public static class Snowball
                 }
             }
         }
-        if(index < rv) return word;
+        if (index < rv) return word;
         return word.Substring(0, index);
     }
     /// <summary>Sufijo residual</summary>
@@ -235,7 +235,7 @@ public static class Snowball
                 }
             }
         }
-        if(index < rv) return word;
+        if (index < rv) return word;
         return word.Substring(0, index);
     }
     /// <summary>Sufijo residual</summary>
@@ -256,7 +256,7 @@ public static class Snowball
         }
         else
         {
-            if(index < rv) return word;
+            if (index < rv) return word;
         }
         return word.Substring(0, index);
     }

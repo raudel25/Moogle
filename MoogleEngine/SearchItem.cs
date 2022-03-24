@@ -10,12 +10,12 @@ public class SearchItem
         this.PosSnippet = PosSnippet;
         this.WordNoDoc = wordsNoDoc;
     }
-    
+
     public string Title { get; private set; }
 
     public string[] Snippet { get; private set; }
     public int[] PosSnippet { get; private set; }
-    public List<string> WordNoDoc {get; private set;}
+    public List<string> WordNoDoc { get; private set; }
 
     public double Score { get; set; }
 }
