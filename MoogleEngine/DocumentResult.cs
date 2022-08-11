@@ -258,7 +258,7 @@ public class DocumentResult
                 if (i == Snippetwords.Count) break;
                 string word = linea[j];
                 //Quitamos los signos de puntuacion
-                word = Document.SignPuntuation(word);
+                word = Document.SignPunctuation(word);
                 //Si solo es un signo de puntuacion seguimos
                 if (word == "") continue;
                 cant++;

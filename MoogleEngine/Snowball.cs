@@ -24,6 +24,7 @@ public static class Snowball
         if (word1 == word) word1 = Step3B(word, r1, r2, rv);
         return word1;
     }
+
     /// <summary>Metodo para determinar las regiones del lemmatizador</summary>
     /// <returns>Numero de caracteres desde el inicio de la palabra no contenidos en la region indicada</returns>
     static (int, int, int) R1R2RV(string word)
@@ -41,6 +42,7 @@ public static class Snowball
                 break;
             }
         }
+
         //r2 es la region despues de la primera consonante antecedida por una vocal en r1
         for (int j = i + 2; j < word.Length; j++)
         {
@@ -50,6 +52,7 @@ public static class Snowball
                 break;
             }
         }
+
         if (word.Length > 2)
         {
             //Si la 2da letra es una consonante rv es la region despues de la siguiente vocal
@@ -82,8 +85,10 @@ public static class Snowball
                 rv = 3;
             }
         }
+
         return new(r1, r2, rv);
     }
+
     /// <summary>Pronombre adjunto, gerundios e infinitivos</summary>
     /// <returns>Raiz de la palabra luego de realizar el paso</returns>
     static string Step0(string word, int r1, int r2, int rv)
@@ -102,6 +107,7 @@ public static class Snowball
                 }
             }
         }
+
         if (find)
         {
             for (int j = 4; j >= 1; j--)
@@ -130,9 +136,11 @@ public static class Snowball
                 }
             }
         }
+
         if (index < rv) return word;
         return word.Substring(0, index);
     }
+
     /// <summary>Eliminación de sufijos estándar</summary>
     /// <returns>Raiz de la palabra luego de realizar el paso</returns>
     static string Step1(string word, int r1, int r2, int rv)
@@ -149,9 +157,11 @@ public static class Snowball
                 }
             }
         }
+
         if (index < r2) return word;
         return word.Substring(0, index);
     }
+
     /// <summary>Sufijos verbales que empiezan por y</summary>
     /// <returns>Raiz de la palabra luego de realizar el paso</returns>
     static string Step2A(string word, int r1, int r2, int rv)
@@ -168,9 +178,11 @@ public static class Snowball
                 }
             }
         }
+
         if (index < rv) return word;
         return word.Substring(0, index);
     }
+
     /// <summary>Otros sufijos verbales</summary>
     /// <returns>Raiz de la palabra luego de realizar el paso</returns>
     static string Step2B1(string word, int r1, int r2, int rv)
@@ -187,6 +199,7 @@ public static class Snowball
                 }
             }
         }
+
         if (index - 2 >= 0 && index > rv)
         {
             if ((word[index - 1] == 'u') && (word[index - 2] == 'g' || word[index - 2] == 'q'))
@@ -198,8 +211,10 @@ public static class Snowball
         {
             if (index < rv) return word;
         }
+
         return word.Substring(0, index);
     }
+
     /// <summary>Otros sufijos verbales</summary>
     /// <returns>Raiz de la palabra luego de realizar el paso</returns>
     static string Step2B2(string word, int r1, int r2, int rv)
@@ -216,9 +231,11 @@ public static class Snowball
                 }
             }
         }
+
         if (index < rv) return word;
         return word.Substring(0, index);
     }
+
     /// <summary>Sufijo residual</summary>
     /// <returns>Raiz de la palabra luego de realizar el paso</returns>
     static string Step3A(string word, int r1, int r2, int rv)
@@ -235,9 +252,11 @@ public static class Snowball
                 }
             }
         }
+
         if (index < rv) return word;
         return word.Substring(0, index);
     }
+
     /// <summary>Sufijo residual</summary>
     /// <returns>Raiz de la palabra luego de realizar el paso</returns>
     static string Step3B(string word, int r1, int r2, int rv)
@@ -247,6 +266,7 @@ public static class Snowball
         {
             index = word.Length - 1;
         }
+
         if (index - 2 >= 0 && index > rv)
         {
             if ((word[index - 1] == 'u') && (word[index - 2] == 'g' || word[index - 2] == 'q'))
@@ -258,6 +278,7 @@ public static class Snowball
         {
             if (index < rv) return word;
         }
+
         return word.Substring(0, index);
     }
 }

@@ -8,8 +8,7 @@ public static class Server
     /// <returns>Parte del documento a renderizar</returns>
     public static List<string> Read(string path, int line)
     {
-        string[] doc;
-        doc = File.ReadAllLines("..//Content//" + path + ".txt");
+        string[] doc = File.ReadAllLines("..//Content//" + path + ".txt");
         if (line < 0) line = 0;
         if (line > doc.Length - 1) line = doc.Length - 1 - (doc.Length - 1) % 100;
         List<string> words = new List<string>();
@@ -18,8 +17,10 @@ public static class Server
             words.Add(doc[i]);
             if (i == line + 99) break;
         }
+
         return words;
     }
+
     /// <summary>Metodo para Autocompletar la query</summary>
     /// <param name="word">Query</param>
     /// <returns>Palabras para auto completar</returns>
@@ -30,6 +31,7 @@ public static class Server
         {
             return auto;
         }
+
         //Recorremos nuestro corpus
         foreach (var i in CorpusData.Vocabulary)
         {
@@ -56,6 +58,7 @@ public static class Server
                 }
             }
         }
+
         return auto;
     }
 }
