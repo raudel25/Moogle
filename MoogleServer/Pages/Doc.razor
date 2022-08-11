@@ -4,59 +4,80 @@
 
 <h1>🔍 Moogle!</h1>
 
-<br>
+<br/>
 
 <ul>
-    <h3>@id📝</h3>
+    <h3>@Id📝</h3>
 </ul>
 
-<br>
+<br/>
 
 <ul>
     <p align="justify">
-        @foreach (var (item, index) in Server.Read(id!, page).Select((value, i) => (value, i)))
+        @foreach (var (item, index) in Server.Read(Id!, Page).Select((value, i) => (value, i)))
         {
-            @if (index + page == pos)
+            if (index + Page == Pos)
             {
-                <strong>@(item+" ")</strong>
+                <strong>@(item + " ")</strong>
             }
             else
             {
-               @(item+" ")
+                @(item + " ")
             }
-            @if(item=="")
+            if (item == "")
             {
-                <br><br>
+                <br/>
+                <br/>
             }
         }
     </p>
 </ul>
 
 <ul>
-    <a target='__blank' href=@(id+"/"+(page-100)+"/"+pos)><button type="default" class="btn btn-primary"
-        style="margin-right:30px; border-radius:50px;">👈 Anterior</button></a>
+    <a target='__blank' href=@(Id + "/" + (Page - 100) + "/" + Pos)>
+        <button class="btn btn-primary"
+                style="margin-right:30px; border-radius:50px;">
+            👈 Anterior
+        </button>
+    </a>
 
-    <input type="number" class="p-1 my-4" @bind="newpage" @bind:event="oninput" 
-        style="width: 100px; text-align:center; border-radius:50px" margin-left="100px">
+    <input type="number" class="p-1 my-4" @bind="_newpage" @bind:event="oninput"
+           style="width: 100px; text-align:center; border-radius:50px" margin-left="100px">
 
-    <a target='__blank' href=@(id+"/"+(newpage*100)+"/"+pos)><button type="default" class="btn btn-primary" 
-        style="border-radius:50px;">Ir</button></a>
+    <a target='__blank' href=@(Id + "/" + (_newpage * 100) + "/" + Pos)>
+        <button class="btn btn-primary"
+                style="border-radius:50px;">
+            Ir
+        </button>
+    </a>
 
-    <a target='__blank' href=@(id+"/"+(page+100)+"/"+pos)><button type="default" class="btn btn-primary"
-        style="margin-left:30px; border-radius:50px;">Próximo 👉</button></a>
+    <a target='__blank' href=@(Id + "/" + (Page + 100) + "/" + Pos)>
+        <button class="btn btn-primary"
+                style="margin-left:30px; border-radius:50px;">
+            Próximo 👉
+        </button>
+    </a>
 </ul>
 
 <ul>
-    <a target='__blank' href=@(id+"/"+(pos-pos%100)+"/"+pos)><button type="default" class="btn btn-primary"
-        style="border-radius:50px;">Resultado</button></a> 
+    <a target='__blank' href=@(Id + "/" + (Pos - Pos % 100) + "/" + Pos)>
+        <button class="btn btn-primary"
+                style="border-radius:50px;">
+            Resultado
+        </button>
+    </a>
 </ul>
 
 @code {
+
     [Parameter]
-    public string? id { get; set; }
+    public string? Id { get; set; }
+
     [Parameter]
-    public int pos { get; set; }
+    public int Pos { get; set; }
+
     [Parameter]
-    public int page { get; set; }
-    private int newpage { get; set; }
+    public int Page { get; set; }
+
+    private int _newpage;
 }
