@@ -13,7 +13,7 @@
 <br/>
 
 <ul>
-    <p align="justify">
+    <p>
         @foreach (var (item, index) in Server.Read(Id!, Page).Select((value, i) => (value, i)))
         {
             if (index + Page == Pos)
@@ -41,10 +41,10 @@
         </button>
     </a>
 
-    <input type="number" class="p-1 my-4" @bind="_newpage" @bind:event="oninput"
+    <input type="number" class="p-1 my-4" @bind="_newPage" @bind:event="oninput"
            style="width: 100px; text-align:center; border-radius:50px" margin-left="100px">
 
-    <a target='__blank' href=@(Id + "/" + (_newpage * 100) + "/" + Pos)>
+    <a target='__blank' href=@(Id + "/" + (_newPage * 100) + "/" + Pos)>
         <button class="btn btn-primary"
                 style="border-radius:50px;">
             Ir
@@ -79,5 +79,5 @@
     [Parameter]
     public int Page { get; set; }
 
-    private int _newpage;
+    private int _newPage;
 }

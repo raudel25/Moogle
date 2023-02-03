@@ -18,7 +18,7 @@
         }
 
         <button class="btn-search" @onclick="RunQuery">
-            <img src="/Search.jpg" align="left" width="32px" height="32px">
+            <img src="/Search.jpg" width="32px" height="32px" alt="">
         </button>
         <datalist id="auto">
             @foreach (var item in _autoComp)
@@ -45,7 +45,7 @@ else
     @if (_result.Count == 0 && _search)
     {
         <ul>
-            <img src="/NoResults.jpg" width="350px" height="350px">
+            <img src="/NoResults.jpg" width="350px" height="350px" alt="">
             <h5>No hay resultados para su búsqueda😢</h5>
         </ul>
     }
@@ -54,7 +54,7 @@ else
 @if (!_search)
 {
     <ul>
-        <img src="/Start Search.jpg" width="350px" height="350px">
+        <img src="/Start Search.jpg" width="350px" height="350px" alt="">
     </ul>
 }
 
@@ -141,7 +141,7 @@ else
         int stop = 0;
         bool noLetter = false;
 
-        //Buscamos la ultima porcion de la query alfanumerica
+    //Buscamos la ultima porcion de la query alfanumerica
         for (int i = 0; i < queryAux.Length; i++)
         {
             if (!char.IsLetterOrDigit(queryAux[i])) noLetter = true;
@@ -164,16 +164,16 @@ else
         {
             List<int> change = new List<int>();
             string aux = auto.ToLower();
-            
-            //Guardamos las posiciones de las mayusculas
+
+    //Guardamos las posiciones de las mayusculas
             for (int i = 0; i < auto.Length; i++)
             {
                 if (auto[i] != aux[i]) change.Add(i);
             }
-            
+
             _autoComp = Server.AutoComplete(aux);
-            
-            //Actualizar las mayusculas y minusculas y completar con la recomendacion
+
+    //Actualizar las mayusculas y minusculas y completar con la recomendacion
             for (int i = 0; i < _autoComp.Count; i++)
             {
                 System.Text.StringBuilder addAutoComp = new System.Text.StringBuilder(queryAux.ToString());

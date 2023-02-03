@@ -41,7 +41,7 @@ public static class Moogle
 
         Document.Documents = new List<Document>();
 
-        Document.Cantdoc = list.Count();
+        Document.CantDoc = list.Count();
 
         int q = 0;
         foreach (var i in list)

@@ -373,7 +373,7 @@ public class QueryClass
                 suggestion = wordDic.Key;
                 changes = dist;
                 double sum = 0;
-                for (int j = 0; j < Document.Cantdoc; j++)
+                for (int j = 0; j < Document.CantDoc; j++)
                 {
                     sum += wordDic.Value.WeightDoc[j];
                 }
@@ -385,7 +385,7 @@ public class QueryClass
             if (dist == changes)
             {
                 double sum = 0;
-                for (int j = 0; j < Document.Cantdoc; j++)
+                for (int j = 0; j < Document.CantDoc; j++)
                 {
                     sum += wordDic.Value.WeightDoc[j];
                 }
@@ -515,7 +515,7 @@ public class QueryClass
             double a = 0;
             if (HighestRelevance.ContainsKey(word.Key)) a = HighestRelevance[word.Key];
             WordsQuery[word.Key] = (Math.Pow(Math.E, a) * word.Value / _max) *
-                                   Math.Log(Document.Cantdoc / CorpusData.Vocabulary[word.Key].WordCantDoc);
+                                   Math.Log(Document.CantDoc / CorpusData.Vocabulary[word.Key].WordCantDoc);
             Norma += WordsQuery[word.Key] * WordsQuery[word.Key];
         }
 
@@ -525,13 +525,13 @@ public class QueryClass
             if (word.Value[0] != 0)
             {
                 WordsStemmingSyn[word.Key][0] = ((word.Value[0] + word.Value[1]) / _maxStemmingSyn) *
-                                                Math.Log(Document.Cantdoc /
+                                                Math.Log(Document.CantDoc /
                                                          CorpusData.Vocabulary[word.Key].WordCantDoc);
             }
             else
             {
                 WordsStemmingSyn[word.Key][0] = ((word.Value[0] + word.Value[1]) / (2 * (double) _maxStemmingSyn)) *
-                                                Math.Log(Document.Cantdoc /
+                                                Math.Log(Document.CantDoc /
                                                          CorpusData.Vocabulary[word.Key].WordCantDoc);
             }
 

@@ -9,30 +9,30 @@ public static class Snowball
     /// <returns>Raiz de la palabra</returns>
     public static string Stemmer(string word)
     {
-        (int, int, int) t = R1R2RV(word);
+        (int, int, int) t = R1R2Rv(word);
         int r1 = t.Item1;
         int r2 = t.Item2;
         int rv = t.Item3;
         //Vamos evaluando cada uno de los pasos si la palabra no tiene cambio continuamos con otro
-        string word1 = Step0(word, r1, r2, rv);
-        if (word1 == word) word1 = Step1(word, r1, r2, rv);
-        if (word1 == word) word1 = Step2A(word, r1, r2, rv);
-        if (word1 == word) word1 = Step2B1(word, r1, r2, rv);
-        if (word1 == word) word1 = Step2B2(word, r1, r2, rv);
+        string word1 = Step0(word, rv);
+        if (word1 == word) word1 = Step1(word, r1, r2);
+        if (word1 == word) word1 = Step2A(word, rv);
+        if (word1 == word) word1 = Step2B1(word, r1, rv);
+        if (word1 == word) word1 = Step2B2(word, r1, rv);
         //Realizamos siempre el paso 3
-        word1 = Step3A(word1, r1, r2, rv);
-        if (word1 == word) word1 = Step3B(word, r1, r2, rv);
+        word1 = Step3A(word1, r1, rv);
+        if (word1 == word) word1 = Step3B(word, rv);
         return word1;
     }
 
     /// <summary>Metodo para determinar las regiones del lemmatizador</summary>
     /// <returns>Numero de caracteres desde el inicio de la palabra no contenidos en la region indicada</returns>
-    static (int, int, int) R1R2RV(string word)
+    static (int, int, int) R1R2Rv(string word)
     {
         int r1 = word.Length;
         int r2 = word.Length;
         int rv = word.Length;
-        int i = 0;
+        int i;
         //r1 es la region despues de la primera consonante antecedida por una vocal
         for (i = 1; i < word.Length; i++)
         {
@@ -91,11 +91,11 @@ public static class Snowball
 
     /// <summary>Pronombre adjunto, gerundios e infinitivos</summary>
     /// <returns>Raiz de la palabra luego de realizar el paso</returns>
-    static string Step0(string word, int r1, int r2, int rv)
+    static string Step0(string word, int rv)
     {
         int index = word.Length;
         bool find = false;
-        int i = 0;
+        int i;
         for (i = 3; i >= 1; i--)
         {
             if (word.Length - 1 - i >= 0)
@@ -143,7 +143,7 @@ public static class Snowball
 
     /// <summary>Eliminación de sufijos estándar</summary>
     /// <returns>Raiz de la palabra luego de realizar el paso</returns>
-    static string Step1(string word, int r1, int r2, int rv)
+    static string Step1(string word, int r1, int r2)
     {
         int index = word.Length;
         for (int i = 6; i >= 1; i--)
@@ -164,7 +164,7 @@ public static class Snowball
 
     /// <summary>Sufijos verbales que empiezan por y</summary>
     /// <returns>Raiz de la palabra luego de realizar el paso</returns>
-    static string Step2A(string word, int r1, int r2, int rv)
+    static string Step2A(string word, int rv)
     {
         int index = word.Length;
         for (int i = 4; i >= 1; i--)
@@ -185,7 +185,7 @@ public static class Snowball
 
     /// <summary>Otros sufijos verbales</summary>
     /// <returns>Raiz de la palabra luego de realizar el paso</returns>
-    static string Step2B1(string word, int r1, int r2, int rv)
+    static string Step2B1(string word, int r1, int rv)
     {
         int index = word.Length;
         for (int i = 3; i >= 1; i--)
@@ -217,7 +217,7 @@ public static class Snowball
 
     /// <summary>Otros sufijos verbales</summary>
     /// <returns>Raiz de la palabra luego de realizar el paso</returns>
-    static string Step2B2(string word, int r1, int r2, int rv)
+    static string Step2B2(string word, int r1, int rv)
     {
         int index = word.Length;
         for (int i = 6; i >= 1; i--)
@@ -238,7 +238,7 @@ public static class Snowball
 
     /// <summary>Sufijo residual</summary>
     /// <returns>Raiz de la palabra luego de realizar el paso</returns>
-    static string Step3A(string word, int r1, int r2, int rv)
+    static string Step3A(string word, int r1, int rv)
     {
         int index = word.Length;
         for (int i = 1; i >= 0; i--)
@@ -259,7 +259,7 @@ public static class Snowball
 
     /// <summary>Sufijo residual</summary>
     /// <returns>Raiz de la palabra luego de realizar el paso</returns>
-    static string Step3B(string word, int r1, int r2, int rv)
+    static string Step3B(string word, int rv)
     {
         int index = word.Length;
         if (Data.Step3B.Contains(word.Substring(word.Length - 1)))

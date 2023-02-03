@@ -170,7 +170,7 @@ public static class DistanceWord
             }
 
             posWordsSorted = Sorted(posWordsSorted,
-                BuildTuple(CorpusData.Vocabulary[words[i]].PosDoc[document.Index], i, posRnd));
+                BuildTuple(CorpusData.Vocabulary[words[i]].PosDoc[document.Index]!, i, posRnd));
         }
 
         return (posWordsSorted, posRnd);

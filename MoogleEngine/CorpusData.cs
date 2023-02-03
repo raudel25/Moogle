@@ -16,7 +16,7 @@ public static class CorpusData
     {
         if (!Vocabulary.ContainsKey(word))
         {
-            DataStructure data = new DataStructure(Document.Cantdoc);
+            DataStructure data = new DataStructure(Document.CantDoc);
             Vocabulary.Add(word, data);
         }
 
@@ -26,7 +26,7 @@ public static class CorpusData
         }
 
         Vocabulary[word].WeightDoc[document.Index]++;
-        Vocabulary[word].PosDoc[document.Index].Add(pos);
+        Vocabulary[word].PosDoc[document.Index]!.Add(pos);
         //Llevamos la cuenta de la maxima frecuencia en el documento
         if (Vocabulary[word].WeightDoc[document.Index] > document.Max)
             document.Max = (int)Vocabulary[word].WeightDoc[document.Index];
@@ -42,7 +42,7 @@ public class DataStructure
     public double WordCantDoc { get; set; }
 
     //Guardamos las posiciones de la palabra en cada documento
-    public List<int>[] PosDoc { get; set; }
+    public List<int>?[] PosDoc { get; set; }
 
     public DataStructure(int n)
     {

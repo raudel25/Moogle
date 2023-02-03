@@ -6,7 +6,7 @@ public class Document
     public static List<Document>? Documents { get; set; }
 
     //Guardar la cantidad de documentos
-    public static int Cantdoc { get; set; }
+    public static int CantDoc { get; set; }
 
     //Guardar la frecuencia de la palabra que mas se repite por documento
     public int Max { get; set; }
@@ -123,10 +123,10 @@ public class Document
         foreach (var word in CorpusData.Vocabulary)
         {
             word.Value.WordCantDoc = WordCantDoc(word.Value.WeightDoc);
-            for (int j = 0; j < Document.Cantdoc; j++)
+            for (int j = 0; j < Document.CantDoc; j++)
             {
                 word.Value.WeightDoc[j] = (word.Value.WeightDoc[j] / Document.Documents![j].Max) *
-                                          Math.Log(Document.Cantdoc / word.Value.WordCantDoc);
+                                          Math.Log(Document.CantDoc / word.Value.WordCantDoc);
                 Document.Documents[j].Norma += word.Value.WeightDoc[j] * word.Value.WeightDoc[j];
             }
         }
@@ -137,7 +137,7 @@ public class Document
     private static int WordCantDoc(double[] words)
     {
         int cant = 0;
-        for (int i = 0; i < Document.Cantdoc; i++)
+        for (int i = 0; i < Document.CantDoc; i++)
         {
             if (words[i] != 0) cant++;
         }
