@@ -103,4 +103,10 @@ a, .btn-link {
     justify-content: center;
 }
 
+.no-doc{
+    font-size:small;
+    display: flex;
+    justify-content: center;
+}
+
   
