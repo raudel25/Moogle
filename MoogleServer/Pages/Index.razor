@@ -1,4 +1,5 @@
 ﻿@page "/"
+@using System.Text
 
 <PageTitle>Moogle!</PageTitle>
 
@@ -65,10 +66,10 @@ else
             <div>
                 <div class="center">
                     <p>
-                        <a onmouseover="this.style.color='blue'" onmouseout="this.style.color='black'" style="color: black; font-size:large; text-decoration: none;" target='__blank' href=@(item.Title + "/" + 0 + "/" + (-1))>@item.Title</a>
+                        <a onmouseover="this.style.color='blue'" onmouseout="this.style.color='black'" style="color: black; font-size:large; text-decoration: none;" target='__blank' href=@(item.Title + "/" + 0 + "/" + -1)>@item.Title</a>
                     </p>
                 </div>
-                @for (int i = 0; i < item.Snippet.Length; i++)
+                @for (var i = 0; i < item.Snippet.Length; i++)
                 {
                     <p>... <a onmouseover="this.style.color='blue'" onmouseout="this.style.color='black'" style="color: black; text-decoration: none; font-size:medium;" target='__blank' href=@(item.Title + "/" + (item.PosSnippet[i] - item.PosSnippet[i] % 100) + "/" + item.PosSnippet[i])>@item.Snippet[i]</a> ...</p>
                 }
@@ -100,8 +101,8 @@ else
 
 @code {
     private string _query = "";
-    private List<string> _autoComp = new List<string>();
-    private SearchResult _result = new SearchResult();
+    private List<string> _autoComp = new();
+    private SearchResult _result = new();
     private bool _search;
 
     private void Include(string s)
@@ -130,19 +131,19 @@ else
 
     private void Press(KeyboardEventArgs e)
     {
-        System.Text.StringBuilder queryAux = new System.Text.StringBuilder(_query);
+        var queryAux = new StringBuilder(_query);
         if (e.Code == "Enter")
         {
             RunQuery();
         }
 
-        System.Text.StringBuilder sb = new System.Text.StringBuilder();
-        int start = 0;
-        int stop = 0;
-        bool noLetter = false;
+        var sb = new StringBuilder();
+        var start = 0;
+        var stop = 0;
+        var noLetter = false;
 
     //Buscamos la ultima porcion de la query alfanumerica
-        for (int i = 0; i < queryAux.Length; i++)
+        for (var i = 0; i < queryAux.Length; i++)
         {
             if (!char.IsLetterOrDigit(queryAux[i])) noLetter = true;
             else
@@ -150,7 +151,7 @@ else
                 if (noLetter)
                 {
                     noLetter = false;
-                    sb = new System.Text.StringBuilder();
+                    sb = new StringBuilder();
                     start = i;
                     stop = 0;
                 }
@@ -159,14 +160,14 @@ else
             }
         }
 
-        string auto = sb.ToString();
+        var auto = sb.ToString();
         if (_query != "")
         {
-            List<int> change = new List<int>();
-            string aux = auto.ToLower();
+            var change = new List<int>();
+            var aux = auto.ToLower();
 
     //Guardamos las posiciones de las mayusculas
-            for (int i = 0; i < auto.Length; i++)
+            for (var i = 0; i < auto.Length; i++)
             {
                 if (auto[i] != aux[i]) change.Add(i);
             }
@@ -174,13 +175,13 @@ else
             _autoComp = Server.AutoComplete(aux);
 
     //Actualizar las mayusculas y minusculas y completar con la recomendacion
-            for (int i = 0; i < _autoComp.Count; i++)
+            for (var i = 0; i < _autoComp.Count; i++)
             {
-                System.Text.StringBuilder addAutoComp = new System.Text.StringBuilder(queryAux.ToString());
-                sb = new System.Text.StringBuilder(_autoComp[i]);
-                for (int j = 0; j < change.Count; j++)
+                var addAutoComp = new StringBuilder(queryAux.ToString());
+                sb = new StringBuilder(_autoComp[i]);
+                foreach (var t in change)
                 {
-                    sb[change[j]] = Char.ToUpper(sb[change[j]]);
+                    sb[t] = char.ToUpper(sb[t]);
                 }
                 addAutoComp.Remove(start, stop);
                 addAutoComp.Insert(start, sb.ToString());

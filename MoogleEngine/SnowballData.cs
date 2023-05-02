@@ -2,22 +2,22 @@ namespace MoogleEngine;
 
 public static class Data
 {
-    public static List<char> Vocals = new List<char>()
+    public static List<char> Vocals = new()
     {
         'a', 'e', 'i', 'o', 'u', 'á', 'é', 'í', 'ó', 'ú', 'ü'
     };
 
-    public static List<string> Step0 = new List<string>()
+    public static List<string> Step0 = new()
     {
         "me", "se", "sela", "selo", "selas", "selos", "la", "le", "lo", "las", "les", "los", "nos"
     };
 
-    public static List<string> AfterStep0 = new List<string>()
+    public static List<string> AfterStep0 = new()
     {
         "iéndo", "ándo", "ár", "ér", "ír", "ando", "iendo", "ar", "er", "ir", "yendo"
     };
 
-    public static List<string> Step1 = new List<string>()
+    public static List<string> Step1 = new()
     {
         "ito", "itos", "ita", "itas", "anza", "anzas", "ico", "ica", "icos", "icas", "ismo", "ismos", "capaz", "ables",
         "ible", "ibles", "ista", "istas", "oso", "osa", "osos", "osas", "amiento", "amientos", "imiento", "imientos",
@@ -25,17 +25,17 @@ public static class Data
         "ativo", "ativa", "or", "edor", "amente", "mente", "idad", "idades", "iva", "ivo", "ivas", "ivos"
     };
 
-    public static List<string> Step2A = new List<string>()
+    public static List<string> Step2A = new()
     {
         "yeron", "yendo", "yamos", "yais", "yan", "yen", "yas", "yes", "ya", "ye", "yo", "yó"
     };
 
-    public static List<string> Step2B1 = new List<string>()
+    public static List<string> Step2B1 = new()
     {
         "en", "es", "éis", "emos"
     };
 
-    public static List<string> Step2B2 = new List<string>()
+    public static List<string> Step2B2 = new()
     {
         "arían", "arías", "arán", "arás", "aríais", "aría", "aréis", "aríamos", "aremos", "ará",
         "aré", "erían", "erías", "erán", "erás", "eríais", "ería", "eréis", "eríamos", "eremos",
@@ -48,12 +48,12 @@ public static class Data
         "imos", "áramos", "iéramos", "iésemos", "ásemos"
     };
 
-    public static List<string> Step3A = new List<string>()
+    public static List<string> Step3A = new()
     {
         "os", "a", "o", "á", "í", "ó"
     };
 
-    public static List<string> Step3B = new List<string>()
+    public static List<string> Step3B = new()
     {
         "e", "é"
     };

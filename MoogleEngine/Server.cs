@@ -8,11 +8,11 @@ public static class Server
     /// <returns>Parte del documento a renderizar</returns>
     public static List<string> Read(string path, int line)
     {
-        string[] doc = File.ReadAllLines("..//Content//" + path + ".txt");
+        var doc = File.ReadAllLines("..//Content//" + path + ".txt");
         if (line < 0) line = 0;
         if (line > doc.Length - 1) line = doc.Length - 1 - (doc.Length - 1) % 100;
-        List<string> words = new List<string>();
-        for (int i = line; i < doc.Length; i++)
+        var words = new List<string>();
+        for (var i = line; i < doc.Length; i++)
         {
             words.Add(doc[i]);
             if (i == line + 99) break;
@@ -26,17 +26,12 @@ public static class Server
     /// <returns>Palabras para auto completar</returns>
     public static List<string> AutoComplete(string word)
     {
-        List<string> auto = new List<string>();
-        if (word == "")
-        {
-            return auto;
-        }
+        var auto = new List<string>();
+        if (word == "") return auto;
 
         //Recorremos nuestro corpus
         foreach (var i in CorpusData.Vocabulary)
-        {
             if (i.Key.Length >= word.Length)
-            {
                 if (i.Key.Substring(0, word.Length) == word)
                 {
                     if (auto.Count < 5)
@@ -46,18 +41,14 @@ public static class Server
                     else
                     {
                         //Nos quedamos con las palabras de menor longitud
-                        for (int j = 0; j < auto.Count; j++)
-                        {
+                        for (var j = 0; j < auto.Count; j++)
                             if (i.Key.Length < auto[j].Length)
                             {
                                 auto[j] = i.Key;
                                 break;
                             }
-                        }
                     }
                 }
-            }
-        }
 
         return auto;
     }

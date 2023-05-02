@@ -6,28 +6,26 @@ public static class Moogle
 {
     public static SearchResult Query(string query)
     {
-        QueryClass queryObject = new QueryClass(query);
+        var queryObject = new QueryClass(query);
         //Comprobamos la sugerencia
         if (queryObject.SuggestionQuery == "")
         {
             return new SearchResult(BuildItem(queryObject));
         }
-        else
-        {
-            QueryClass suggestionObject = new QueryClass(queryObject.SuggestionQuery);
-            return new SearchResult(BuildItem(queryObject), BuildItem(suggestionObject), queryObject.SuggestionQuery);
-        }
+
+        var suggestionObject = new QueryClass(queryObject.SuggestionQuery);
+        return new SearchResult(BuildItem(queryObject), BuildItem(suggestionObject), queryObject.SuggestionQuery);
     }
 
     /// <summary>Construyendo el arreglo de SearchItem</summary>
     /// <param name="query">Query</param>
     /// <returns>Arreglo de SearchItem correspondiente a la query</returns>
-    public static List<SearchItem> BuildItem(QueryClass query)
+    private static List<SearchItem> BuildItem(QueryClass query)
     {
-        List<SearchItem> items = new List<SearchItem>();
-        for (int i = 0; i < Document.Documents!.Count; i++)
+        var items = new List<SearchItem>();
+        for (var i = 0; i < Document.Documents!.Count; i++)
         {
-            DocumentResult d = new DocumentResult(Document.Documents[i], query);
+            var d = new DocumentResult(Document.Documents[i], query);
             if (d.Item != null) items.Add(d.Item);
         }
 
@@ -37,23 +35,22 @@ public static class Moogle
     /// <summary>Metodo para indexar nuestro corpus</summary>
     public static void IndexCorpus()
     {
-        var list = Directory.EnumerateFiles("..//Content", "*.txt");
+        var list = Directory.EnumerateFiles("..//Content", "*.txt").ToList();
 
         Document.Documents = new List<Document>();
 
-        Document.CantDoc = list.Count();
+        Document.CantDoc = list.Count;
 
-        int q = 0;
-        foreach (var i in list)
+        var q = 0;
+        foreach (var d1 in list.Select(i => new Document(File.ReadAllLines(i), i, q)))
         {
-            Document d1 = new Document(File.ReadAllLines(i), i, q);
             Document.Documents.Add(d1);
             q++;
         }
 
         //Deserializamos nuestra base de datos de sinonimos
-        string jsonstring = File.ReadAllText("..//synonymous.json");
-        Synonymous sin = JsonSerializer.Deserialize<Synonymous>(jsonstring)!;
+        var jsonstring = File.ReadAllText("..//synonymous.json");
+        var sin = JsonSerializer.Deserialize<Synonymous>(jsonstring)!;
         CorpusData.Synonymous = sin.synonymous;
         Document.TfIdfDoc();
     }

@@ -2,11 +2,11 @@ namespace MoogleEngine;
 
 public static class CorpusData
 {
+    //Guardamos las palabras de nuestro corpus
+    public static readonly Dictionary<string, DataStructure> Vocabulary = new();
+
     //Guardar los sinonimos cargados de nuestro json
     public static List<string[]>? Synonymous { get; set; }
-
-    //Guardamos las palabras de nuestro corpus
-    public static Dictionary<string, DataStructure> Vocabulary = new Dictionary<string, DataStructure>();
 
     /// <summary>Metodo para el indexar los terminos en el corpus</summary>
     /// <param name="word">Palabra a indexar</param>
@@ -16,14 +16,11 @@ public static class CorpusData
     {
         if (!Vocabulary.ContainsKey(word))
         {
-            DataStructure data = new DataStructure(Document.CantDoc);
+            var data = new DataStructure(Document.CantDoc);
             Vocabulary.Add(word, data);
         }
 
-        if (Vocabulary[word].WeightDoc[document.Index] == 0)
-        {
-            Vocabulary[word].PosDoc[document.Index] = new List<int>();
-        }
+        if (Vocabulary[word].WeightDoc[document.Index] == 0) Vocabulary[word].PosDoc[document.Index] = new List<int>();
 
         Vocabulary[word].WeightDoc[document.Index]++;
         Vocabulary[word].PosDoc[document.Index]!.Add(pos);
@@ -35,6 +32,12 @@ public static class CorpusData
 
 public class DataStructure
 {
+    public DataStructure(int n)
+    {
+        WeightDoc = new double[n];
+        PosDoc = new List<int>[n];
+    }
+
     //Guardamos el peso de la palabra en cada documento
     public double[] WeightDoc { get; set; }
 
@@ -43,12 +46,6 @@ public class DataStructure
 
     //Guardamos las posiciones de la palabra en cada documento
     public List<int>?[] PosDoc { get; set; }
-
-    public DataStructure(int n)
-    {
-        this.WeightDoc = new double[n];
-        this.PosDoc = new List<int>[n];
-    }
 }
 
 public class Synonymous

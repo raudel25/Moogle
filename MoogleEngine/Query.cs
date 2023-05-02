@@ -2,36 +2,6 @@ namespace MoogleEngine;
 
 public class QueryClass
 {
-    //Guardar la sugerencia para el usuario
-    public string SuggestionQuery { get; private set; }
-
-    //Guardar los pesos de las palabras de la query
-    public Dictionary<string, double> WordsQuery { get; private set; }
-
-    //Guardar los sinonimos y las palabras con la misma raiz q las de nuestra query
-    public Dictionary<string, double[]> WordsStemmingSyn { get; private set; }
-    public double Norma { get; private set; }
-
-    public double NormaStemmingSyn { get; private set; }
-
-    //Guardar las palabras del operador Excluir
-    public List<string> Exclude { get; private set; }
-
-    //Guardar las palabras del operador Incluir
-    public List<string> Include { get; private set; }
-
-    //Guardar las palabras del operador Cercania por cada grupo de palabras cercanas
-    public List<List<string>> CloseWords { get; private set; }
-
-    //Guardar las palabras del operador Relevancia y su respectiva relevancia
-    public Dictionary<string, int> HighestRelevance { get; private set; }
-
-    //Guardar las palabras de la busqueda literal
-    public List<List<string>> SearchLiteralWords { get; private set; }
-
-    //Bool para la presencia de busqueda literal
-    private bool _searchLiteral;
-
     //Guardar la maxima frecuencia de la query
     private int _max = 1;
 
@@ -41,22 +11,85 @@ public class QueryClass
     //Para determinar si no hay resultados
     private bool _noResults;
 
+    //Bool para la presencia de busqueda literal
+    private bool _searchLiteral;
+
     public QueryClass(string query)
     {
-        this.SuggestionQuery = query;
-        this.WordsQuery = new Dictionary<string, double>();
-        this.WordsStemmingSyn = new Dictionary<string, double[]>();
-        this.Exclude = new List<string>();
-        this.Include = new List<string>();
-        this.CloseWords = new List<List<string>>();
-        this.SearchLiteralWords = new List<List<string>>();
-        this.HighestRelevance = new Dictionary<string, int>();
+        SuggestionQuery = query;
+        WordsQuery = new Dictionary<string, double>();
+        WordsStemmingSyn = new Dictionary<string, double[]>();
+        Exclude = new List<string>();
+        Include = new List<string>();
+        CloseWords = new List<List<string>>();
+        SearchLiteralWords = new List<List<string>>();
+        HighestRelevance = new Dictionary<string, int>();
         Operators(query);
         if (_noResults) return;
         TfIdfC();
         //Comprobamos la sugerencia
-        if (this.SuggestionQuery == query) this.SuggestionQuery = "";
+        if (SuggestionQuery == query) SuggestionQuery = "";
     }
+
+    //Guardar la sugerencia para el usuario
+    public string SuggestionQuery { get; private set; }
+
+    //Guardar los pesos de las palabras de la query
+    public Dictionary<string, double> WordsQuery { get; }
+
+    //Guardar los sinonimos y las palabras con la misma raiz q las de nuestra query
+    public Dictionary<string, double[]> WordsStemmingSyn { get; }
+    public double Norma { get; private set; }
+
+    public double NormaStemmingSyn { get; private set; }
+
+    //Guardar las palabras del operador Excluir
+    public List<string> Exclude { get; }
+
+    //Guardar las palabras del operador Incluir
+    public List<string> Include { get; }
+
+    //Guardar las palabras del operador Cercania por cada grupo de palabras cercanas
+    public List<List<string>> CloseWords { get; }
+
+    //Guardar las palabras del operador Relevancia y su respectiva relevancia
+    private Dictionary<string, int> HighestRelevance { get; }
+
+    //Guardar las palabras de la busqueda literal
+    public List<List<string>> SearchLiteralWords { get; }
+
+    #region TfIdf
+
+    /// <summary>Metodo para calcular el TfIdf de nuestra query</summary>
+    private void TfIdfC()
+    {
+        foreach (var word in WordsQuery)
+        {
+            //Factor para modificar el peso de la palabra
+            double a = 0;
+            if (HighestRelevance.ContainsKey(word.Key)) a = HighestRelevance[word.Key];
+            WordsQuery[word.Key] = Math.Pow(Math.E, a) * word.Value / _max *
+                                   Math.Log(Document.CantDoc / CorpusData.Vocabulary[word.Key].WordCantDoc);
+            Norma += WordsQuery[word.Key] * WordsQuery[word.Key];
+        }
+
+        foreach (var word in WordsStemmingSyn)
+        {
+            //Comprobamos si la palabra es raiz o sinonimo
+            if (word.Value[0] != 0)
+                WordsStemmingSyn[word.Key][0] = (word.Value[0] + word.Value[1]) / _maxStemmingSyn *
+                                                Math.Log(Document.CantDoc /
+                                                         CorpusData.Vocabulary[word.Key].WordCantDoc);
+            else
+                WordsStemmingSyn[word.Key][0] = (word.Value[0] + word.Value[1]) / (2 * (double)_maxStemmingSyn) *
+                                                Math.Log(Document.CantDoc /
+                                                         CorpusData.Vocabulary[word.Key].WordCantDoc);
+
+            NormaStemmingSyn += WordsStemmingSyn[word.Key][0];
+        }
+    }
+
+    #endregion
 
     #region FrecuencyQuery
 
@@ -66,7 +99,7 @@ public class QueryClass
     {
         if (!WordsQuery.ContainsKey(word)) WordsQuery.Add(word, 0);
         WordsQuery[word]++;
-        if (WordsQuery[word] > _max) _max = (int) WordsQuery[word];
+        if (WordsQuery[word] > _max) _max = (int)WordsQuery[word];
     }
 
     /// <summary>Metodo para calcular la frecuencia de la query con las raices y los sinonimos</summary>
@@ -78,7 +111,7 @@ public class QueryClass
         if (stemming) WordsStemmingSyn[word][0]++;
         else WordsStemmingSyn[word][1]++;
         if (WordsStemmingSyn[word][0] + WordsStemmingSyn[word][1] > _maxStemmingSyn)
-            _maxStemmingSyn = (int) (WordsStemmingSyn[word][0] + WordsStemmingSyn[word][1]);
+            _maxStemmingSyn = (int)(WordsStemmingSyn[word][0] + WordsStemmingSyn[word][1]);
     }
 
     #endregion
@@ -87,13 +120,13 @@ public class QueryClass
 
     /// <summary>Metodo para los operadores de busqueda</summary>
     /// <param name="query">Texto de la Query</param>
-    public void Operators(string query)
+    private void Operators(string query)
     {
         //Tokenizamos nuestro query
-        string[] s = query.Split();
-        for (int i = 0; i < s.Length; i++)
+        var s = query.Split();
+        foreach (var t in s)
         {
-            string word = s[i];
+            var word = t;
             word = Document.SignPunctuation(word, true);
             if (word == "") continue;
             word = word.ToLower();
@@ -106,14 +139,10 @@ public class QueryClass
             if (word == "") continue;
             //Comprobamos si la palabra a buscar existe en nuestro sistema
             if (CorpusData.Vocabulary.ContainsKey(word))
-            {
                 FrecuencyQuery(word);
-            }
             else
-            {
                 //Si la palabra no existe procedemos a dar una recomendacion
                 Suggestion(word);
-            }
 
             //Buscamos los sinonimos y las raices de la palabra
             SearchStemming(word);
@@ -138,14 +167,14 @@ public class QueryClass
         {
             if (word == "\"") return true;
             //Comprobamos si las palabras pertenecientes a la busqueda han terminado
-            if (word[word.Length - 1] == '"') _searchLiteral = false;
+            if (word[^1] == '"') _searchLiteral = false;
             //Comprobamos si estamos en presencia de un comodin
             if (word == "\"?" || word == "?\"") word = "?";
             if (word != "?") word = Document.SignPunctuation(word);
             if (word == "") return true;
             if (CorpusData.Vocabulary.ContainsKey(word) || word == "?")
             {
-                SearchLiteralWords[SearchLiteralWords.Count - 1].Add(word);
+                SearchLiteralWords[^1].Add(word);
                 if (word != "?") FrecuencyQuery(word);
             }
             else
@@ -166,31 +195,24 @@ public class QueryClass
     /// <returns>Bool indicando si el operador fue encontrado</returns>
     private bool CloseOperator(string word)
     {
-        List<string> close = new List<string>();
-        string[] closeWords = word.Split('~');
+        var close = new List<string>();
+        var closeWords = word.Split('~');
         //Si nuestro arreglo tienen mas de dos elementos estamos en presencia del operador
         if (closeWords.Length > 1)
         {
-            for (int m = 0; m < closeWords.Length; m++)
+            for (var m = 0; m < closeWords.Length; m++)
             {
                 closeWords[m] = Document.SignPunctuation(closeWords[m]);
                 if (closeWords[m] == "") continue;
                 if (CorpusData.Vocabulary.ContainsKey(closeWords[m]))
-                {
                     FrecuencyQuery(closeWords[m]);
-                }
                 else
-                {
                     Suggestion(closeWords[m]);
-                }
 
                 close.Add(closeWords[m]);
             }
 
-            if (close.Count != 0)
-            {
-                CloseWords.Add(close);
-            }
+            if (close.Count != 0) CloseWords.Add(close);
 
             return true;
         }
@@ -258,7 +280,7 @@ public class QueryClass
         if (word[0] == '*')
         {
             //Buscamos la cantidad de *
-            int a = 0;
+            var a = 0;
             while (word[a] == '*')
             {
                 a++;
@@ -292,19 +314,13 @@ public class QueryClass
     private void SearchStemming(string word)
     {
         //Hallamos la raiz de la palabra
-        string stemmer = Snowball.Stemmer(word);
+        var stemmer = Snowball.Stemmer(word);
         if (stemmer == "") return;
         foreach (var wordDic in CorpusData.Vocabulary)
-        {
             //Comprobamos q las primeras letras sean iguales
             if (wordDic.Key[0] == stemmer[0] && word != wordDic.Key)
-            {
                 if (Snowball.Stemmer(wordDic.Key) == stemmer)
-                {
                     FrecuencyQueryStemmingSyn(wordDic.Key, true);
-                }
-            }
-        }
     }
 
     /// <summary>Metodo para buscar los sinonimos</summary>
@@ -313,24 +329,16 @@ public class QueryClass
     {
         //Recorremos la lista de los sinonimos
         foreach (var line in CorpusData.Synonymous!)
-        {
-            for (int i = 0; i < line.Length; i++)
-            {
-                if (line[i] == word)
+            foreach (var t in line)
+                if (t == word)
                 {
                     //Si nos encontramos una palabra igual a word todas las palabras del arreglo seran sus sinonimos 
-                    for (int m = 0; m < line.Length; m++)
-                    {
-                        if (line[m] != word && CorpusData.Vocabulary.ContainsKey(line[m]))
-                        {
-                            FrecuencyQueryStemmingSyn(line[m], false);
-                        }
-                    }
+                    foreach (var t1 in line)
+                        if (t1 != word && CorpusData.Vocabulary.ContainsKey(t1))
+                            FrecuencyQueryStemmingSyn(t1, false);
 
                     break;
                 }
-            }
-        }
     }
 
     #endregion
@@ -341,17 +349,15 @@ public class QueryClass
     /// <param name="word">String q contiene la palabra</param>
     private void Suggestion(string word)
     {
-        string a = SuggestionWord(word);
+        var a = SuggestionWord(word);
         //Modifiquemos nuestro txt de la query por la palabra recomendada
-        for (int m = 0; m <= SuggestionQuery.Length - word.Length; m++)
-        {
+        for (var m = 0; m <= SuggestionQuery.Length - word.Length; m++)
             if (word == SuggestionQuery.Substring(m, word.Length).ToLower())
             {
                 SuggestionQuery = SuggestionQuery.Substring(0, m) + a +
                                   SuggestionQuery.Substring(m + word.Length, SuggestionQuery.Length - word.Length - m);
                 break;
             }
-        }
     }
 
     /// <summary>Metodo para encontrar la palabra mas cercana</summary>
@@ -359,24 +365,21 @@ public class QueryClass
     /// <returns>Palabra con la sugerencia a la busqueda</returns>
     private static string SuggestionWord(string word)
     {
-        string suggestion = "";
+        var suggestion = "";
         double suggestionTfIdf = 0;
-        int changes = int.MaxValue;
+        var changes = int.MaxValue;
         double len = word.Length;
         foreach (var wordDic in CorpusData.Vocabulary)
         {
             if (Math.Abs(wordDic.Key.Length - len) > changes) continue;
-            int dist = LevenshteinDistance(word, wordDic.Key, changes);
+            var dist = LevenshteinDistance(word, wordDic.Key, changes);
             //Nos quedamos con la palabra que posea menos cambios
             if (dist < changes)
             {
                 suggestion = wordDic.Key;
                 changes = dist;
                 double sum = 0;
-                for (int j = 0; j < Document.CantDoc; j++)
-                {
-                    sum += wordDic.Value.WeightDoc[j];
-                }
+                for (var j = 0; j < Document.CantDoc; j++) sum += wordDic.Value.WeightDoc[j];
 
                 suggestionTfIdf = sum;
             }
@@ -385,10 +388,7 @@ public class QueryClass
             if (dist == changes)
             {
                 double sum = 0;
-                for (int j = 0; j < Document.CantDoc; j++)
-                {
-                    sum += wordDic.Value.WeightDoc[j];
-                }
+                for (var j = 0; j < Document.CantDoc; j++) sum += wordDic.Value.WeightDoc[j];
 
                 if (sum > suggestionTfIdf)
                 {
@@ -408,50 +408,48 @@ public class QueryClass
     /// <returns>Cantidad de cambios entre una palabra y otra</returns>
     private static int LevenshteinDistance(string a, string b, int actchange)
     {
-        int cost = 0;
-        int m = a.Length;
-        int n = b.Length;
-        int[,] change = new int[m + 1, n + 1];
+        var m = a.Length;
+        var n = b.Length;
+        var change = new int[m + 1, n + 1];
         if (n == 0) return m;
         if (m == 0) return n;
         // Llenamos la primera columna y la primera fila.
-        for (int i = 0; i <= m; i++)
+        for (var i = 0; i <= m; i++)
         {
             change[i, 0] = 4 * i;
             if (i > 0)
-            {
-                if (a[i - 1] == 'h') change[i, 0] -= 2;
-            }
+                if (a[i - 1] == 'h')
+                    change[i, 0] -= 2;
         }
 
-        for (int j = 0; j <= n; j++)
+        for (var j = 0; j <= n; j++)
         {
             change[0, j] = 4 * j;
             if (j > 0)
-            {
-                if (b[j - 1] == 'h') change[0, j] -= 2;
-            }
+                if (b[j - 1] == 'h')
+                    change[0, j] -= 2;
         }
 
-        for (int i = 1; i <= Math.Min(m, n); i++)
+        for (var i = 1; i <= Math.Min(m, n); i++)
         {
-            int min = int.MaxValue;
-            for (int j = i; j <= n; j++)
+            var min = int.MaxValue;
+            int cost;
+            for (var j = i; j <= n; j++)
             {
                 //Damos menos peso a los errores ortograficos
-                cost = (a[i - 1] == b[j - 1]) ? 0 : OrtograficRule(a[i - 1], b[j - 1]);
-                change[i, j] = Math.Min(Math.Min(change[i - 1, j] + ((a[i - 1] == 'h') ? 2 : 4), //Eliminacion
-                        change[i, j - 1] + ((b[j - 1] == 'h') ? 2 : 4)), //Insercion 
+                cost = a[i - 1] == b[j - 1] ? 0 : OrtograficRule(a[i - 1], b[j - 1]);
+                change[i, j] = Math.Min(Math.Min(change[i - 1, j] + (a[i - 1] == 'h' ? 2 : 4), //Eliminacion
+                        change[i, j - 1] + (b[j - 1] == 'h' ? 2 : 4)), //Insercion 
                     change[i - 1, j - 1] + cost); //Sustitucion
                 min = Math.Min(min, change[i, j]);
             }
 
-            for (int j = i + 1; j <= m; j++)
+            for (var j = i + 1; j <= m; j++)
             {
                 //Damos menos peso a los errores ortograficos
-                cost = (a[j - 1] == b[i - 1]) ? 0 : OrtograficRule(a[j - 1], b[i - 1]);
-                change[j, i] = Math.Min(Math.Min(change[j - 1, i] + ((a[j - 1] == 'h') ? 2 : 4), //Eliminacion
-                        change[j, i - 1] + ((b[i - 1] == 'h') ? 2 : 4)), //Insercion 
+                cost = a[j - 1] == b[i - 1] ? 0 : OrtograficRule(a[j - 1], b[i - 1]);
+                change[j, i] = Math.Min(Math.Min(change[j - 1, i] + (a[j - 1] == 'h' ? 2 : 4), //Eliminacion
+                        change[j, i - 1] + (b[i - 1] == 'h' ? 2 : 4)), //Insercion 
                     change[j - 1, i - 1] + cost); //Sustitucion  
                 min = Math.Min(min, change[j, i]);
             }
@@ -483,11 +481,11 @@ public class QueryClass
         }
 
         //Vocales con tilde
-        if (min == 97 && 224 <= max && max <= 229) return 1;
-        if (min == 101 && 232 <= max && max <= 235) return 1;
-        if (min == 105 && 236 <= max && max <= 239) return 1;
-        if (min == 111 && 242 <= max && max <= 246) return 1;
-        if (min == 117 && 249 <= max && max <= 252) return 1;
+        if (min == 97 && max is >= 224 and <= 229) return 1;
+        if (min == 101 && max is >= 232 and <= 235) return 1;
+        if (min == 105 && max is >= 236 and <= 239) return 1;
+        if (min == 111 && max is >= 242 and <= 246) return 1;
+        if (min == 117 && max is >= 249 and <= 252) return 1;
         //c-s c-z j-g v-b
         if (min == 99 && max == 115) return 2;
         if (min == 115 && max == 122) return 2;
@@ -500,43 +498,6 @@ public class QueryClass
         if (min == 115 && max == 120) return 3;
         if (min == 108 && max == 114) return 3;
         return 4;
-    }
-
-    #endregion
-
-    #region TfIdf
-
-    /// <summary>Metodo para calcular el TfIdf de nuestra query</summary>
-    private void TfIdfC()
-    {
-        foreach (var word in WordsQuery)
-        {
-            //Factor para modificar el peso de la palabra
-            double a = 0;
-            if (HighestRelevance.ContainsKey(word.Key)) a = HighestRelevance[word.Key];
-            WordsQuery[word.Key] = (Math.Pow(Math.E, a) * word.Value / _max) *
-                                   Math.Log(Document.CantDoc / CorpusData.Vocabulary[word.Key].WordCantDoc);
-            Norma += WordsQuery[word.Key] * WordsQuery[word.Key];
-        }
-
-        foreach (var word in WordsStemmingSyn)
-        {
-            //Comprobamos si la palabra es raiz o sinonimo
-            if (word.Value[0] != 0)
-            {
-                WordsStemmingSyn[word.Key][0] = ((word.Value[0] + word.Value[1]) / _maxStemmingSyn) *
-                                                Math.Log(Document.CantDoc /
-                                                         CorpusData.Vocabulary[word.Key].WordCantDoc);
-            }
-            else
-            {
-                WordsStemmingSyn[word.Key][0] = ((word.Value[0] + word.Value[1]) / (2 * (double) _maxStemmingSyn)) *
-                                                Math.Log(Document.CantDoc /
-                                                         CorpusData.Vocabulary[word.Key].WordCantDoc);
-            }
-
-            NormaStemmingSyn += WordsStemmingSyn[word.Key][0];
-        }
     }
 
     #endregion

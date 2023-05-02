@@ -2,6 +2,16 @@ namespace MoogleEngine;
 
 public class Document
 {
+    public Document(string[] doc, string title, int q)
+    {
+        Max = 1;
+        Path = title;
+        Title = title.Substring(12, title.Length - 5 - 12 + 1);
+        Index = q;
+        Norma = 0;
+        Token(doc);
+    }
+
     //Guardar una lista con todos los documentos del corpus
     public static List<Document>? Documents { get; set; }
 
@@ -12,24 +22,14 @@ public class Document
     public int Max { get; set; }
 
     //Guardar el indice del documento
-    public int Index { get; private set; }
+    public int Index { get; }
 
     //Guardar el titulo del documento
-    public string Title { get; private set; }
+    public string Title { get; }
 
     //Guardar la ruta del documento
-    public string Path { get; private set; }
-    public double Norma { get; set; }
-
-    public Document(string[] doc, string title, int q)
-    {
-        this.Max = 1;
-        this.Path = title;
-        this.Title = title.Substring(12, title.Length - 5 - 12 + 1);
-        this.Index = q;
-        this.Norma = 0;
-        Token(doc);
-    }
+    public string Path { get; }
+    public double Norma { get; private set; }
 
     #region Token
 
@@ -37,15 +37,15 @@ public class Document
     /// <param name="doc">Texto del documento</param>
     private void Token(string[] doc)
     {
-        int cant = 0;
+        var cant = 0;
         //Recorremos cada linea del documento y llevamos un contadorcon la posicion de la palabra
-        for (int i = 0; i < doc.Length; i++)
+        foreach (var t in doc)
         {
             //Separamos por espacios
-            string[] s = doc[i].Split();
-            for (int j = 0; j < s.Length; j++)
+            var s = t.Split();
+            foreach (var t1 in s)
             {
-                string word = s[j];
+                var word = t1;
                 //Quitamos los signos de puntuacion
                 word = SignPunctuation(word);
                 //Si solo es un signo de puntuacion seguimos
@@ -65,18 +65,17 @@ public class Document
     public static string SignPunctuation(string s, bool query = false)
     {
         if (s == "") return s;
-        int start = 0;
-        int stop = 0;
+        var start = 0;
+        var stop = 0;
         //Recorremos la palabra de izqueierda a derecha y paramos cuando hallemos una letra
-        for (int i = 0; i < s.Length; i++)
+        for (var i = 0; i < s.Length; i++)
         {
-            bool next = false;
-            bool operators = false;
+            var next = false;
+            var operators = false;
             //Si la palabra es parte de la query excluimos los signos de los operadores
             if (query)
-            {
-                if (s[i] == '!' || s[i] == '*' || s[i] == '^' || s[i] == '"' || s[i] == '?') operators = true;
-            }
+                if (s[i] == '!' || s[i] == '*' || s[i] == '^' || s[i] == '"' || s[i] == '?')
+                    operators = true;
 
             //Si nos encontramos una letra paramos y guardamos la posicion
             if (!operators && !char.IsLetterOrDigit(s[i])) next = true;
@@ -91,14 +90,13 @@ public class Document
         }
 
         //Recorremos la palabra de derecha a izquierda y paramos cuando hallemos una letra
-        for (int i = 0; i < s.Length; i++)
+        for (var i = 0; i < s.Length; i++)
         {
-            bool next = false;
-            bool operators = false;
+            var next = false;
+            var operators = false;
             if (query)
-            {
-                if (s[s.Length - 1 - i] == '"' || s[s.Length - 1 - i] == '?') operators = true;
-            }
+                if (s[s.Length - 1 - i] == '"' || s[s.Length - 1 - i] == '?')
+                    operators = true;
 
             //Si nos encontramos una letra paramos y guardamos la posicion
             if (!operators && !char.IsLetterOrDigit(s[s.Length - 1 - i])) next = true;
@@ -123,11 +121,11 @@ public class Document
         foreach (var word in CorpusData.Vocabulary)
         {
             word.Value.WordCantDoc = WordCantDoc(word.Value.WeightDoc);
-            for (int j = 0; j < Document.CantDoc; j++)
+            for (var j = 0; j < CantDoc; j++)
             {
-                word.Value.WeightDoc[j] = (word.Value.WeightDoc[j] / Document.Documents![j].Max) *
-                                          Math.Log(Document.CantDoc / word.Value.WordCantDoc);
-                Document.Documents[j].Norma += word.Value.WeightDoc[j] * word.Value.WeightDoc[j];
+                word.Value.WeightDoc[j] = word.Value.WeightDoc[j] / Documents![j].Max *
+                                          Math.Log(CantDoc / word.Value.WordCantDoc);
+                Documents[j].Norma += word.Value.WeightDoc[j] * word.Value.WeightDoc[j];
             }
         }
     }
@@ -136,11 +134,10 @@ public class Document
     /// <param name="words">Arreglo con la frecuencia de la palabra en los documentos</param>
     private static int WordCantDoc(double[] words)
     {
-        int cant = 0;
-        for (int i = 0; i < Document.CantDoc; i++)
-        {
-            if (words[i] != 0) cant++;
-        }
+        var cant = 0;
+        for (var i = 0; i < CantDoc; i++)
+            if (words[i] != 0)
+                cant++;
 
         return cant;
     }

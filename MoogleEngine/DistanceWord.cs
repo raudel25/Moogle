@@ -8,19 +8,19 @@ public static class DistanceWord
     /// <returns>Posicion de la busqueda literal</returns>
     public static int DistanceLiteral(List<string> words, Document document)
     {
-        ((int, int)[], int) aux = ListPosWords(words, document);
-        (int, int)[] posWordsSorted = aux.Item1;
-        int posRnd = aux.Item2;
-        int ind = 0;
-        int pos = posWordsSorted[0].Item2;
-        int posLiteral = -1;
-        List<int> indWord = new List<int>();
-        bool literal = false;
+        var (posWordsSorted, posRnd) = ListPosWords(words, document);
+        var ind = 0;
+        var pos = posWordsSorted[0].Item2;
+        var posLiteral = -1;
+        var indWord = new List<int>();
+        var literal = false;
         //Recorremos la posiciones de la palabras
-        for (int i = 0; i < posWordsSorted.Length; i++)
-        {
+        for (var i = 0; i < posWordsSorted.Length; i++)
             //Si encontramos dos indices iguales estamos en presencia de la misma palabra
-            if (pos == posWordsSorted[i].Item2) indWord.Add(posWordsSorted[i].Item1);
+            if (pos == posWordsSorted[i].Item2)
+            {
+                indWord.Add(posWordsSorted[i].Item1);
+            }
             else
             {
                 //Si encontramos una posicion diferente revisamos si es correcto el indice de las palabras que son iguales
@@ -30,14 +30,15 @@ public static class DistanceWord
                     if (posWordsSorted[i].Item2 == pos + 1) ind++;
                     else ind = 0;
                 }
-                else ind = 0;
+                else
+                {
+                    ind = 0;
+                }
 
                 //Como hemos encontrado una palabra diferente creamos una nueva lista de indices
-                indWord = new List<int>();
-                indWord.Add(posWordsSorted[i].Item1);
+                indWord = new List<int> { posWordsSorted[i].Item1 };
                 pos = posWordsSorted[i].Item2;
             }
-        }
 
         LiteralIndex(words, indWord, ref posRnd, ref ind, ref pos, ref posLiteral, ref literal);
         //Si hemos encontrado una posicion correcta la devolvemos de lo contrario devlovemos -1
@@ -51,8 +52,8 @@ public static class DistanceWord
     /// <returns>Minima distancia entre las palabras del operador</returns>
     public static int DistanceClose(List<string> words, Document document)
     {
-        int[] ocurrence = new int[words.Count];
-        (int, int)[] posWordsSorted = ListPosWords(words, document, ocurrence).Item1;
+        var ocurrence = new int[words.Count];
+        var posWordsSorted = ListPosWords(words, document, ocurrence).Item1;
         return SearchDistanceWords(words, posWordsSorted, ocurrence, words.Count).Item1;
     }
 
@@ -62,15 +63,15 @@ public static class DistanceWord
     /// <returns>Tupla con la posicion y las palabras que no fueron contenidas</returns>
     public static (int, List<string>) DistanceSnippet(List<string> words, Document document)
     {
-        List<string> wordsNotRange = new List<string>();
-        int[] ocurrence = new int[words.Count];
-        (int, int)[] posWordsSorted = ListPosWords(words, document, ocurrence).Item1;
-        int pos = 0;
-        int start = Math.Min(words.Count, DocumentResult.SnippetLen);
+        var wordsNotRange = new List<string>();
+        var ocurrence = new int[words.Count];
+        var posWordsSorted = ListPosWords(words, document, ocurrence).Item1;
+        var pos = 0;
+        var start = Math.Min(words.Count, DocumentResult.SnippetLen);
         //Buscamos la maxima cantidad de palabras a contener en la ventana de texto
-        for (int j = start; j >= 1; j--)
+        for (var j = start; j >= 1; j--)
         {
-            (int, int) aux = SearchDistanceWords(words, posWordsSorted, ocurrence, j, wordsNotRange);
+            var aux = SearchDistanceWords(words, posWordsSorted, ocurrence, j, wordsNotRange);
             pos = aux.Item2;
 
             //Si la minima distancia enontrada es menor a la esperada paramos
@@ -91,13 +92,13 @@ public static class DistanceWord
     private static (int, int) SearchDistanceWords(List<string> words, (int, int)[] posWordsSorted, int[] ocurrence,
         int minWords, List<string> wordsNotRange = null!)
     {
-        int minDist = int.MaxValue;
-        int pos = 0;
-        int contains = 0;
-        Queue<(int, int)> searchMinDist = new Queue<(int, int)>();
-        int[] posList = new int[words.Count];
+        var minDist = int.MaxValue;
+        var pos = 0;
+        var contains = 0;
+        var searchMinDist = new Queue<(int, int)>();
+        var posList = new int[words.Count];
         //Recorremos el array buscando la minima ventana q contenga a todas las palabras
-        for (int i = 0; i < posWordsSorted.Length; i++)
+        for (var i = 0; i < posWordsSorted.Length; i++)
         {
             searchMinDist.Enqueue(posWordsSorted[i]);
             posList[posWordsSorted[i].Item1]++;
@@ -110,12 +111,13 @@ public static class DistanceWord
                 {
                     //Buscamos la posible palabra a eliminar de la cola
                     eliminate = searchMinDist.Peek();
-                    if (posList[eliminate.Item1] == ocurrence[eliminate.Item1]) break;
-                    else
+                    if (posList[eliminate.Item1] == ocurrence[eliminate.Item1])
                     {
-                        searchMinDist.Dequeue();
-                        posList[eliminate.Item1]--;
+                        break;
                     }
+
+                    searchMinDist.Dequeue();
+                    posList[eliminate.Item1]--;
                 }
 
                 //Comprobamos si la distancia obtenida es menor que la q teniamos
@@ -127,7 +129,7 @@ public static class DistanceWord
                 }
                 else if (posWordsSorted[i].Item2 - searchMinDist.Peek().Item2 + 1 == minDist)
                 {
-                    Random random = new Random();
+                    var random = new Random();
                     if (random.Next(2) == 0)
                     {
                         WordsNotRange(words, posList, ocurrence, wordsNotRange);
@@ -152,22 +154,20 @@ public static class DistanceWord
     /// <returns>Arreglo de tuplas ordenadas con el indice y la posicion de la palabra</returns>
     private static ((int, int)[], int) ListPosWords(List<string> words, Document document, int[]? ocurrence = null)
     {
-        int posRnd = 0;
+        var posRnd = 0;
         if (ocurrence != null) OcurrenceWord(words, ocurrence);
         //Guardamos en un arreglo de tuplas las posiciones de las palabras
         //Ordenamos los elementos de los arrays de tuplas por el numero de la posicion de la palabra
-        (int, int)[] posWordsSorted = Array.Empty<(int, int)>();
-        for (int i = 0; i < words.Count; i++)
+        var posWordsSorted = Array.Empty<(int, int)>();
+        for (var i = 0; i < words.Count; i++)
         {
             if (ocurrence == null!)
-            {
                 //Comprobamos la presencia de un comodin
                 if (words[i] == "?")
                 {
                     posRnd++;
                     continue;
                 }
-            }
 
             posWordsSorted = Sorted(posWordsSorted,
                 BuildTuple(CorpusData.Vocabulary[words[i]].PosDoc[document.Index]!, i, posRnd));
@@ -195,10 +195,13 @@ public static class DistanceWord
             {
                 if (pos - words.Count + 1 + cantRnd >= 0)
                 {
-                    if (posLiteral == -1) posLiteral = pos - words.Count + 1 + cantRnd;
+                    if (posLiteral == -1)
+                    {
+                        posLiteral = pos - words.Count + 1 + cantRnd;
+                    }
                     else
                     {
-                        Random rnd = new Random();
+                        var rnd = new Random();
                         if (rnd.Next(2) == 0) posLiteral = pos - words.Count + 1 + cantRnd;
                     }
 
@@ -223,23 +226,21 @@ public static class DistanceWord
     {
         if (wordsNotRange == null!) return;
         wordsNotRange.Clear();
-        for (int u = 0; u < words.Count; u++)
-        {
-            if (posList[u] < ocurrence[u]) wordsNotRange.Add(words[u]);
-        }
+        for (var u = 0; u < words.Count; u++)
+            if (posList[u] < ocurrence[u])
+                wordsNotRange.Add(words[u]);
     }
 
-    ///<summary>Mezcla ordenada de las tuplas correspondientes a las posiciones de las palabras </summary> 
+    /// <summary>Mezcla ordenada de las tuplas correspondientes a las posiciones de las palabras </summary>
     /// <param name="words1">Array de tuplas</param>
     /// <param name="words2">Array de tuplas</param>
     /// <returns>Array ordenado</returns>
     private static (int, int)[] Sorted((int, int)[] words1, (int, int)[] words2)
     {
-        (int, int)[] words3 = new (int, int)[words1.Length + words2.Length];
-        int i = 0;
-        int j = 0;
+        var words3 = new (int, int)[words1.Length + words2.Length];
+        var i = 0;
+        var j = 0;
         while (i < words1.Length && j < words2.Length)
-        {
             if (words1[i].Item2 <= words2[j].Item2)
             {
                 words3[i + j] = words1[i];
@@ -250,7 +251,6 @@ public static class DistanceWord
                 words3[i + j] = words2[j];
                 j++;
             }
-        }
 
         while (i < words1.Length)
         {
@@ -274,11 +274,8 @@ public static class DistanceWord
     /// <returns>Tuplas con el indice de la palabra en la lista y la posiciion de la palabra</returns>
     private static (int, int)[] BuildTuple(List<int> wordsPos, int index, int posRnd = 0)
     {
-        (int, int)[] tuple = new (int, int)[wordsPos.Count];
-        for (int i = 0; i < tuple.Length; i++)
-        {
-            tuple[i] = (index - posRnd, wordsPos[i] - posRnd);
-        }
+        var tuple = new (int, int)[wordsPos.Count];
+        for (var i = 0; i < tuple.Length; i++) tuple[i] = (index - posRnd, wordsPos[i] - posRnd);
 
         return tuple;
     }
@@ -288,21 +285,19 @@ public static class DistanceWord
     /// <param name="ocurrence">Cantidad de ocurrencias de la palabra</param>
     private static void OcurrenceWord(List<string> words, int[] ocurrence)
     {
-        for (int i = 0; i < words.Count; i++)
+        for (var i = 0; i < words.Count; i++)
         {
             if (ocurrence[i] != 0) continue;
-            int cant = 0;
+            var cant = 0;
             //Contamos la cantidad de palabras iguales
-            for (int j = i; j < words.Count; j++)
-            {
-                if (words[i] == words[j]) cant++;
-            }
+            for (var j = i; j < words.Count; j++)
+                if (words[i] == words[j])
+                    cant++;
 
             //Asignamos esa cantidad a cada posicion donde esten las palabras iguales
-            for (int j = i; j < words.Count; j++)
-            {
-                if (words[i] == words[j]) ocurrence[j] = cant;
-            }
+            for (var j = i; j < words.Count; j++)
+                if (words[i] == words[j])
+                    ocurrence[j] = cant;
         }
     }
 }

@@ -2,59 +2,50 @@ namespace MoogleEngine;
 
 public class SearchResult
 {
-    private List<SearchItem> _items;
+    private readonly List<SearchItem> _items;
 
     public SearchResult(List<SearchItem> items)
     {
-        if (items == null)
-        {
-            throw new ArgumentNullException("items");
-        }
+        if (items == null) throw new ArgumentNullException(nameof(items));
 
         items.Sort((o1, o2) => o2.Score.CompareTo(o1.Score));
-        this._items = items;
-        this.Suggestion = "";
-        this.QuerySuggestion = null!;
+        _items = items;
+        Suggestion = "";
+        QuerySuggestion = null!;
     }
 
     public SearchResult(List<SearchItem> items, List<SearchItem> sugestionItems, string suggestion)
     {
-        if (items == null!)
-        {
-            throw new ArgumentNullException("items");
-        }
+        if (items == null!) throw new ArgumentNullException(nameof(items));
 
         items.Sort((o1, o2) => o2.Score.CompareTo(o1.Score));
-        this._items = items;
+        _items = items;
         //Comrobamos si la sugerencia es coreecta
         if (sugestionItems.Count != 0)
         {
-            this.QuerySuggestion = new SearchResult(sugestionItems);
+            QuerySuggestion = new SearchResult(sugestionItems);
         }
         else
         {
             suggestion = "";
-            this.QuerySuggestion = null!;
+            QuerySuggestion = null!;
         }
 
-        this.Suggestion = suggestion;
+        Suggestion = suggestion;
     }
 
     public SearchResult() : this(new List<SearchItem>())
     {
     }
 
-    public string Suggestion { get; private set; }
+    public string Suggestion { get; }
+
+    public int Count => _items.Count;
+
+    public SearchResult QuerySuggestion { get; set; }
 
     public IEnumerable<SearchItem> Items()
     {
-        return this._items;
+        return _items;
     }
-
-    public int Count
-    {
-        get { return this._items.Count; }
-    }
-
-    public SearchResult QuerySuggestion { get; set; }
 }

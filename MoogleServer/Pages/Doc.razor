@@ -34,7 +34,7 @@
 </ul>
 
 <ul>
-    <a target='__blank' href=@(Id + "/" + (Page - 100) + "/" + Pos)>
+    <a target="__blank" href=@(Id + "/" + (Page - 100) + "/" + Pos)>
         <button class="btn btn-primary"
                 style="margin-right:30px; border-radius:50px;">
             👈 Anterior
@@ -44,14 +44,14 @@
     <input type="number" class="p-1 my-4" @bind="_newPage" @bind:event="oninput"
            style="width: 100px; text-align:center; border-radius:50px" margin-left="100px">
 
-    <a target='__blank' href=@(Id + "/" + (_newPage * 100) + "/" + Pos)>
+    <a target="__blank" href=@(Id + "/" + _newPage * 100 + "/" + Pos)>
         <button class="btn btn-primary"
                 style="border-radius:50px;">
             Ir
         </button>
     </a>
 
-    <a target='__blank' href=@(Id + "/" + (Page + 100) + "/" + Pos)>
+    <a target="__blank" href=@(Id + "/" + (Page + 100) + "/" + Pos)>
         <button class="btn btn-primary"
                 style="margin-left:30px; border-radius:50px;">
             Próximo 👉
@@ -60,7 +60,7 @@
 </ul>
 
 <ul>
-    <a target='__blank' href=@(Id + "/" + (Pos - Pos % 100) + "/" + Pos)>
+    <a target="__blank" href=@(Id + "/" + (Pos - Pos % 100) + "/" + Pos)>
         <button class="btn btn-primary"
                 style="border-radius:50px;">
             Resultado

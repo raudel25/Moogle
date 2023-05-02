@@ -4,27 +4,28 @@ namespace MoogleEngine;
 
 public class DocumentResult
 {
-    public SearchItem? Item { get; set; }
     public static readonly int SnippetLen = 20;
 
     public DocumentResult(Document document, QueryClass query)
     {
         //Lista para las palabras de la query presentes en el documento
-        List<string> wordsDoc = new List<string>();
+        var wordsDoc = new List<string>();
         //Lista para las palabras de la busqueda literal presentes en el documneto
-        List<string> wordsDocLiteral = new List<string>();
+        var wordsDocLiteral = new List<string>();
         //Lista para las palabras que no estan en el documento
-        List<string> wordsNoDoc = new List<string>();
+        var wordsNoDoc = new List<string>();
         //Lista de posiciones para la busqueda literal
-        List<int> posSearchLiteral = new List<int>();
-        double score = SimVectors(query, document, wordsDoc, wordsNoDoc, wordsDocLiteral);
+        var posSearchLiteral = new List<int>();
+        var score = SimVectors(query, document, wordsDoc, wordsNoDoc, wordsDocLiteral);
         //Modificacion del Score por el operador cercania
         score += Close(wordsDocLiteral, document, query);
         if (!ResultSearch(posSearchLiteral, score, document, query)) return;
         //Buscamos los Snippets
-        (string[], int[]) aux = Snippet(wordsDoc, posSearchLiteral, document, query);
-        this.Item = new SearchItem(document.Title, aux.Item1, aux.Item2, score, wordsNoDoc);
+        var aux = Snippet(wordsDoc, posSearchLiteral, document, query);
+        Item = new SearchItem(document.Title, aux.Item1, aux.Item2, score, wordsNoDoc);
     }
+
+    public SearchItem? Item { get; set; }
 
     #region SearchResult
 
@@ -47,14 +48,10 @@ public class DocumentResult
             //Calculamos el producto de los 2 vectores
             queryXdoc += CorpusData.Vocabulary[wordDic.Key].WeightDoc[document.Index] * wordDic.Value;
             if (CorpusData.Vocabulary[wordDic.Key].WeightDoc[document.Index] * wordDic.Value != 0)
-            {
                 wordsDoc.Add(wordDic.Key);
-            }
 
             if (CorpusData.Vocabulary[wordDic.Key].PosDoc[document.Index] != null)
-            {
                 wordsDocLiteral.Add(wordDic.Key);
-            }
             else wordsNoDoc.Add(wordDic.Key);
         }
 
@@ -66,25 +63,21 @@ public class DocumentResult
             {
                 queryXdoc += CorpusData.Vocabulary[wordDic.Key].WeightDoc[document.Index] * wordDic.Value[0];
                 if (CorpusData.Vocabulary[wordDic.Key].WeightDoc[document.Index] * wordDic.Value[0] != 0)
-                {
                     wordsDoc.Add(wordDic.Key);
-                }
             }
 
             modQuery = query.NormaStemmingSyn;
-            if (queryXdoc != 0)
-            {
-                factor = double.MinValue;
-            }
+            if (queryXdoc != 0) factor = double.MinValue;
         }
-        else modQuery = query.Norma;
-
-        double modDoc = Document.Documents![document.Index].Norma;
-        if (modQuery * modDoc != 0)
+        else
         {
+            modQuery = query.Norma;
+        }
+
+        var modDoc = Document.Documents![document.Index].Norma;
+        if (modQuery * modDoc != 0)
             //Calculamos la similitud del coseno
             score = factor + queryXdoc / Math.Sqrt(modQuery * modDoc);
-        }
 
         return score;
     }
@@ -99,22 +92,15 @@ public class DocumentResult
     {
         if (score == 0) return false;
         //Comprobamos el operador de Exclusion
-        for (int m = 0; m < query.Exclude.Count; m++)
+        if (query.Exclude.Any(t => CorpusData.Vocabulary[t].PosDoc[doc.Index] != null))
         {
-            if (CorpusData.Vocabulary[query.Exclude[m]].PosDoc[doc.Index] != null)
-            {
-                return false;
-            }
+            return false;
         }
 
         //Comprobamos el operador de Inclusion
-        for (int m = 0; m < query.Include.Count; m++)
-        {
-            if (CorpusData.Vocabulary[query.Include[m]].PosDoc[doc.Index] == null)
-            {
+        foreach (var t in query.Include)
+            if (CorpusData.Vocabulary[t].PosDoc[doc.Index] == null)
                 return false;
-            }
-        }
 
         //Comprobamos el operador de busqueda literal
         return SearchLiteralOperator(doc, query, posSearchLiteral);
@@ -127,16 +113,16 @@ public class DocumentResult
     /// <returns>Bool indicando si el documento es valido para el operador busqueda literal</returns>
     private static bool SearchLiteralOperator(Document doc, QueryClass query, List<int> posSearchLiteral)
     {
-        for (int i = 0; i < query.SearchLiteralWords.Count; i++)
+        foreach (var t in query.SearchLiteralWords)
         {
             //Evaluamos los parametros para la busqueda literal
-            for (int j = 0; j < query.SearchLiteralWords[i].Count; j++)
+            foreach (var t1 in t)
             {
-                if (query.SearchLiteralWords[i][j] == "?") continue;
-                if (CorpusData.Vocabulary[query.SearchLiteralWords[i][j]].PosDoc[doc.Index] == null) return false;
+                if (t1 == "?") continue;
+                if (CorpusData.Vocabulary[t1].PosDoc[doc.Index] == null) return false;
             }
 
-            int posLiteral = DistanceWord.DistanceLiteral(query.SearchLiteralWords[i], doc);
+            var posLiteral = DistanceWord.DistanceLiteral(t, doc);
             if (posLiteral == -1) return false;
             //Guardamos la posicion de la busqueda literal encontrada
             posSearchLiteral.Add(posLiteral);
@@ -155,21 +141,19 @@ public class DocumentResult
         double sumScore = 0;
         foreach (var wordList in query.CloseWords)
         {
-            bool close = true;
+            var close = true;
             //Comprobamos que las palabras del operador cercania esten en nuestra lista de palabras
-            for (int j = 0; j < wordList.Count; j++)
-            {
-                if (!words.Contains(wordList[j]))
+            foreach (var t in wordList)
+                if (!words.Contains(t))
                 {
                     close = false;
                     break;
                 }
-            }
 
             //Si hemos encontrado todas las palabras de nuestro operador cercania buscamos la minima distancia
             if (close)
             {
-                int n = DistanceWord.DistanceClose(wordList, document);
+                var n = DistanceWord.DistanceClose(wordList, document);
                 if (n == int.MaxValue) continue;
                 sumScore += 100 / ((double)n - 1);
             }
@@ -191,27 +175,24 @@ public class DocumentResult
     private static (string[], int[]) Snippet(List<string> snippetWords, List<int> posSearchLiteral, Document document,
         QueryClass query)
     {
-        List<int> wordsList = new List<int>();
+        var wordsList = new List<int>();
         //Comprobamos si tenemos resultados de busqueda literal
         if (query.SearchLiteralWords.Count > 0)
-        {
-            for (int x = 0; x < query.SearchLiteralWords.Count; x++)
+            for (var x = 0; x < query.SearchLiteralWords.Count; x++)
             {
                 //Removemos la palabra de la busqueda literal, de la lista de palabras del snippet
                 foreach (var y in query.SearchLiteralWords[x])
-                {
-                    if (snippetWords.Contains(y)) snippetWords.Remove(y);
-                }
+                    if (snippetWords.Contains(y))
+                        snippetWords.Remove(y);
 
                 //Guardamos la posicion del snippet
                 wordsList.Add(posSearchLiteral[x]);
             }
-        }
 
         //Buscamos la mayor cantidad de palabras de la query que esten contenidas en una ventana de tamaño SnippetLen
         while (snippetWords.Count != 0 && wordsList.Count < 5)
         {
-            (int, List<string>) tuple = DistanceWord.DistanceSnippet(snippetWords, document);
+            var tuple = DistanceWord.DistanceSnippet(snippetWords, document);
             wordsList.Add(tuple.Item1);
             //Actualizamos la lista de palabras
             snippetWords = tuple.Item2;
@@ -227,37 +208,34 @@ public class DocumentResult
     private static (string[], int[]) BuildSinipped(Document document, List<int> snippetWords)
     {
         snippetWords.Sort();
-        string[] doc = File.ReadAllLines(document.Path);
-        string[] addSnippet = new string[snippetWords.Count];
-        int[] addposSnippet = new int[snippetWords.Count];
+        var doc = File.ReadAllLines(document.Path);
+        var addSnippet = new string[snippetWords.Count];
+        var addposSnippet = new int[snippetWords.Count];
         //Recorremos el documento
-        int i = 0;
-        int cant = 0;
-        for (int lineaInd = 0; lineaInd < doc.Length; lineaInd++)
+        var i = 0;
+        var cant = 0;
+        for (var lineaInd = 0; lineaInd < doc.Length; lineaInd++)
         {
-            string[] linea = doc[lineaInd].Split();
-            for (int j = 0; j < linea.Length; j++)
+            var linea = doc[lineaInd].Split();
+            for (var j = 0; j < linea.Length; j++)
             {
                 if (cant == snippetWords[i])
                 {
-                    int cantWordsSnippet = 0;
-                    StringBuilder sb = new StringBuilder();
-                    bool nextline = lineaInd < doc.Length - 1;
-                    int pos = j;
+                    var cantWordsSnippet = 0;
+                    var sb = new StringBuilder();
+                    var nextline = lineaInd < doc.Length - 1;
+                    var pos = j;
                     //Determinamos si es necesario coger palabras anteriores a la posicion indicada
                     if (nextline)
                     {
-                        if (doc[lineaInd + 1] == "" && linea.Length - j < 20)
-                        {
-                            pos = (j < 5) ? 0 : j - 5;
-                        }
+                        if (doc[lineaInd + 1] == "" && linea.Length - j < 20) pos = j < 5 ? 0 : j - 5;
                     }
                     else if (linea.Length - j < 20)
                     {
-                        pos = (j < 5) ? 0 : j - 5;
+                        pos = j < 5 ? 0 : j - 5;
                     }
 
-                    for (int w = pos; w < linea.Length; w++)
+                    for (var w = pos; w < linea.Length; w++)
                     {
                         sb.Append(linea[w] + " ");
                         cantWordsSnippet++;
@@ -267,16 +245,13 @@ public class DocumentResult
                     //Si no hemos alcanzado la longitud de nuestro snippet vamos a la linea siguiente
                     if (cantWordsSnippet < SnippetLen && nextline)
                     {
-                        int ind = lineaInd + 1;
-                        if (doc[lineaInd + 1] == "" && lineaInd < doc.Length - 2)
-                        {
-                            ind = lineaInd + 2;
-                        }
+                        var ind = lineaInd + 1;
+                        if (doc[lineaInd + 1] == "" && lineaInd < doc.Length - 2) ind = lineaInd + 2;
 
-                        string[] newline = doc[ind].Split();
-                        for (int w = 0; w < newline.Length; w++)
+                        var newline = doc[ind].Split();
+                        foreach (var t in newline)
                         {
-                            sb.Append(newline[w] + " ");
+                            sb.Append(t + " ");
                             cantWordsSnippet++;
                             if (cantWordsSnippet == SnippetLen) break;
                         }
@@ -290,7 +265,7 @@ public class DocumentResult
                 }
 
                 if (i == snippetWords.Count) break;
-                string word = linea[j];
+                var word = linea[j];
                 //Quitamos los signos de puntuacion
                 word = Document.SignPunctuation(word);
                 //Si solo es un signo de puntuacion seguimos
